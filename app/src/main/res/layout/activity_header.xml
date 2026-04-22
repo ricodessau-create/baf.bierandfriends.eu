@@ -4,7 +4,6 @@
     android:layout_height="wrap_content"
     android:background="@color/background_dark">
 
-    <!-- App Header Banner -->
     <ImageView
         android:id="@+id/appHeaderBanner"
         android:layout_width="match_parent"
@@ -13,17 +12,5 @@
         android:scaleType="centerCrop"
         android:adjustViewBounds="true"
         android:contentDescription="@string/header_banner_desc" />
-
-    <!-- Optional: App Title über dem Banner -->
-    <TextView
-        android:id="@+id/headerTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/app_name"
-        android:textColor="@color/gold"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp" />
 
 </RelativeLayout>
