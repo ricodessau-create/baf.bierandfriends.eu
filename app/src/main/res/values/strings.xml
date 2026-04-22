@@ -1,3 +1,5 @@
 <resources>
-    <string name="app_name">BierAndFriends App</string>
+    <string name="app_name">BierAndFriends [BAF]</string>
+    <string name="header_banner_desc">Header Banner für BierAndFriends</string>
+    <string name="start_banner_desc">Startscreen Banner für BierAndFriends</string>
 </resources>
