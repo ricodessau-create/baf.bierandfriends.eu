@@ -1,5 +1,6 @@
 <resources>
-    <color name="primary">#FFBB33</color>
-    <color name="primaryDark">#FF8800</color>
-    <color name="accent">#33B5E5</color>
+    <color name="background_dark">#0D0D0D</color>
+    <color name="gold">#E2B857</color>
+    <color name="gold_dark">#A67C2E</color>
+    <color name="text_light">#F5F5F5</color>
 </resources>
