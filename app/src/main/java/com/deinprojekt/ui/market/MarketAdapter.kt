@@ -1,13 +1,6 @@
-package com.deinprojekt.ui.market
-
-import android.view.LayoutInflater
-import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView
-import com.deinprojekt.data.models.MarketItem
-import com.deinprojekt.databinding.MarketListItemBinding
-
 class MarketAdapter(
-    private val items: List<MarketItem>
+    private val items: List<MarketItem>,
+    private val onClick: (String) -> Unit
 ) : RecyclerView.Adapter<MarketAdapter.MarketViewHolder>() {
 
     inner class MarketViewHolder(val binding: MarketListItemBinding)
@@ -29,6 +22,10 @@ class MarketAdapter(
         holder.binding.itemDescription.text = item.description
         holder.binding.itemPrice.text = "${item.price} €"
         holder.binding.itemOwner.text = "Anbieter: ${item.ownerUuid}"
+
+        holder.binding.root.setOnClickListener {
+            onClick(item.id)
+        }
     }
 
     override fun getItemCount(): Int = items.size
