@@ -47,9 +47,8 @@ class MarketFragment : Fragment() {
             val items = marketRepository.getMarketItems()
 
             binding.marketRecyclerView.adapter = MarketAdapter(items) { itemId ->
-                val action = MarketFragmentDirections
-                    .actionMarketFragmentToMarketDetailFragment(itemId)
-
+                val action =
+                    MarketFragmentDirections.actionMarketFragmentToMarketDetailFragment(itemId)
                 findNavController().navigate(action)
             }
         }
