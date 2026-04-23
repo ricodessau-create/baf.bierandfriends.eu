@@ -6,6 +6,7 @@
     android:background="@android:color/black"
     android:padding="12dp">
 
+    <!-- Suche -->
     <EditText
         android:id="@+id/marketSearch"
         android:layout_width="match_parent"
@@ -15,9 +16,60 @@
         android:textColor="#FFFFFF"
         android:textColorHint="#888888"
         android:background="#222222"
-        android:drawablePadding="8dp"
         android:layout_marginBottom="12dp" />
 
+    <!-- Filter-Leiste -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:layout_marginBottom="12dp">
+
+        <LinearLayout
+            android:id="@+id/filterContainer"
+            android:orientation="horizontal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <Button
+                android:id="@+id/filterOwn"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="Eigene"
+                android:backgroundTint="#333333"
+                android:textColor="#FFD700"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/filterWithImage"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="Mit Bild"
+                android:backgroundTint="#333333"
+                android:textColor="#FFD700"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/sortPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="Preis ↑"
+                android:backgroundTint="#333333"
+                android:textColor="#FFD700"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/sortNewest"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="Neueste"
+                android:backgroundTint="#333333"
+                android:textColor="#FFD700" />
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- Liste -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/marketRecyclerView"
         android:layout_width="match_parent"
@@ -25,6 +77,7 @@
         android:layout_weight="1"
         android:clipToPadding="false" />
 
+    <!-- FAB -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/marketFab"
         android:layout_width="wrap_content"
