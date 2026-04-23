@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp"
+    android:background="@android:color/black">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <EditText
+            android:id="@+id/createTitle"
+            android:hint="Titel"
+            android:textColor="@android:color/white"
+            android:hintTextColor="#777777"
+            android:background="@android:color/transparent"
+            android:textSize="18sp"
+            android:layout_marginBottom="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <EditText
+            android:id="@+id/createDescription"
+            android:hint="Beschreibung"
+            android:textColor="@android:color/white"
+            android:hintTextColor="#777777"
+            android:background="@android:color/transparent"
+            android:minLines="4"
+            android:textSize="16sp"
+            android:layout_marginBottom="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <EditText
+            android:id="@+id/createPrice"
+            android:hint="Preis (€)"
+            android:inputType="numberDecimal"
+            android:textColor="@android:color/white"
+            android:hintTextColor="#777777"
+            android:background="@android:color/transparent"
+            android:textSize="18sp"
+            android:layout_marginBottom="30dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/createSaveButton"
+            android:text="Speichern"
+            android:textSize="16sp"
+            android:backgroundTint="#FFD700"
+            android:textColor="@android:color/black"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+
+</ScrollView>
