@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.deinprojekt.data.repository.MarketRepository
 import com.deinprojekt.databinding.FragmentMarketBinding
@@ -33,13 +34,24 @@ class MarketFragment : Fragment() {
         binding.marketRecyclerView.layoutManager = LinearLayoutManager(requireContext())
 
         loadMarketItems()
+
+        binding.marketFab.setOnClickListener {
+            findNavController().navigate(
+                R.id.action_marketFragment_to_marketCreateFragment
+            )
+        }
     }
 
     private fun loadMarketItems() {
         lifecycleScope.launch {
             val items = marketRepository.getMarketItems()
 
-            binding.marketRecyclerView.adapter = MarketAdapter(items)
+            binding.marketRecyclerView.adapter = MarketAdapter(items) { itemId ->
+                val action = MarketFragmentDirections
+                    .actionMarketFragmentToMarketDetailFragment(itemId)
+
+                findNavController().navigate(action)
+            }
         }
     }
 
