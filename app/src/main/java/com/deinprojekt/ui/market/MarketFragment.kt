@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.deinprojekt.data.models.MarketItem
 import com.deinprojekt.data.repository.MarketRepository
 import com.deinprojekt.databinding.FragmentMarketBinding
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
 class MarketFragment : Fragment() {
@@ -20,9 +21,15 @@ class MarketFragment : Fragment() {
     private var _binding: FragmentMarketBinding? = null
     private val binding get() = _binding!!
 
-    private val marketRepository = MarketRepository()
+    private val repo = MarketRepository()
+    private val auth = FirebaseAuth.getInstance()
 
     private var allItems: List<MarketItem> = emptyList()
+    private var filteredItems: List<MarketItem> = emptyList()
+
+    private var filterOwn = false
+    private var filterWithImage = false
+    private var sortPriceAsc = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,8 +45,9 @@ class MarketFragment : Fragment() {
 
         binding.marketRecyclerView.layoutManager = LinearLayoutManager(requireContext())
 
-        loadMarketItems()
+        loadItems()
         setupSearch()
+        setupFilters()
 
         binding.marketFab.setOnClickListener {
             findNavController().navigate(
@@ -48,30 +56,69 @@ class MarketFragment : Fragment() {
         }
     }
 
-    private fun loadMarketItems() {
+    private fun loadItems() {
         lifecycleScope.launch {
-            allItems = marketRepository.getMarketItems()
-            updateList(allItems)
+            allItems = repo.getMarketItems()
+            applyFilters()
         }
     }
 
     private fun setupSearch() {
         binding.marketSearch.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
-                filterList(s.toString())
+                applyFilters()
             }
-
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
     }
 
-    private fun filterList(query: String) {
-        val filtered = allItems.filter { item ->
-            item.title.contains(query, ignoreCase = true) ||
-            item.description.contains(query, ignoreCase = true)
+    private fun setupFilters() {
+
+        binding.filterOwn.setOnClickListener {
+            filterOwn = !filterOwn
+            applyFilters()
         }
-        updateList(filtered)
+
+        binding.filterWithImage.setOnClickListener {
+            filterWithImage = !filterWithImage
+            applyFilters()
+        }
+
+        binding.sortPrice.setOnClickListener {
+            sortPriceAsc = !sortPriceAsc
+            applyFilters()
+        }
+
+        binding.sortNewest.setOnClickListener {
+            filteredItems = filteredItems.sortedByDescending { it.createdAt?.seconds ?: 0 }
+            updateList(filteredItems)
+        }
+    }
+
+    private fun applyFilters() {
+        val query = binding.marketSearch.text.toString().trim()
+
+        filteredItems = allItems.filter { item ->
+
+            val matchesSearch =
+                item.title.contains(query, ignoreCase = true) ||
+                item.description.contains(query, ignoreCase = true)
+
+            val matchesOwn =
+                !filterOwn || item.ownerUuid == auth.currentUser?.uid
+
+            val matchesImage =
+                !filterWithImage || item.imageUrl != null
+
+            matchesSearch && matchesOwn && matchesImage
+        }
+
+        if (sortPriceAsc) {
+            filteredItems = filteredItems.sortedBy { it.price }
+        }
+
+        updateList(filteredItems)
     }
 
     private fun updateList(list: List<MarketItem>) {
