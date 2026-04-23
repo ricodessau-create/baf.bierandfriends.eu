@@ -1,9 +1,13 @@
 package com.deinprojekt.ui.market
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -12,6 +16,7 @@ import com.deinprojekt.data.repository.MarketRepository
 import com.deinprojekt.databinding.MarketCreateFragmentBinding
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -22,6 +27,19 @@ class MarketCreateFragment : Fragment() {
 
     private val repo = MarketRepository()
     private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
+    private val storage = FirebaseStorage.getInstance()
+
+    private var selectedImageUri: Uri? = null
+
+    private val imagePicker =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                selectedImageUri = result.data?.data
+                binding.createImagePlaceholder.visibility = View.GONE
+                binding.createImagePreview.visibility = View.VISIBLE
+                binding.createImagePreview.setImageURI(selectedImageUri)
+            }
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,6 +53,12 @@ class MarketCreateFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        binding.createSelectImageButton.setOnClickListener {
+            val intent = Intent(Intent.ACTION_PICK)
+            intent.type = "image/*"
+            imagePicker.launch(intent)
+        }
+
         binding.createSaveButton.setOnClickListener {
             saveItem()
         }
@@ -45,25 +69,33 @@ class MarketCreateFragment : Fragment() {
         val description = binding.createDescription.text.toString().trim()
         val price = binding.createPrice.text.toString().toDoubleOrNull() ?: 0.0
         val ownerUuid = auth.currentUser?.uid ?: "unknown"
-
-        if (title.isEmpty() || description.isEmpty()) {
-            // Optional: einfache Validierung, z.B. Toast
-            return
-        }
-
-        val item = MarketItem(
-            id = UUID.randomUUID().toString(),
-            createdAt = Timestamp.now(),
-            description = description,
-            ownerUuid = ownerUuid,
-            price = price,
-            title = title
-        )
+        val id = UUID.randomUUID().toString()
 
         lifecycleScope.launch {
+
+            val imageUrl = if (selectedImageUri != null) {
+                uploadImage(id, selectedImageUri!!)
+            } else null
+
+            val item = MarketItem(
+                id = id,
+                createdAt = Timestamp.now(),
+                description = description,
+                ownerUuid = ownerUuid,
+                price = price,
+                title = title,
+                imageUrl = imageUrl
+            )
+
             repo.createMarketItem(item)
             findNavController().navigateUp()
         }
+    }
+
+    private suspend fun uploadImage(id: String, uri: Uri): String {
+        val ref = storage.getReference("market_images/$id.jpg")
+        ref.putFile(uri).await()
+        return ref.downloadUrl.await().toString()
     }
 
     override fun onDestroyView() {
