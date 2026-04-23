@@ -10,6 +10,8 @@ import androidx.navigation.fragment.findNavController
 import com.deinprojekt.data.models.MarketItem
 import com.deinprojekt.data.repository.MarketRepository
 import com.deinprojekt.databinding.MarketCreateFragmentBinding
+import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -19,6 +21,7 @@ class MarketCreateFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val repo = MarketRepository()
+    private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,16 +41,23 @@ class MarketCreateFragment : Fragment() {
     }
 
     private fun saveItem() {
-        val title = binding.createTitle.text.toString()
-        val description = binding.createDescription.text.toString()
+        val title = binding.createTitle.text.toString().trim()
+        val description = binding.createDescription.text.toString().trim()
         val price = binding.createPrice.text.toString().toDoubleOrNull() ?: 0.0
+        val ownerUuid = auth.currentUser?.uid ?: "unknown"
+
+        if (title.isEmpty() || description.isEmpty()) {
+            // Optional: einfache Validierung, z.B. Toast
+            return
+        }
 
         val item = MarketItem(
             id = UUID.randomUUID().toString(),
-            title = title,
+            createdAt = Timestamp.now(),
             description = description,
+            ownerUuid = ownerUuid,
             price = price,
-            ownerUuid = "TODO_USER_ID"
+            title = title
         )
 
         lifecycleScope.launch {
