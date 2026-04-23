@@ -4,35 +4,33 @@
     android:id="@+id/nav_graph"
     app:startDestination="@id/homeFragment">
 
-    <!-- HOME -->
     <fragment
         android:id="@+id/homeFragment"
         android:name="com.deinprojekt.ui.home.HomeFragment"
         android:label="Home" />
 
-    <!-- EVENTS -->
     <fragment
         android:id="@+id/eventsFragment"
         android:name="com.deinprojekt.ui.events.EventsFragment"
         android:label="Events" />
 
-    <!-- COMMUNITY -->
     <fragment
         android:id="@+id/communityFragment"
         android:name="com.deinprojekt.ui.community.CommunityFragment"
         android:label="Community" />
 
-    <!-- MARKET -->
     <fragment
         android:id="@+id/marketFragment"
         android:name="com.deinprojekt.ui.market.MarketFragment"
-        android:label="Market" >
+        android:label="Market">
         <action
             android:id="@+id/action_marketFragment_to_marketDetailFragment"
             app:destination="@id/marketDetailFragment" />
+        <action
+            android:id="@+id/action_marketFragment_to_marketCreateFragment"
+            app:destination="@id/marketCreateFragment" />
     </fragment>
 
-    <!-- MARKET DETAIL (NEU) -->
     <fragment
         android:id="@+id/marketDetailFragment"
         android:name="com.deinprojekt.ui.market.MarketDetailFragment"
@@ -42,7 +40,11 @@
             app:argType="string" />
     </fragment>
 
-    <!-- PROFILE -->
+    <fragment
+        android:id="@+id/marketCreateFragment"
+        android:name="com.deinprojekt.ui.market.MarketCreateFragment"
+        android:label="Erstellen" />
+
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.deinprojekt.ui.profile.ProfileFragment"
