@@ -11,12 +11,31 @@ class MarketRepository {
     suspend fun getMarketItems(): List<MarketItem> {
         return try {
             db.collection("market")
-                .orderBy("createdAt") // Timestamp-Sortierung
+                .orderBy("createdAt")
                 .get()
                 .await()
                 .toObjects(MarketItem::class.java)
         } catch (e: Exception) {
             emptyList()
+        }
+    }
+
+    suspend fun createMarketItem(item: MarketItem) {
+        db.collection("market")
+            .document(item.id)
+            .set(item)
+            .await()
+    }
+
+    suspend fun getMarketItemById(id: String): MarketItem? {
+        return try {
+            db.collection("market")
+                .document(id)
+                .get()
+                .await()
+                .toObject(MarketItem::class.java)
+        } catch (e: Exception) {
+            null
         }
     }
 }
