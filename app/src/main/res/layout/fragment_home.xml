@@ -2,90 +2,52 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/md_theme_background">
+    android:background="@color/baf_black">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="vertical">
 
-        <!-- Header Banner -->
-        <ImageView
-            android:id="@+id/homeHeaderBanner"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:src="@drawable/banner"
-            android:scaleType="centerCrop"
-            android:adjustViewBounds="true"
-            android:contentDescription="@string/header_banner_desc" />
+        <!-- Samurai Header -->
+        <include
+            layout="@layout/app_header" />
 
-        <!-- Section Title -->
+        <!-- News Section -->
         <TextView
-            android:id="@+id/homeTitle"
+            android:id="@+id/newsTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Willkommen bei BierAndFriends"
-            android:textColor="@color/gold"
+            android:text="Neuigkeiten"
+            android:textColor="@color/baf_gold"
             android:textSize="22sp"
             android:textStyle="bold"
-            android:layout_marginTop="24dp" />
+            android:layout_margin="16dp"/>
 
-        <!-- Card 1: Backend-Daten später -->
         <LinearLayout
-            android:id="@+id/cardNews"
+            android:id="@+id/newsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@color/md_theme_surface"
-            android:padding="16dp"
-            android:layout_marginTop="16dp"
-            android:elevation="6dp">
+            android:padding="8dp"/>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Neuigkeiten"
-                android:textColor="@color/gold"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+        <!-- Events Section -->
+        <TextView
+            android:id="@+id/eventsTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Events"
+            android:textColor="@color/baf_gold"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_margin="16dp"/>
 
-            <TextView
-                android:id="@+id/newsContent"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Wird später vom Backend geladen..."
-                android:textColor="@color/md_theme_onSurface"
-                android:layout_marginTop="8dp" />
-        </LinearLayout>
-
-        <!-- Card 2: Events -->
         <LinearLayout
-            android:id="@+id/cardEvents"
+            android:id="@+id/eventsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@color/md_theme_surface"
-            android:padding="16dp"
-            android:layout_marginTop="16dp"
-            android:elevation="6dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Events"
-                android:textColor="@color/gold"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/eventsContent"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Wird später vom Backend geladen..."
-                android:textColor="@color/md_theme_onSurface"
-                android:layout_marginTop="8dp" />
-        </LinearLayout>
+            android:padding="8dp"/>
 
     </LinearLayout>
 
