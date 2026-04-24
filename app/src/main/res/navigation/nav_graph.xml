@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/nav_graph"
     app:startDestination="@id/homeFragment">
 
     <fragment
@@ -24,26 +23,26 @@
         android:name="com.deinprojekt.ui.market.MarketFragment"
         android:label="Market">
         <action
-            android:id="@+id/action_marketFragment_to_marketDetailFragment"
-            app:destination="@id/marketDetailFragment" />
-        <action
             android:id="@+id/action_marketFragment_to_marketCreateFragment"
             app:destination="@id/marketCreateFragment" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/marketDetailFragment"
-        android:name="com.deinprojekt.ui.market.MarketDetailFragment"
-        android:label="Detail">
-        <argument
-            android:name="itemId"
-            app:argType="string" />
+        <action
+            android:id="@+id/action_marketFragment_to_marketDetailFragment"
+            app:destination="@id/marketDetailFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/marketCreateFragment"
         android:name="com.deinprojekt.ui.market.MarketCreateFragment"
-        android:label="Erstellen" />
+        android:label="Neues Angebot" />
+
+    <fragment
+        android:id="@+id/marketDetailFragment"
+        android:name="com.deinprojekt.ui.market.MarketDetailFragment"
+        android:label="Details">
+        <argument
+            android:name="itemId"
+            app:argType="string" />
+    </fragment>
 
     <fragment
         android:id="@+id/profileFragment"
