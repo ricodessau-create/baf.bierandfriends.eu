@@ -1,3 +1,12 @@
+package com.deinprojekt.ui.market
+
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.deinprojekt.data.models.MarketItem
+import com.deinprojekt.databinding.MarketListItemBinding
+
 class MarketAdapter(
     private val items: List<MarketItem>,
     private val onClick: (String) -> Unit
@@ -22,6 +31,12 @@ class MarketAdapter(
         holder.binding.itemDescription.text = item.description
         holder.binding.itemPrice.text = "${item.price} €"
         holder.binding.itemOwner.text = "Anbieter: ${item.ownerUuid}"
+
+        if (item.imageUrl != null) {
+            Glide.with(holder.itemView)
+                .load(item.imageUrl)
+                .into(holder.binding.itemImage)
+        }
 
         holder.binding.root.setOnClickListener {
             onClick(item.id)
