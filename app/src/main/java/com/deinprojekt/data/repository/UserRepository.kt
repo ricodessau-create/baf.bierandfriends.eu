@@ -23,4 +23,16 @@ class UserRepository {
             null
         }
     }
+
+    suspend fun updateSyncData(uuid: String, rankIngame: String) {
+        val uid = auth.currentUser?.uid ?: return
+        db.collection("users").document(uid)
+            .update(
+                mapOf(
+                    "uuid" to uuid,
+                    "rank_ingame" to rankIngame,
+                    "synced" to true
+                )
+            ).await()
+    }
 }
