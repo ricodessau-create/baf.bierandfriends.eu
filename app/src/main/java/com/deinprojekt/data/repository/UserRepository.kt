@@ -24,6 +24,14 @@ class UserRepository {
         }
     }
 
+    suspend fun saveSyncToken(token: String) {
+        val uid = auth.currentUser?.uid ?: return
+        db.collection("sync_tokens")
+            .document(token)
+            .set(mapOf("uid" to uid))
+            .await()
+    }
+
     suspend fun updateSyncData(uuid: String, rankIngame: String) {
         val uid = auth.currentUser?.uid ?: return
         db.collection("users").document(uid)
