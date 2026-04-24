@@ -8,5 +8,6 @@ data class MarketItem(
     val description: String = "",
     val ownerUuid: String = "",
     val price: Double = 0.0,
-    val title: String = ""
+    val title: String = "",
+    val imageUrl: String? = null
 )
