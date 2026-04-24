@@ -1,12 +1,16 @@
 <resources>
-    <color name="md_theme_primary">#E2B857</color> <!-- Gold -->
-    <color name="md_theme_onPrimary">#0D0D0D</color>
+    <!-- Primärfarben -->
+    <color name="baf_gold">#FFD700</color>
+    <color name="baf_gold_dark">#C5A100</color>
 
-    <color name="md_theme_background">#0A0A0A</color> <!-- Sehr dunkles Grau -->
-    <color name="md_theme_onBackground">#F5F5F5</color>
+    <!-- Hintergrund -->
+    <color name="baf_black">#0A0A0A</color>
+    <color name="baf_dark_gray">#1A1A1A</color>
 
-    <color name="md_theme_surface">#141414</color>
-    <color name="md_theme_onSurface">#FFFFFF</color>
+    <!-- Text -->
+    <color name="baf_text_primary">#FFFFFF</color>
+    <color name="baf_text_secondary">#B3B3B3</color>
 
-    <color name="md_theme_secondary">#A67C2E</color> <!-- Dunkles Gold -->
+    <!-- Akzente -->
+    <color name="baf_red">#FF3B30</color>
 </resources>
