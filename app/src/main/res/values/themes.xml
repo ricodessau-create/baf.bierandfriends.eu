@@ -18,6 +18,9 @@
 
         <!-- Navigation -->
         <item name="bottomNavigationStyle">@style/BAF.BottomNav</item>
+
+        <!-- FAB -->
+        <item name="floatingActionButtonStyle">@style/BAF.FAB</item>
     </style>
 
 </resources>
