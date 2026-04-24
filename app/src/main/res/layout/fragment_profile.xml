@@ -2,85 +2,72 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/md_theme_background">
+    android:background="@color/baf_black">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="24dp">
 
-        <!-- Samurai Header -->
-        <include
-            layout="@layout/app_header" />
-
-        <!-- Title -->
         <TextView
             android:id="@+id/profileTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Profil"
-            android:textColor="@color/gold"
-            android:textSize="22sp"
+            android:textColor="@color/baf_gold"
+            android:textSize="28sp"
             android:textStyle="bold"
-            android:layout_marginTop="24dp" />
+            android:layout_marginBottom="24dp" />
 
-        <!-- User Info Card -->
-        <LinearLayout
-            android:id="@+id/cardUserInfo"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/profileUsername"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@color/md_theme_surface"
-            android:padding="16dp"
-            android:layout_marginTop="16dp"
-            android:elevation="6dp">
+            android:text="Benutzername"
+            android:textColor="#FFFFFF"
+            android:textSize="20sp"
+            android:layout_marginBottom="8dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Benutzerinformationen"
-                android:textColor="@color/gold"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/userInfoContent"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Wird später vom Backend geladen..."
-                android:textColor="@color/md_theme_onSurface"
-                android:layout_marginTop="8dp" />
-        </LinearLayout>
-
-        <!-- Settings Card -->
-        <LinearLayout
-            android:id="@+id/cardSettings"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/profileEmail"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@color/md_theme_surface"
-            android:padding="16dp"
-            android:layout_marginTop="16dp"
-            android:elevation="6dp">
+            android:text="E-Mail"
+            android:textColor="#AAAAAA"
+            android:layout_marginBottom="24dp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Einstellungen"
-                android:textColor="@color/gold"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+        <TextView
+            android:id="@+id/profileRankApp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="App-Rang:"
+            android:textColor="@color/baf_gold"
+            android:layout_marginBottom="8dp" />
 
-            <TextView
-                android:id="@+id/settingsContent"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Optionen werden später hinzugefügt..."
-                android:textColor="@color/md_theme_onSurface"
-                android:layout_marginTop="8dp" />
-        </LinearLayout>
+        <TextView
+            android:id="@+id/profileRankIngame"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ingame-Rang:"
+            android:textColor="@color/baf_gold"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/profileUUID"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="UUID:"
+            android:textColor="@color/baf_gold"
+            android:layout_marginBottom="24dp" />
+
+        <Button
+            android:id="@+id/profileSyncButton"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Account synchronisieren"
+            android:backgroundTint="@color/baf_gold"
+            android:textColor="@android:color/black" />
 
     </LinearLayout>
-
 </ScrollView>
