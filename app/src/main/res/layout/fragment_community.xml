@@ -10,15 +10,9 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Header Banner -->
-        <ImageView
-            android:id="@+id/communityHeaderBanner"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:src="@drawable/banner"
-            android:scaleType="centerCrop"
-            android:adjustViewBounds="true"
-            android:contentDescription="Community Banner" />
+        <!-- Samurai Header -->
+        <include
+            layout="@layout/app_header" />
 
         <!-- Title -->
         <TextView
