@@ -11,5 +11,5 @@
         android:src="@drawable/header_baf_samurai"
         android:adjustViewBounds="true"
         android:scaleType="centerCrop"
-        android:contentDescription="@string/app_header"/>
+        android:contentDescription="@string/app_header" />
 </LinearLayout>
