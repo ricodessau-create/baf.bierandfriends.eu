@@ -22,14 +22,14 @@
             android:textColor="@color/baf_gold"
             android:textSize="22sp"
             android:textStyle="bold"
-            android:layout_margin="16dp"/>
+            android:layout_margin="16dp" />
 
         <LinearLayout
             android:id="@+id/newsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="8dp"/>
+            android:padding="8dp" />
 
         <!-- Events Section -->
         <TextView
@@ -40,14 +40,14 @@
             android:textColor="@color/baf_gold"
             android:textSize="22sp"
             android:textStyle="bold"
-            android:layout_margin="16dp"/>
+            android:layout_margin="16dp" />
 
         <LinearLayout
             android:id="@+id/eventsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="8dp"/>
+            android:padding="8dp" />
 
     </LinearLayout>
 
