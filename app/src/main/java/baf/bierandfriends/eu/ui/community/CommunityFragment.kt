@@ -6,6 +6,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
+import baf.bierandfriends.eu.R
 import baf.bierandfriends.eu.data.repository.ForumRepository
 import baf.bierandfriends.eu.databinding.FragmentCommunityBinding
 import kotlinx.coroutines.launch
