@@ -95,6 +95,12 @@
     <fragment
         android:id="@+id/profileFragment"
         android:name="baf.bierandfriends.eu.ui.profile.ProfileFragment"
-        android:label="Profil" />
+        android:label="Profil">
+        <action
+            android:id="@+id/action_profileFragment_to_loginFragment"
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/homeFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 
 </navigation>
