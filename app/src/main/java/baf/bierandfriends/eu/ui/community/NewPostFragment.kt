@@ -12,6 +12,7 @@ import baf.bierandfriends.eu.data.models.ForumPost
 import baf.bierandfriends.eu.data.repository.ForumRepository
 import baf.bierandfriends.eu.data.repository.UserRepository
 import baf.bierandfriends.eu.databinding.FragmentNewPostBinding
+import com.google.firebase.Timestamp
 import kotlinx.coroutines.launch
 
 class NewPostFragment : Fragment() {
@@ -33,10 +34,7 @@ class NewPostFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        binding.submitPostButton.setOnClickListener {
-            submitPost()
-        }
+        binding.submitPostButton.setOnClickListener { submitPost() }
     }
 
     private fun submitPost() {
@@ -56,7 +54,7 @@ class NewPostFragment : Fragment() {
                 title = title,
                 content = content,
                 author = authorName,
-                createdAt = System.currentTimeMillis()
+                createdAt = Timestamp.now()
             )
 
             forumRepository.createPost(post)
