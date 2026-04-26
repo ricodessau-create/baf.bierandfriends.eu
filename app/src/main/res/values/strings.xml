@@ -1,6 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">BierAndFriends [BAF]</string>
-    <string name="app_header">BierAndFriends Header</string>
-    <string name="header_banner_desc">Header Banner für BierAndFriends</string>
-    <string name="start_banner_desc">Startscreen Banner für BierAndFriends</string>
+    <string name="app_name">BierAndFriends</string>
+    <string name="header_banner_desc">BAF Banner</string>
+    <string name="start_banner_desc">BAF Start Banner</string>
+    <string name="app_header">BAF Header</string>
 </resources>
