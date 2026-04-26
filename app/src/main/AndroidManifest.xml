@@ -1,9 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="baf.bierandfriends.eu">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
     <application
         android:allowBackup="true"
-        android:label="BierAndFriends App"
+        android:label="BierAndFriends"
+        android:icon="@drawable/ic_home_gaming"
+        android:roundIcon="@drawable/ic_home_gaming"
         android:theme="@style/Theme.BAF">
 
         <activity
