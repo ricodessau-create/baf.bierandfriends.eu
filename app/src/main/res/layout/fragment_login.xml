@@ -49,12 +49,20 @@
         android:backgroundTint="@color/baf_gold"
         android:textColor="@android:color/black" />
 
-    <TextView
-        android:id="@+id/loginToRegister"
+    <ProgressBar
+        android:id="@+id/loginProgress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Noch keinen Account? Jetzt registrieren"
+        android:layout_marginTop="16dp"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/registerButton"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="Noch kein Account? Registrieren"
+        android:backgroundTint="@android:color/transparent"
         android:textColor="@color/baf_gold"
-        android:layout_marginTop="24dp" />
+        android:layout_marginTop="8dp" />
 
 </LinearLayout>
