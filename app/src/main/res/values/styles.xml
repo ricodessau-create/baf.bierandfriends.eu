@@ -1,32 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Gold-Schwarz Button -->
-    <style name="BAF.Button" parent="Widget.Material3.Button">
-        <item name="android:backgroundTint">@color/baf_dark_gray</item>
-        <item name="android:textColor">@color/baf_gold</item>
-        <item name="cornerRadius">12dp</item>
+    <style name="Theme.BAF" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/baf_gold</item>
+        <item name="colorPrimaryVariant">@color/baf_gold_dark</item>
+        <item name="colorOnPrimary">@color/baf_black</item>
+        <item name="colorSecondary">@color/baf_gold</item>
+        <item name="colorOnSecondary">@color/baf_black</item>
+        <item name="android:windowBackground">@color/baf_black</item>
+        <item name="android:statusBarColor">@color/baf_black</item>
+        <item name="android:navigationBarColor">@color/baf_black</item>
     </style>
 
-    <!-- Gold Border Card -->
     <style name="BAF.Card" parent="Widget.MaterialComponents.CardView">
         <item name="cardBackgroundColor">@color/baf_dark_gray</item>
-        <item name="strokeColor">@color/baf_gold</item>
-        <item name="strokeWidth">2dp</item>
         <item name="cardCornerRadius">12dp</item>
+        <item name="cardElevation">4dp</item>
+        <item name="strokeColor">@color/baf_gold_dark</item>
+        <item name="strokeWidth">1dp</item>
     </style>
 
-    <!-- Bottom Navigation -->
-    <style name="BAF.BottomNav" parent="Widget.MaterialComponents.BottomNavigationView">
-        <item name="itemIconTint">@color/nav_item_colors</item>
-        <item name="itemTextColor">@color/nav_item_colors</item>
-        <item name="android:background">@color/baf_black</item>
+    <style name="BAF.Button" parent="Widget.MaterialComponents.Button">
+        <item name="backgroundTint">@color/baf_gold</item>
+        <item name="android:textColor">@color/baf_black</item>
+        <item name="android:textStyle">bold</item>
+        <item name="cornerRadius">8dp</item>
     </style>
 
-    <!-- Floating Action Button -->
     <style name="BAF.FAB" parent="Widget.MaterialComponents.FloatingActionButton">
-        <item name="android:backgroundTint">@color/baf_dark_gray</item>
-        <item name="android:tint">@color/baf_gold</item>
-        <item name="elevation">8dp</item>
+        <item name="backgroundTint">@color/baf_gold</item>
+        <item name="tint">@color/baf_black</item>
     </style>
 
 </resources>
