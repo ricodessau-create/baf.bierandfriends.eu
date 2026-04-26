@@ -2,13 +2,13 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_dark">
+    android:background="@color/baf_black">
 
     <ImageView
         android:id="@+id/startBanner"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:src="@drawable/banner_start"
+        android:src="@drawable/header_baf_samurai"
         android:scaleType="centerCrop"
         android:adjustViewBounds="true"
         android:contentDescription="@string/start_banner_desc" />
