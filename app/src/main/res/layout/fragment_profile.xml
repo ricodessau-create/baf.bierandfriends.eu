@@ -8,66 +8,110 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="16dp">
 
         <TextView
-            android:id="@+id/profileTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
             android:text="Profil"
             android:textColor="@color/baf_gold"
-            android:textSize="28sp"
+            android:textSize="22sp"
             android:textStyle="bold"
-            android:layout_marginBottom="24dp" />
-
-        <TextView
-            android:id="@+id/profileUsername"
+            android:layout_marginBottom="16dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Benutzername"
-            android:textColor="#FFFFFF"
-            android:textSize="20sp"
-            android:layout_marginBottom="8dp" />
+            android:layout_height="wrap_content"/>
 
-        <TextView
-            android:id="@+id/profileEmail"
-            android:layout_width="wrap_content"
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="E-Mail"
-            android:textColor="#AAAAAA"
-            android:layout_marginBottom="24dp" />
+            style="@style/BAF.Card">
 
-        <TextView
-            android:id="@+id/profileRankApp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="App-Rang:"
-            android:textColor="@color/baf_gold"
-            android:layout_marginBottom="8dp" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
 
-        <TextView
-            android:id="@+id/profileRankIngame"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Ingame-Rang:"
-            android:textColor="@color/baf_gold"
-            android:layout_marginBottom="8dp" />
+                <TextView
+                    android:id="@+id/profileUsername"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/baf_text_primary"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:text="Lade..."/>
 
-        <TextView
-            android:id="@+id/profileUUID"
-            android:layout_width="wrap_content"
+                <TextView
+                    android:id="@+id/profileEmail"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/baf_text_secondary"
+                    android:textSize="14sp"
+                    android:layout_marginTop="4dp"/>
+
+                <TextView
+                    android:id="@+id/profileRank"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/baf_gold"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp"/>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/syncTokenCard"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="UUID:"
-            android:textColor="@color/baf_gold"
-            android:layout_marginBottom="24dp" />
+            android:layout_marginTop="16dp"
+            android:visibility="gone"
+            style="@style/BAF.Card">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:text="Dein Sync-Token"
+                    android:textColor="@color/baf_text_secondary"
+                    android:textSize="14sp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
+
+                <TextView
+                    android:id="@+id/syncTokenText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/baf_gold"
+                    android:textSize="32sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:layout_marginTop="8dp"/>
+
+                <TextView
+                    android:text="Tippe /biersync DEINTOKEN im Minecraft!"
+                    android:textColor="@color/baf_text_secondary"
+                    android:textSize="12sp"
+                    android:gravity="center"
+                    android:layout_marginTop="8dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
 
         <Button
-            android:id="@+id/profileSyncButton"
+            android:id="@+id/syncButton"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="Account synchronisieren"
-            android:backgroundTint="@color/baf_gold"
-            android:textColor="@android:color/black" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Minecraft Account verknüpfen"
+            style="@style/BAF.Button"/>
 
     </LinearLayout>
+
 </ScrollView>
