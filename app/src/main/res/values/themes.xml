@@ -1,23 +1,15 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
 
     <style name="Theme.BAF" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Farben -->
         <item name="colorPrimary">@color/baf_gold</item>
+        <item name="colorPrimaryVariant">@color/baf_gold_dark</item>
         <item name="colorOnPrimary">@color/baf_black</item>
-        <item name="colorSurface">@color/baf_dark_gray</item>
-        <item name="android:colorBackground">@color/baf_black</item>
-
-        <!-- Buttons -->
-        <item name="materialButtonStyle">@style/BAF.Button</item>
-
-        <!-- Cards -->
-        <item name="materialCardViewStyle">@style/BAF.Card</item>
-
-        <!-- Navigation -->
-        <item name="bottomNavigationStyle">@style/BAF.BottomNav</item>
-
-        <!-- FAB -->
-        <item name="floatingActionButtonStyle">@style/BAF.FAB</item>
+        <item name="colorSecondary">@color/baf_gold</item>
+        <item name="colorOnSecondary">@color/baf_black</item>
+        <item name="android:windowBackground">@color/baf_black</item>
+        <item name="android:statusBarColor">@color/baf_black</item>
+        <item name="android:navigationBarColor">@color/baf_black</item>
     </style>
 
 </resources>
