@@ -1,96 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/baf_black"
-    android:padding="12dp">
+    android:background="@color/baf_black">
 
-    <!-- Samurai Header -->
-    <include
-        layout="@layout/app_header" />
-
-    <!-- Suche -->
-    <EditText
-        android:id="@+id/marketSearch"
+    <LinearLayout
+        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:hint="Suche..."
-        android:padding="12dp"
-        android:textColor="#FFFFFF"
-        android:textColorHint="#888888"
-        android:background="#222222"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="12dp" />
+        android:layout_height="match_parent"
+        android:padding="12dp">
 
-    <!-- Filter-Leiste -->
-    <HorizontalScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:scrollbars="none"
-        android:layout_marginBottom="12dp">
+        <!-- Samurai Header -->
+        <include
+            layout="@layout/app_header" />
 
-        <LinearLayout
-            android:id="@+id/filterContainer"
-            android:orientation="horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+        <!-- Suche -->
+        <EditText
+            android:id="@+id/marketSearch"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:hint="Suche..."
+            android:padding="12dp"
+            android:textColor="#FFFFFF"
+            android:textColorHint="#888888"
+            android:background="#222222"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="12dp" />
 
-            <Button
-                android:id="@+id/filterOwn"
+        <!-- Filter-Leiste -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:id="@+id/filterContainer"
+                android:orientation="horizontal"
                 android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:text="Eigene"
-                android:backgroundTint="#333333"
-                android:textColor="#FFD700"
-                android:layout_marginEnd="8dp" />
+                android:layout_height="wrap_content">
 
-            <Button
-                android:id="@+id/filterWithImage"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:text="Mit Bild"
-                android:backgroundTint="#333333"
-                android:textColor="#FFD700"
-                android:layout_marginEnd="8dp" />
+                <Button
+                    android:id="@+id/filterOwn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="Eigene"
+                    android:backgroundTint="#333333"
+                    android:textColor="#FFD700"
+                    android:layout_marginEnd="8dp" />
 
-            <Button
-                android:id="@+id/sortPrice"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:text="Preis ↑"
-                android:backgroundTint="#333333"
-                android:textColor="#FFD700"
-                android:layout_marginEnd="8dp" />
+                <Button
+                    android:id="@+id/filterWithImage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="Mit Bild"
+                    android:backgroundTint="#333333"
+                    android:textColor="#FFD700"
+                    android:layout_marginEnd="8dp" />
 
-            <Button
-                android:id="@+id/sortNewest"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:text="Neueste"
-                android:backgroundTint="#333333"
-                android:textColor="#FFD700" />
+                <Button
+                    android:id="@+id/sortPrice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="Preis ↑"
+                    android:backgroundTint="#333333"
+                    android:textColor="#FFD700"
+                    android:layout_marginEnd="8dp" />
 
-        </LinearLayout>
-    </HorizontalScrollView>
+                <Button
+                    android:id="@+id/sortNewest"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="Neueste"
+                    android:backgroundTint="#333333"
+                    android:textColor="#FFD700" />
 
-    <!-- Liste -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/marketRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:clipToPadding="false" />
+            </LinearLayout>
+        </HorizontalScrollView>
 
-    <!-- FAB -->
+        <!-- Liste -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/marketRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:clipToPadding="false" />
+
+    </LinearLayout>
+
+    <!-- FAB (schwebt jetzt korrekt) -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/marketFab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="end|bottom"
-        android:layout_margin="16dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="20dp"
         android:src="@drawable/ic_add"
         app:tint="@android:color/black"
         app:backgroundTint="#FFD700" />
 
-</LinearLayout>
+</FrameLayout>
