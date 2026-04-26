@@ -4,22 +4,22 @@
     <item
         android:id="@+id/homeFragment"
         android:title="Home"
-        android:icon="@drawable/ic_home" />
+        android:icon="@drawable/ic_home_gaming" />
 
     <item
         android:id="@+id/eventsFragment"
         android:title="Events"
-        android:icon="@drawable/ic_events" />
+        android:icon="@drawable/ic_events_gaming" />
 
     <item
         android:id="@+id/communityFragment"
         android:title="Community"
-        android:icon="@drawable/ic_community" />
+        android:icon="@drawable/ic_community_gaming" />
 
     <item
         android:id="@+id/marketFragment"
         android:title="Markt"
-        android:icon="@drawable/ic_market" />
+        android:icon="@drawable/ic_image_placeholder" />
 
     <item
         android:id="@+id/ticketsFragment"
@@ -29,6 +29,6 @@
     <item
         android:id="@+id/profileFragment"
         android:title="Profil"
-        android:icon="@drawable/ic_profile" />
+        android:icon="@drawable/ic_profile_gaming" />
 
 </menu>
