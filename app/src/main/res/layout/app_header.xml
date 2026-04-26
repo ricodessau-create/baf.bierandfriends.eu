@@ -2,14 +2,16 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/baf_black">
 
-    <ImageView
-        android:id="@+id/appHeader"
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:src="@drawable/header_baf_samurai"
-        android:adjustViewBounds="true"
-        android:scaleType="centerCrop"
-        android:contentDescription="@string/app_header" />
+        android:layout_height="56dp"
+        android:text="BierAndFriends"
+        android:textColor="@color/baf_gold"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:gravity="center"/>
+
 </LinearLayout>
