@@ -11,11 +11,8 @@
         android:layout_height="match_parent"
         android:padding="12dp">
 
-        <!-- Samurai Header -->
-        <include
-            layout="@layout/app_header" />
+        <include layout="@layout/app_header" />
 
-        <!-- Suche -->
         <EditText
             android:id="@+id/marketSearch"
             android:layout_width="match_parent"
@@ -28,7 +25,6 @@
             android:layout_marginTop="12dp"
             android:layout_marginBottom="12dp" />
 
-        <!-- Filter-Leiste -->
         <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -79,7 +75,16 @@
             </LinearLayout>
         </HorizontalScrollView>
 
-        <!-- Liste -->
+        <TextView
+            android:id="@+id/emptyText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Keine Angebote vorhanden."
+            android:textColor="@color/baf_text_secondary"
+            android:textSize="16sp"
+            android:layout_margin="16dp"
+            android:visibility="gone" />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/marketRecyclerView"
             android:layout_width="match_parent"
@@ -89,7 +94,6 @@
 
     </LinearLayout>
 
-    <!-- FAB (schwebt jetzt korrekt) -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/marketFab"
         android:layout_width="wrap_content"
