@@ -26,9 +26,12 @@ class EventsAdapter(private val items: List<Event>) :
         val event = items[position]
         holder.binding.eventTitle.text = event.name
         holder.binding.eventDescription.text = event.description
-        val date = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.GERMAN)
-            .format(Date(event.date))
-        holder.binding.eventDate.text = date
+
+        val dateText = event.date?.let {
+            SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.GERMAN)
+                .format(Date(it.seconds * 1000))
+        } ?: "Kein Datum"
+        holder.binding.eventDate.text = dateText
     }
 
     override fun getItemCount(): Int = items.size
