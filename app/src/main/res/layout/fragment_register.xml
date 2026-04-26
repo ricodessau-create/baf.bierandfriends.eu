@@ -9,10 +9,9 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="24dp"
-        android:gravity="center">
+        android:gravity="center_horizontal">
 
         <TextView
-            android:id="@+id/registerTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Registrieren"
@@ -57,7 +56,7 @@
             android:layout_marginBottom="16dp" />
 
         <EditText
-            android:id="@+id/registerPasswordRepeat"
+            android:id="@+id/registerPasswordConfirm"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:hint="Passwort wiederholen"
@@ -75,6 +74,22 @@
             android:text="Account erstellen"
             android:backgroundTint="@color/baf_gold"
             android:textColor="@android:color/black" />
+
+        <ProgressBar
+            android:id="@+id/registerProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/backToLoginButton"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Zurück zum Login"
+            android:backgroundTint="@android:color/transparent"
+            android:textColor="@color/baf_gold"
+            android:layout_marginTop="8dp" />
 
     </LinearLayout>
 </ScrollView>
