@@ -4,9 +4,6 @@
     android:viewportWidth="24"
     android:viewportHeight="24">
 
-    <!-- Samurai Helmet -->
-    <path
-        android:fillColor="@color/gold"
-        android:pathData="M12,4l4,4v4h-8v-4zM8,14h8v6h-8z" />
+    <path android:fillColor="@color/baf_gold" android:pathData="M12,4l4,4v4h-8v-4zM8,14h8v6h-8z" />
 
 </vector>
