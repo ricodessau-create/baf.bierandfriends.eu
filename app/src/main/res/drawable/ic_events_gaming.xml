@@ -4,14 +4,7 @@
     android:viewportWidth="24"
     android:viewportHeight="24">
 
-    <!-- Calendar Base -->
-    <path
-        android:fillColor="@color/gold"
-        android:pathData="M4,5h16v14h-16zM4,9h16" />
-
-    <!-- Crossed Katanas -->
-    <path
-        android:fillColor="@color/gold"
-        android:pathData="M8,13l2,1 -2,2 1,1 3,-3 -3,-3zM16,13l-2,1 2,2 -1,1 -3,-3 3,-3z" />
+    <path android:fillColor="@color/baf_gold" android:pathData="M4,5h16v14h-16zM4,9h16" />
+    <path android:fillColor="@color/baf_gold" android:pathData="M8,13l2,1 -2,2 1,1 3,-3 -3,-3zM16,13l-2,1 2,2 -1,1 -3,-3 3,-3z" />
 
 </vector>
