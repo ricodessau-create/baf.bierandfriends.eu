@@ -7,8 +7,8 @@
     <application
         android:allowBackup="true"
         android:label="BierAndFriends"
-        android:icon="@drawable/ic_home_gaming"
-        android:roundIcon="@drawable/ic_home_gaming"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
         android:theme="@style/Theme.BAF">
 
         <activity
