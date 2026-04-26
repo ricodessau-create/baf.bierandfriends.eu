@@ -3,14 +3,12 @@
     <!-- Gold-Schwarz Button -->
     <style name="BAF.Button" parent="Widget.Material3.Button">
         <item name="android:backgroundTint">@color/baf_dark_gray</item>
-        <item name="android:strokeColor">@color/baf_gold</item>
-        <item name="android:strokeWidth">2dp</item>
         <item name="android:textColor">@color/baf_gold</item>
         <item name="cornerRadius">12dp</item>
     </style>
 
     <!-- Gold Border Card -->
-    <style name="BAF.Card" parent="Widget.Material3.CardView">
+    <style name="BAF.Card" parent="Widget.MaterialComponents.CardView">
         <item name="cardBackgroundColor">@color/baf_dark_gray</item>
         <item name="strokeColor">@color/baf_gold</item>
         <item name="strokeWidth">2dp</item>
@@ -18,14 +16,14 @@
     </style>
 
     <!-- Bottom Navigation -->
-    <style name="BAF.BottomNav" parent="Widget.Material3.BottomNavigationView">
+    <style name="BAF.BottomNav" parent="Widget.MaterialComponents.BottomNavigationView">
         <item name="itemIconTint">@color/nav_item_colors</item>
         <item name="itemTextColor">@color/nav_item_colors</item>
         <item name="android:background">@color/baf_black</item>
     </style>
 
     <!-- Floating Action Button -->
-    <style name="BAF.FAB" parent="Widget.Material3.FloatingActionButton">
+    <style name="BAF.FAB" parent="Widget.MaterialComponents.FloatingActionButton">
         <item name="android:backgroundTint">@color/baf_dark_gray</item>
         <item name="android:tint">@color/baf_gold</item>
         <item name="elevation">8dp</item>
