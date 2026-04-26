@@ -4,19 +4,8 @@
     android:viewportWidth="24"
     android:viewportHeight="24">
 
-    <!-- Center Helmet -->
-    <path
-        android:fillColor="@color/gold"
-        android:pathData="M12,7h3v3h-6v-3z" />
-
-    <!-- Left Helmet -->
-    <path
-        android:fillColor="@color/gold"
-        android:pathData="M5,10l2,2v2h-4v-2z" />
-
-    <!-- Right Helmet -->
-    <path
-        android:fillColor="@color/gold"
-        android:pathData="M19,10l2,2v2h-4v-2z" />
+    <path android:fillColor="@color/baf_gold" android:pathData="M12,7h3v3h-6v-3z" />
+    <path android:fillColor="@color/baf_gold" android:pathData="M5,10l2,2v2h-4v-2z" />
+    <path android:fillColor="@color/baf_gold" android:pathData="M19,10l2,2v2h-4v-2z" />
 
 </vector>
