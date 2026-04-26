@@ -1,35 +1,52 @@
 package baf.bierandfriends.eu.ui.home
 
+import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView
-import baf.bierandfriends.eu.data.models.News
-import baf.bierandfriends.eu.databinding.ItemNewsBinding
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import baf.bierandfriends.eu.data.repository.NewsRepository
+import baf.bierandfriends.eu.databinding.FragmentHomeBinding
+import kotlinx.coroutines.launch
 
-class NewsAdapter(private val items: List<News>) :
-    RecyclerView.Adapter<NewsAdapter.NewsViewHolder>() {
+class HomeFragment : Fragment() {
 
-    inner class NewsViewHolder(val binding: ItemNewsBinding) :
-        RecyclerView.ViewHolder(binding.root)
+    private var _binding: FragmentHomeBinding? = null
+    private val binding get() = _binding!!
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NewsViewHolder {
-        val binding = ItemNewsBinding.inflate(
-            LayoutInflater.from(parent.context), parent, false
-        )
-        return NewsViewHolder(binding)
+    private val newsRepository = NewsRepository()
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentHomeBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
-    override fun onBindViewHolder(holder: NewsViewHolder, position: Int) {
-        val news = items[position]
-        holder.binding.newsTitle.text = news.title
-        holder.binding.newsContent.text = news.content
-        val date = SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.GERMAN)
-            .format(Date(news.timestamp))
-        holder.binding.newsDate.text = date
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        loadNews()
     }
 
-    override fun getItemCount(): Int = items.size
+    private fun loadNews() {
+        lifecycleScope.launch {
+            val newsList = newsRepository.getLatestNews()
+            if (newsList.isNotEmpty()) {
+                val adapter = NewsAdapter(newsList)
+                binding.newsRecyclerView.adapter = adapter
+                binding.newsRecyclerView.layoutManager =
+                    androidx.recyclerview.widget.LinearLayoutManager(requireContext())
+            } else {
+                binding.emptyText.visibility = View.VISIBLE
+            }
+        }
     }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}
