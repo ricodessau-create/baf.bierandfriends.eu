@@ -1,46 +1,161 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/baf_background">
 
-    <TextView
-        android:id="@+id/titleMarket"
-        style="@style/BAF.TitleText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Marktplatz"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/marketRecyclerView"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/titleMarket" />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/emptyText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Keine Artikel gefunden"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <!-- Header -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="180dp">
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/header_baf_samurai"
+                android:scaleType="centerCrop"
+                android:contentDescription="BAF Header"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#99000000"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center"
+                android:layout_marginBottom="16dp"
+                android:text="MARKT"
+                android:textColor="@color/baf_gold"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:letterSpacing="0.15"/>
+        </FrameLayout>
+
+        <!-- Search -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="10dp"
+            android:background="@color/baf_black">
+
+            <EditText
+                android:id="@+id/marketSearch"
+                android:layout_width="0dp"
+                android:layout_height="42dp"
+                android:layout_weight="1"
+                android:hint="Suche im Markt..."
+                android:textColor="#FFFFFF"
+                android:textColorHint="#666666"
+                android:background="#222200"
+                android:padding="10dp"
+                android:inputType="text"/>
+
+        </LinearLayout>
+
+        <!-- Category filter -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:background="@color/baf_black"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="8dp">
+
+            <LinearLayout
+                android:id="@+id/filterContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/filterAll"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:text="Alle"
+                    android:backgroundTint="@color/baf_gold"
+                    android:textColor="@color/baf_black"
+                    android:textSize="12sp"
+                    android:layout_marginEnd="6dp"/>
+
+                <Button
+                    android:id="@+id/filterBloecke"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:text="Blöcke"
+                    android:backgroundTint="#333300"
+                    android:textColor="@color/baf_gold"
+                    android:textSize="12sp"
+                    android:layout_marginEnd="6dp"/>
+
+                <Button
+                    android:id="@+id/filterRuestung"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:text="Rüstung"
+                    android:backgroundTint="#333300"
+                    android:textColor="@color/baf_gold"
+                    android:textSize="12sp"
+                    android:layout_marginEnd="6dp"/>
+
+                <Button
+                    android:id="@+id/filterWerkzeuge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:text="Werkzeuge"
+                    android:backgroundTint="#333300"
+                    android:textColor="@color/baf_gold"
+                    android:textSize="12sp"
+                    android:layout_marginEnd="6dp"/>
+
+                <Button
+                    android:id="@+id/filterSonstiges"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:text="Sonstiges"
+                    android:backgroundTint="#333300"
+                    android:textColor="@color/baf_gold"
+                    android:textSize="12sp"/>
+
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <TextView
+            android:id="@+id/emptyText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Keine Angebote vorhanden."
+            android:textColor="@color/baf_text_secondary"
+            android:textSize="16sp"
+            android:layout_margin="16dp"
+            android:visibility="gone"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/marketRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="10dp"
+            android:paddingBottom="80dp"
+            android:clipToPadding="false"/>
+
+    </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/marketFab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="32dp"
-        android:src="@android:drawable/ic_input_add"
-        app:backgroundTint="@color/baf_gold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:tint="@color/baf_background" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:layout_gravity="bottom|end"
+        android:layout_margin="80dp"
+        android:src="@drawable/ic_add"
+        app:tint="@android:color/black"
+        app:backgroundTint="@color/baf_gold"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
