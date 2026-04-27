@@ -1,40 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout 
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:background="@color/baf_background">
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="180dp">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/header_baf_samurai"
+            android:scaleType="centerCrop"
+            android:contentDescription="BAF Header"/>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#99000000"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center"
+            android:layout_marginBottom="16dp"
+            android:text="EVENTS"
+            android:textColor="@color/baf_gold"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:letterSpacing="0.15"/>
+    </FrameLayout>
+
     <TextView
-        android:id="@+id/titleEvents"
-        style="@style/BAF.TitleText"
-        android:layout_width="wrap_content"
+        android:id="@+id/emptyText"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Events"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:text="Keine Events vorhanden."
+        android:textColor="@color/baf_text_secondary"
+        android:textSize="16sp"
+        android:layout_margin="16dp"
+        android:visibility="gone"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/eventsRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:padding="8dp"
-        android:clipToPadding="false"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/titleEvents" />
+        android:layout_height="match_parent"
+        android:padding="12dp"
+        android:paddingBottom="80dp"
+        android:clipToPadding="false"/>
 
-    <TextView
-        android:id="@+id/emptyEventsText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Aktuell keine Events verfügbar"
-        android:textColor="@color/baf_text_secondary"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>
