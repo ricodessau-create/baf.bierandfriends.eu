@@ -9,13 +9,13 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import baf.bierandfriends.eu.R
 import baf.bierandfriends.eu.databinding.FragmentMarketBinding
-import baf.bierandfriends.eu.data.repository.MarketRepository
+import baf.bierandfriends.eu.repository.MarketRepository
 
 class MarketFragment : Fragment() {
 
     private var _binding: FragmentMarketBinding? = null
     private val binding get() = _binding!!
-    private val marketRepository = MarketRepository()
+    private lateinit var marketRepository: MarketRepository
     private lateinit var marketAdapter: MarketAdapter
 
     override fun onCreateView(
@@ -30,9 +30,10 @@ class MarketFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        marketRepository = MarketRepository()
         setupRecyclerView()
 
-        // FIX: Zugriff auf marketFab (muss in fragment_market.xml existieren)
+        // FAB Klick-Logik
         binding.marketFab.setOnClickListener {
             findNavController().navigate(R.id.action_navigation_market_to_newMarketItemFragment)
         }
@@ -49,11 +50,18 @@ class MarketFragment : Fragment() {
     }
 
     private fun loadMarketItems() {
-        // Da die Repository-Methode suspend ist, müsste hier normalerweise ein CoroutineScope genutzt werden.
-        // Für den Build-Fix stellen wir sicher, dass die UI-Elemente korrekt angesprochen werden.
-        // (Beispielhafte Implementierung basierend auf deinem bisherigen Code)
-        binding.emptyText.visibility = View.VISIBLE
-        binding.marketRecyclerView.visibility = View.GONE
+        marketRepository.getMarketItems { items ->
+            if (isAdded) {
+                if (items.isEmpty()) {
+                    binding.emptyText.visibility = View.VISIBLE
+                    binding.marketRecyclerView.visibility = View.GONE
+                } else {
+                    binding.emptyText.visibility = View.GONE
+                    binding.marketRecyclerView.visibility = View.VISIBLE
+                    marketAdapter.updateItems(items)
+                }
+            }
+        }
     }
 
     override fun onDestroyView() {
