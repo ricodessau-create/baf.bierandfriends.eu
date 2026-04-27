@@ -1,54 +1,38 @@
 package baf.bierandfriends.eu.ui.profile
 
+import android.net.Uri
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import baf.bierandfriends.eu.R
 import baf.bierandfriends.eu.data.repository.UserRepository
 import baf.bierandfriends.eu.databinding.FragmentProfileBinding
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.firebase.auth.FirebaseAuth
+import com.bumptech.glide.Glide // Benötigt Glide Bibliothek
 import kotlinx.coroutines.launch
 
-class ProfileFragment : Fragment() {
+class ProfileFragment : Fragment(R.layout.fragment_profile) {
 
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
-
     private val userRepository = UserRepository()
-    private val auth = FirebaseAuth.getInstance()
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentProfileBinding.inflate(inflater, container, false)
-        return binding.root
+    // NEU: Image Picker Launcher
+    private val getImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+        uri?.let { uploadImage(it) }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        _binding = FragmentProfileBinding.bind(view)
+
         loadProfile()
 
-        binding.syncButton.setOnClickListener { generateToken() }
-
-        binding.logoutButton.setOnClickListener {
-            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
-            val googleSignInClient = GoogleSignIn.getClient(requireActivity(), gso)
-            googleSignInClient.signOut().addOnCompleteListener {
-                auth.signOut()
-                requireActivity().runOnUiThread {
-                    requireActivity().finish()
-                    startActivity(requireActivity().intent)
-                }
-            }
-        }
+        // NEU: Klick auf Bild oder FAB öffnet den Picker
+        binding.profileImage.setOnClickListener { getImage.launch("image/*") }
+        binding.editImageFab.setOnClickListener { getImage.launch("image/*") }
     }
 
     private fun loadProfile() {
@@ -57,31 +41,33 @@ class ProfileFragment : Fragment() {
             if (profile != null) {
                 binding.profileUsername.text = profile.username
                 binding.profileEmail.text = profile.email
-                binding.profileRank.text = profile.rank.replaceFirstChar { it.uppercase() }
+                // ... andere Felder ...
 
-                if (profile.minecraftName.isNotEmpty()) {
-                    binding.profileMinecraft.text = "Minecraft: ${profile.minecraftName}"
-                    binding.profileMinecraft.visibility = View.VISIBLE
-                }
-
-                if (profile.hopfenkaltschalen > 0) {
-                    binding.profileHK.text = "${profile.hopfenkaltschalen} HK"
-                    binding.profileHK.visibility = View.VISIBLE
+                // Profilbild laden (mit Glide)
+                if (!profile.profileImageUrl.isNullOrEmpty()) {
+                    Glide.with(this@ProfileFragment)
+                        .load(profile.profileImageUrl)
+                        .placeholder(R.drawable.ic_profile_placeholder)
+                        .circleCrop() // Rundes Bild
+                        .into(binding.profileImage)
                 }
             }
         }
     }
 
-    private fun generateToken() {
+    private fun uploadImage(uri: Uri) {
+        binding.profileProgress.visibility = View.VISIBLE // Progressbar hinzufügen
         lifecycleScope.launch {
-            val token = userRepository.generateSyncToken()
-            binding.syncTokenText.text = token
-            binding.syncTokenCard.visibility = View.VISIBLE
-            Toast.makeText(
-                requireContext(),
-                "Tippe /biersync $token im Minecraft!",
-                Toast.LENGTH_LONG
-            ).show()
+            val newUrl = userRepository.uploadProfileImage(uri)
+            binding.profileProgress.visibility = View.GONE
+            
+            if (newUrl != null) {
+                // Bild sofort lokal aktualisieren
+                Glide.with(this@ProfileFragment).load(newUrl).circleCrop().into(binding.profileImage)
+                Toast.makeText(context, "Bild aktualisiert!", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(context, "Upload fehlgeschlagen.", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
