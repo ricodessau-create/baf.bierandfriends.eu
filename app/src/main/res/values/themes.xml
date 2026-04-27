@@ -1,15 +1,29 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-
-    <style name="Theme.BAF" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+<resources xmlns:tools="http://schemas.android.com/tools">
+    
+    <style name="Theme.BierAndFriends" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">@color/baf_gold</item>
         <item name="colorPrimaryVariant">@color/baf_gold_dark</item>
-        <item name="colorOnPrimary">@color/baf_black</item>
-        <item name="colorSecondary">@color/baf_gold</item>
-        <item name="colorOnSecondary">@color/baf_black</item>
-        <item name="android:windowBackground">@color/baf_black</item>
-        <item name="android:statusBarColor">@color/baf_black</item>
-        <item name="android:navigationBarColor">@color/baf_black</item>
+        <item name="colorOnPrimary">@color/baf_background</item>
+        
+        <item name="android:windowBackground">@color/baf_background</item>
+        <item name="android:statusBarColor">@color/baf_background</item>
+        <item name="android:navigationBarColor">@color/baf_background</item>
+        
+        <item name="android:textColorPrimary">@color/baf_text_primary</item>
+        <item name="android:textColorSecondary">@color/baf_text_secondary</item>
     </style>
+
+    <style name="BAF.Card" parent="Widget.MaterialComponents.CardView">
+        <item name="cardBackgroundColor">@color/baf_card_background</item>
+        <item name="cardCornerRadius">16dp</item>
+        <item name="cardElevation">4dp</item>
+        <item name="android:layout_margin">8dp</item>
+    </style>
+
+    <style name="BAF.TitleText">
+        <item name="android:textColor">@color/baf_gold</item>
+        <item name="android:textSize">26sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:fontFamily">sans-serif-black</item> </style>
 
 </resources>
