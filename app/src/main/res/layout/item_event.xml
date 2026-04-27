@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/BAF.Card"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    style="@style/BAF.Card">
+    android:layout_height="wrap_content">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,28 +14,32 @@
 
         <TextView
             android:id="@+id/eventTitle"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/baf_gold"
             android:textSize="18sp"
-            android:textStyle="bold"/>
+            android:textStyle="bold"
+            android:text="Event Titel"/>
 
         <TextView
             android:id="@+id/eventDate"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:textColor="@color/baf_text_secondary"
             android:textSize="12sp"
-            android:layout_marginTop="4dp"/>
+            android:text="12.10.2023 - 20:00 Uhr"/>
 
         <TextView
             android:id="@+id/eventDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:textColor="@color/baf_text_primary"
             android:textSize="14sp"
-            android:layout_marginTop="8dp"/>
+            android:maxLines="3"
+            android:ellipsize="end"
+            android:text="Kurze Beschreibung des Events..."/>
 
     </LinearLayout>
-
 </com.google.android.material.card.MaterialCardView>
