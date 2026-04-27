@@ -1,73 +1,41 @@
-package baf.bierandfriends.eu.ui.market
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.market.MarketFragment">
 
-import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
-import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
-import baf.bierandfriends.eu.R
-import baf.bierandfriends.eu.databinding.FragmentMarketBinding
-import baf.bierandfriends.eu.models.MarketItem
-import baf.bierandfriends.eu.repository.MarketRepository
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/marketRecyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-class MarketFragment : Fragment() {
+    <TextView
+        android:id="@+id/emptyText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Keine Artikel im Marktplatz gefunden."
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    private var _binding: FragmentMarketBinding? = null
-    private val binding get() = _binding!!
-    private lateinit var marketRepository: MarketRepository
-    private lateinit var marketAdapter: MarketAdapter
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/marketFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:contentDescription="Neuer Artikel"
+        android:src="@android:drawable/ic_input_add"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tint="@white" />
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        _binding = FragmentMarketBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-
-        marketRepository = MarketRepository()
-        setupRecyclerView()
-
-        // FIX: Sicherstellen, dass marketFab im Layout existiert
-        binding.marketFab.setOnClickListener {
-            findNavController().navigate(R.id.action_navigation_market_to_newMarketItemFragment)
-        }
-
-        loadMarketItems()
-    }
-
-    private fun setupRecyclerView() {
-        marketAdapter = MarketAdapter(emptyList())
-        binding.marketRecyclerView.apply {
-            layoutManager = LinearLayoutManager(context)
-            adapter = marketAdapter
-        }
-    }
-
-    private fun loadMarketItems() {
-        marketRepository.getMarketItems { items ->
-            if (isAdded) {
-                // FIX: Sicherstellen, dass emptyText im Layout existiert
-                if (items.isEmpty()) {
-                    binding.emptyText.visibility = View.VISIBLE
-                    binding.marketRecyclerView.visibility = View.GONE
-                } else {
-                    binding.emptyText.visibility = View.GONE
-                    binding.marketRecyclerView.visibility = View.VISIBLE
-                    marketAdapter.updateItems(items)
-                }
-            }
-        }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-}
+</androidx.constraintlayout.widget.ConstraintLayout>
