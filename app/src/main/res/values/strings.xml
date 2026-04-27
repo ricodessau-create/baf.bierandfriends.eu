@@ -4,4 +4,5 @@
     <string name="header_banner_desc">BAF Banner</string>
     <string name="start_banner_desc">BAF Start Banner</string>
     <string name="app_header">BAF Header</string>
+    <string name="default_web_client_id">649950498981-8p7j0s0g46p7kru90jpggq9fi07h78bq.apps.googleusercontent.com</string>
 </resources>
