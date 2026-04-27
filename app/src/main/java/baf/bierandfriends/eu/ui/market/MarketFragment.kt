@@ -33,9 +33,14 @@ class MarketFragment : Fragment() {
         marketRepository = MarketRepository()
         setupRecyclerView()
 
-        // FAB Klick-Logik
+        // Der Click-Listener für das mittige FAB
         binding.marketFab.setOnClickListener {
-            findNavController().navigate(R.id.action_navigation_market_to_newMarketItemFragment)
+            // Stelle sicher, dass diese Action in deiner navigation_graph.xml existiert!
+            try {
+                findNavController().navigate(R.id.action_navigation_market_to_newMarketItemFragment)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
 
         loadMarketItems()
