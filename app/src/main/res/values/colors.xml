@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="baf_black">#0D0D0D</color>
-    <color name="baf_gold">#FFD700</color>
-    <color name="baf_gold_dark">#B8860B</color>
-    <color name="baf_dark_gray">#1A1A1A</color>
-    <color name="baf_text_primary">#FFFFFF</color>
-    <color name="baf_text_secondary">#888888</color>
-    <color name="baf_red">#FF3333</color>
-    <color name="background_dark">#0D0D0D</color>
+    <color name="baf_background">#121212</color> <color name="baf_card_background">#1E1E1E</color> <color name="baf_gold">#FFC107</color>
+    <color name="baf_gold_dark">#C79100</color>
+    
+    <color name="baf_text_primary">#FFFFFF</color> <color name="baf_text_secondary">#B0B0B0</color> <color name="baf_red">#EF5350</color>
+    <color name="baf_green">#66BB6A</color>
 </resources>
