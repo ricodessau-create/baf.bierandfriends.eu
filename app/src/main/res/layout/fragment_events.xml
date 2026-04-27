@@ -1,34 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/baf_black">
+    android:background="@color/baf_background">
 
     <TextView
+        android:id="@+id/titleEvents"
+        style="@style/BAF.TitleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:text="Events"
-        android:textColor="@color/baf_gold"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:layout_margin="16dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
-
-    <TextView
-        android:id="@+id/emptyText"
-        android:text="Keine Events vorhanden."
-        android:textColor="@color/baf_text_secondary"
-        android:textSize="16sp"
-        android:layout_margin="16dp"
-        android:visibility="gone"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/eventsRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
         android:padding="8dp"
-        android:clipToPadding="false"/>
+        android:clipToPadding="false"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/titleEvents" />
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/emptyEventsText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Aktuell keine Events verfügbar"
+        android:textColor="@color/baf_text_secondary"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
