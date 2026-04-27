@@ -1,53 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
+    android:layout_marginBottom="8dp"
     style="@style/BAF.Card">
 
     <LinearLayout
-        android:padding="12dp"
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="10dp"
+        android:gravity="center_vertical">
 
         <ImageView
             android:id="@+id/itemImage"
-            android:layout_width="match_parent"
-            android:layout_height="180dp"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:src="@drawable/ic_image_placeholder"
             android:scaleType="centerCrop"
-            android:background="@drawable/gold_border"/>
+            android:contentDescription="Item Bild"/>
 
-        <TextView
-            android:id="@+id/itemTitle"
-            android:textColor="@color/baf_gold"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginTop="8dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="10dp">
 
-        <TextView
-            android:id="@+id/itemDescription"
-            android:textColor="@color/baf_text_secondary"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/itemTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/baf_gold"
+                android:textSize="15sp"
+                android:textStyle="bold"/>
 
-        <TextView
-            android:id="@+id/itemPrice"
-            android:textColor="@color/baf_gold"
-            android:textStyle="bold"
-            android:layout_marginTop="4dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            <TextView
+                android:id="@+id/itemDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/baf_text_secondary"
+                android:textSize="12sp"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:layout_marginTop="2dp"/>
 
-        <TextView
-            android:id="@+id/itemOwner"
-            android:textColor="@color/baf_text_secondary"
-            android:textSize="12sp"
-            android:layout_marginTop="4dp"
+            <TextView
+                android:id="@+id/itemOwner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/baf_text_secondary"
+                android:textSize="11sp"/>
+
+        </LinearLayout>
+
+        <LinearLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="end">
+
+            <TextView
+                android:id="@+id/itemPrice"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/baf_gold"
+                android:textSize="14sp"
+                android:textStyle="bold"/>
+
+        </LinearLayout>
 
     </LinearLayout>
 
