@@ -87,7 +87,8 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:clipToPadding="false" />
+            android:paddingBottom="80dp"
+            android:clipToPadding="false"/>
 
     </LinearLayout>
 
@@ -96,7 +97,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="20dp"
+        android:layout_margin="80dp"
         android:src="@drawable/ic_add"
         app:tint="@android:color/black"
         app:backgroundTint="#FFD700" />
