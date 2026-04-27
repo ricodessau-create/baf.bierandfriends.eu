@@ -5,13 +5,13 @@
     android:orientation="vertical"
     android:background="@color/baf_black">
 
-    <TextView
+    <ImageView
+        android:id="@+id/appHeaderBanner"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:text="BierAndFriends"
-        android:textColor="@color/baf_gold"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:gravity="center"/>
+        android:layout_height="200dp"
+        android:src="@drawable/header_baf_samurai"
+        android:scaleType="centerCrop"
+        android:adjustViewBounds="true"
+        android:contentDescription="@string/header_banner_desc" />
 
 </LinearLayout>
