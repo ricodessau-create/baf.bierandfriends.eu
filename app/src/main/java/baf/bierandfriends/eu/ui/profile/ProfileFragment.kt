@@ -7,8 +7,12 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import baf.bierandfriends.eu.R
 import baf.bierandfriends.eu.data.repository.UserRepository
 import baf.bierandfriends.eu.databinding.FragmentProfileBinding
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
 class ProfileFragment : Fragment() {
@@ -17,6 +21,7 @@ class ProfileFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val userRepository = UserRepository()
+    private val auth = FirebaseAuth.getInstance()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,8 +36,18 @@ class ProfileFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         loadProfile()
 
-        binding.syncButton.setOnClickListener {
-            generateToken()
+        binding.syncButton.setOnClickListener { generateToken() }
+
+        binding.logoutButton.setOnClickListener {
+            val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
+            val googleSignInClient = GoogleSignIn.getClient(requireActivity(), gso)
+            googleSignInClient.signOut().addOnCompleteListener {
+                auth.signOut()
+                requireActivity().runOnUiThread {
+                    requireActivity().finish()
+                    startActivity(requireActivity().intent)
+                }
+            }
         }
     }
 
@@ -43,6 +58,16 @@ class ProfileFragment : Fragment() {
                 binding.profileUsername.text = profile.username
                 binding.profileEmail.text = profile.email
                 binding.profileRank.text = profile.rank.replaceFirstChar { it.uppercase() }
+
+                if (profile.minecraftName.isNotEmpty()) {
+                    binding.profileMinecraft.text = "Minecraft: ${profile.minecraftName}"
+                    binding.profileMinecraft.visibility = View.VISIBLE
+                }
+
+                if (profile.hopfenkaltschalen > 0) {
+                    binding.profileHK.text = "${profile.hopfenkaltschalen} HK"
+                    binding.profileHK.visibility = View.VISIBLE
+                }
             }
         }
     }
