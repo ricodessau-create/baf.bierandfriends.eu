@@ -4,39 +4,94 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/baf_black">
+    android:background="@color/baf_background">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <TextView
-            android:text="Meine Tickets"
-            android:textColor="@color/baf_gold"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:layout_margin="16dp"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+        <!-- Header -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="180dp">
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/header_baf_samurai"
+                android:scaleType="centerCrop"
+                android:contentDescription="BAF Header"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#99000000"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center"
+                android:layout_marginBottom="16dp"
+                android:text="TICKETS"
+                android:textColor="@color/baf_gold"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:letterSpacing="0.15"/>
+        </FrameLayout>
+
+        <!-- Tabs -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@color/baf_black">
+
+            <TextView
+                android:id="@+id/tabMeineTickets"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Meine Tickets"
+                android:textColor="@color/baf_gold"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:padding="14dp"/>
+
+            <TextView
+                android:id="@+id/tabNeuesTicket"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Neues Ticket"
+                android:textColor="@color/baf_tab_unselected"
+                android:textSize="14sp"
+                android:gravity="center"
+                android:padding="14dp"/>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/baf_gold_dark"/>
 
         <TextView
             android:id="@+id/emptyText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:text="Noch keine Tickets erstellt."
             android:textColor="@color/baf_text_secondary"
             android:textSize="16sp"
             android:layout_margin="16dp"
-            android:visibility="gone"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:visibility="gone"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/ticketsRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingBottom="96dp"
-            android:clipToPadding="false"
-            android:padding="8dp"/>
+            android:padding="12dp"
+            android:paddingBottom="80dp"
+            android:clipToPadding="false"/>
 
     </LinearLayout>
 
@@ -44,8 +99,8 @@
         android:id="@+id/newTicketButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="24dp"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="80dp"
         android:src="@drawable/ic_add"
         android:contentDescription="Neues Ticket"
         style="@style/BAF.FAB"/>
