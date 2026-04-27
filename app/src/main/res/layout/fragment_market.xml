@@ -1,97 +1,73 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/baf_black">
+package baf.bierandfriends.eu.ui.market
 
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="12dp">
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import baf.bierandfriends.eu.R
+import baf.bierandfriends.eu.databinding.FragmentMarketBinding
+import baf.bierandfriends.eu.models.MarketItem
+import baf.bierandfriends.eu.repository.MarketRepository
 
-        <EditText
-            android:id="@+id/marketSearch"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:hint="Suche..."
-            android:padding="12dp"
-            android:textColor="#FFFFFF"
-            android:textColorHint="#888888"
-            android:background="#222222"
-            android:layout_marginBottom="12dp" />
+class MarketFragment : Fragment() {
 
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scrollbars="none"
-            android:layout_marginBottom="12dp">
+    private var _binding: FragmentMarketBinding? = null
+    private val binding get() = _binding!!
+    private lateinit var marketRepository: MarketRepository
+    private lateinit var marketAdapter: MarketAdapter
 
-            <LinearLayout
-                android:id="@+id/filterContainer"
-                android:orientation="horizontal"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentMarketBinding.inflate(inflater, container, false)
+        return binding.root
+    }
 
-                <Button
-                    android:id="@+id/filterOwn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="40dp"
-                    android:text="Eigene"
-                    android:backgroundTint="#333333"
-                    android:textColor="#FFD700"
-                    android:layout_marginEnd="8dp" />
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-                <Button
-                    android:id="@+id/filterWithImage"
-                    android:layout_width="wrap_content"
-                    android:layout_height="40dp"
-                    android:text="Mit Bild"
-                    android:backgroundTint="#333333"
-                    android:textColor="#FFD700"
-                    android:layout_marginEnd="8dp" />
+        marketRepository = MarketRepository()
+        setupRecyclerView()
 
-                <Button
-                    android:id="@+id/sortPrice"
-                    android:layout_width="wrap_content"
-                    android:layout_height="40dp"
-                    android:text="Preis ↑"
-                    android:backgroundTint="#333333"
-                    android:textColor="#FFD700"
-                    android:layout_marginEnd="8dp" />
+        // FIX: Sicherstellen, dass marketFab im Layout existiert
+        binding.marketFab.setOnClickListener {
+            findNavController().navigate(R.id.action_navigation_market_to_newMarketItemFragment)
+        }
 
-                <Button
-                    android:id="@+id/sortNewest"
-                    android:layout_width="wrap_content"
-                    android:layout_height="40dp"
-                    android:text="Neueste"
-                    android:backgroundTint="#333333"
-                    android:textColor="#FFD700"
-                    android:layout_marginEnd="8dp" />
+        loadMarketItems()
+    }
 
-            </LinearLayout>
-        </HorizontalScrollView>
+    private fun setupRecyclerView() {
+        marketAdapter = MarketAdapter(emptyList())
+        binding.marketRecyclerView.apply {
+            layoutManager = LinearLayoutManager(context)
+            adapter = marketAdapter
+        }
+    }
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/marketRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:paddingBottom="96dp"
-            android:clipToPadding="false"
-            android:padding="8dp"/>
+    private fun loadMarketItems() {
+        marketRepository.getMarketItems { items ->
+            if (isAdded) {
+                // FIX: Sicherstellen, dass emptyText im Layout existiert
+                if (items.isEmpty()) {
+                    binding.emptyText.visibility = View.VISIBLE
+                    binding.marketRecyclerView.visibility = View.GONE
+                } else {
+                    binding.emptyText.visibility = View.GONE
+                    binding.marketRecyclerView.visibility = View.VISIBLE
+                    marketAdapter.updateItems(items)
+                }
+            }
+        }
+    }
 
-    </LinearLayout>
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/addItemButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="24dp"
-        android:src="@drawable/ic_add"
-        android:contentDescription="Neues Angebot"
-        style="@style/BAF.FAB"/>
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+}
