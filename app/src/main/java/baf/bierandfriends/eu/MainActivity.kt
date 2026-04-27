@@ -23,14 +23,21 @@ class MainActivity : AppCompatActivity() {
         val navController = findNavController(R.id.nav_host_fragment)
         binding.bottomNavigation.setupWithNavController(navController)
 
+        val noBottomNav = setOf(
+            R.id.loginFragment,
+            R.id.registerFragment,
+            R.id.profileFragment,
+            R.id.newPostFragment,
+            R.id.newTicketFragment,
+            R.id.marketCreateFragment,
+            R.id.marketDetailFragment
+        )
+
         navController.addOnDestinationChangedListener { _, destination, _ ->
-            when (destination.id) {
-                R.id.loginFragment, R.id.registerFragment -> {
-                    binding.bottomNavigation.visibility = View.GONE
-                }
-                else -> {
-                    binding.bottomNavigation.visibility = View.VISIBLE
-                }
+            if (destination.id in noBottomNav) {
+                binding.bottomNavigation.visibility = View.GONE
+            } else {
+                binding.bottomNavigation.visibility = View.VISIBLE
             }
         }
     }
