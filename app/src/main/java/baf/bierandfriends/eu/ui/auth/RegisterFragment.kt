@@ -34,7 +34,6 @@ class RegisterFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         binding.registerButton.setOnClickListener { register() }
         binding.backToLoginButton.setOnClickListener { findNavController().navigateUp() }
     }
@@ -49,12 +48,10 @@ class RegisterFragment : Fragment() {
             Toast.makeText(requireContext(), "Bitte alle Felder ausfüllen.", Toast.LENGTH_SHORT).show()
             return
         }
-
         if (password != passwordConfirm) {
             Toast.makeText(requireContext(), "Passwörter stimmen nicht überein.", Toast.LENGTH_SHORT).show()
             return
         }
-
         if (password.length < 6) {
             Toast.makeText(requireContext(), "Passwort muss mindestens 6 Zeichen haben.", Toast.LENGTH_SHORT).show()
             return
