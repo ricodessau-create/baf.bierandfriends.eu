@@ -1,121 +1,108 @@
 package baf.bierandfriends.eu.ui.market
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
-import baf.bierandfriends.eu.R
 import baf.bierandfriends.eu.data.models.MarketItem
 import baf.bierandfriends.eu.data.repository.MarketRepository
-import baf.bierandfriends.eu.databinding.FragmentMarketBinding
+import baf.bierandfriends.eu.databinding.MarketCreateFragmentBinding
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import java.util.UUID
 
-class MarketFragment : Fragment() {
+class MarketCreateFragment : Fragment() {
 
-    private var _binding: FragmentMarketBinding? = null
+    private var _binding: MarketCreateFragmentBinding? = null
     private val binding get() = _binding!!
 
-    private val marketRepository = MarketRepository()
-    private val auth = FirebaseAuth.getInstance()
-    private var allItems = listOf<MarketItem>()
-    private var showingMyItems = false
+    private val repo = MarketRepository()
+    private val auth: FirebaseAuth by lazy { FirebaseAuth.getInstance() }
+    private val storage = FirebaseStorage.getInstance()
+    private var selectedImageUri: Uri? = null
+
+    private val imagePicker =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                selectedImageUri = result.data?.data
+                binding.createImagePlaceholder.visibility = View.GONE
+                binding.createImagePreview.visibility = View.VISIBLE
+                binding.createImagePreview.setImageURI(selectedImageUri)
+            }
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        _binding = FragmentMarketBinding.inflate(inflater, container, false)
+        _binding = MarketCreateFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupTabs()
-        loadItems()
-
-        binding.marketFab.setOnClickListener {
-            findNavController().navigate(R.id.action_marketFragment_to_marketCreateFragment)
+        binding.createSelectImageButton.setOnClickListener {
+            val intent = Intent(Intent.ACTION_PICK)
+            intent.type = "image/*"
+            imagePicker.launch(intent)
         }
 
-        binding.marketSearch.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                filterItems(s.toString())
-            }
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-        })
-    }
-
-    private fun setupTabs() {
-        binding.tabVerkaufen.setOnClickListener {
-            showingMyItems = false
-            binding.tabVerkaufen.setTextColor(resources.getColor(R.color.baf_gold, null))
-            binding.tabKaufen.setTextColor(resources.getColor(R.color.baf_tab_unselected, null))
-            binding.marketFab.visibility = View.VISIBLE
-            loadItems()
-        }
-
-        binding.tabKaufen.setOnClickListener {
-            showingMyItems = true
-            binding.tabKaufen.setTextColor(resources.getColor(R.color.baf_gold, null))
-            binding.tabVerkaufen.setTextColor(resources.getColor(R.color.baf_tab_unselected, null))
-            binding.marketFab.visibility = View.GONE
-            loadMyItems()
+        binding.createSaveButton.setOnClickListener {
+            saveItem()
         }
     }
 
-    private fun loadItems() {
+    private fun saveItem() {
+        val title = binding.createTitle.text.toString().trim()
+        val description = binding.createDescription.text.toString().trim()
+        val price = binding.createPrice.text.toString().toDoubleOrNull() ?: 0.0
+
+        if (title.isEmpty()) {
+            Toast.makeText(requireContext(), "Bitte einen Titel eingeben.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val ownerUuid = auth.currentUser?.uid ?: "unknown"
+        val id = UUID.randomUUID().toString()
+
         lifecycleScope.launch {
-            allItems = marketRepository.getMarketItems()
-            if (allItems.isNotEmpty()) {
-                binding.emptyText.visibility = View.GONE
-                updateAdapter(allItems)
-            } else {
-                binding.emptyText.visibility = View.VISIBLE
-            }
+            val imageUrl = if (selectedImageUri != null) {
+                uploadImage(id, selectedImageUri!!)
+            } else null
+
+            val item = MarketItem(
+                id = id,
+                createdAt = Timestamp.now(),
+                description = description,
+                ownerUuid = ownerUuid,
+                price = price,
+                title = title,
+                imageUrl = imageUrl
+            )
+
+            repo.createMarketItem(item)
+            Toast.makeText(requireContext(), "Angebot erstellt!", Toast.LENGTH_SHORT).show()
+            findNavController().navigateUp()
         }
     }
 
-    private fun loadMyItems() {
-        val uid = auth.currentUser?.uid ?: return
-        lifecycleScope.launch {
-            allItems = marketRepository.getMarketItems()
-            val myItems = allItems.filter { it.ownerUuid == uid }
-            if (myItems.isNotEmpty()) {
-                binding.emptyText.visibility = View.GONE
-                updateAdapter(myItems)
-            } else {
-                binding.emptyText.text = "Du hast noch keine Angebote erstellt."
-                binding.emptyText.visibility = View.VISIBLE
-            }
-        }
-    }
-
-    private fun filterItems(query: String) {
-        val filtered = allItems.filter {
-            it.title.lowercase().contains(query.lowercase()) ||
-            it.description.lowercase().contains(query.lowercase())
-        }
-        updateAdapter(filtered)
-    }
-
-    private fun updateAdapter(items: List<MarketItem>) {
-        val adapter = MarketAdapter(items) { itemId ->
-            val action = MarketFragmentDirections
-                .actionMarketFragmentToMarketDetailFragment(itemId)
-            findNavController().navigate(action)
-        }
-        binding.marketRecyclerView.adapter = adapter
-        binding.marketRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+    private suspend fun uploadImage(id: String, uri: Uri): String {
+        val ref = storage.getReference("market_images/$id.jpg")
+        ref.putFile(uri).await()
+        return ref.downloadUrl.await().toString()
     }
 
     override fun onDestroyView() {
