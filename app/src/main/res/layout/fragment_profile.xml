@@ -44,13 +44,34 @@
             android:padding="16dp"
             android:gravity="center_vertical">
 
-            <ImageView
-                android:layout_width="72dp"
-                android:layout_height="72dp"
-                android:src="@drawable/ic_profile_gaming"
-                android:background="@color/baf_card"
-                android:padding="12dp"
-                android:contentDescription="Avatar"/>
+            <FrameLayout
+                android:layout_width="80dp"
+                android:layout_height="80dp">
+
+                <ImageView
+                    android:id="@+id/profileAvatar"
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:src="@drawable/ic_profile_gaming"
+                    android:background="@color/baf_card"
+                    android:padding="8dp"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="Profilbild"
+                    android:clickable="true"
+                    android:focusable="true"/>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:text="✎"
+                    android:textColor="@color/baf_gold"
+                    android:textSize="12sp"
+                    android:gravity="center"
+                    android:background="#99000000"
+                    android:padding="2dp"/>
+
+            </FrameLayout>
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -105,7 +126,6 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"/>
 
-        <!-- Minecraft info -->
         <TextView
             android:id="@+id/profileMinecraft"
             android:layout_width="match_parent"
@@ -129,7 +149,6 @@
             android:layout_marginTop="4dp"
             android:visibility="gone"/>
 
-        <!-- Options -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
