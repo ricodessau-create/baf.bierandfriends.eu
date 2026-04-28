@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <style name="BAF" parent="Widget.MaterialComponents.CardView"/>
+
     <style name="BAF.Card" parent="Widget.MaterialComponents.CardView">
         <item name="cardBackgroundColor">@color/baf_card</item>
         <item name="cardCornerRadius">8dp</item>
