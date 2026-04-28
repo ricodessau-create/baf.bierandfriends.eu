@@ -1,14 +1,18 @@
 package baf.bierandfriends.eu.ui.profile
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import baf.bierandfriends.eu.data.repository.UserRepository
@@ -29,15 +33,27 @@ class ProfileFragment : Fragment() {
 
     private val userRepository = UserRepository()
     private val auth = FirebaseAuth.getInstance()
-    private val storage = FirebaseStorage.getInstance()
 
-    private val imagePicker =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == Activity.RESULT_OK) {
-                val uri = result.data?.data ?: return@registerForActivityResult
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) openImagePicker()
+        else Toast.makeText(requireContext(), "Berechtigung verweigert.", Toast.LENGTH_SHORT).show()
+    }
+
+    private val imagePicker = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val uri = result.data?.data
+            if (uri != null) {
+                requireContext().contentResolver.takePersistableUriPermission(
+                    uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
                 uploadProfileImage(uri)
             }
         }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,9 +69,16 @@ class ProfileFragment : Fragment() {
         loadProfile()
 
         binding.profileAvatar.setOnClickListener {
-            val intent = Intent(Intent.ACTION_PICK)
-            intent.type = "image/*"
-            imagePicker.launch(intent)
+            val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Manifest.permission.READ_MEDIA_IMAGES
+            } else {
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            }
+            if (ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_GRANTED) {
+                openImagePicker()
+            } else {
+                permissionLauncher.launch(permission)
+            }
         }
 
         binding.syncButton.setOnClickListener { generateToken() }
@@ -71,6 +94,14 @@ class ProfileFragment : Fragment() {
                 }
             }
         }
+    }
+
+    private fun openImagePicker() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+        intent.addCategory(Intent.CATEGORY_OPENABLE)
+        intent.type = "image/*"
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        imagePicker.launch(intent)
     }
 
     private fun loadProfile() {
@@ -98,7 +129,7 @@ class ProfileFragment : Fragment() {
                 }
 
                 if (profile.hopfenkaltschalen > 0) {
-                    binding.profileHK.text = "🍺 ${profile.hopfenkaltschalen} Hopfenkaltschalen"
+                    binding.profileHK.text = "🍺 ${profile.hopfenkaltschalen} HK"
                     binding.profileHK.visibility = View.VISIBLE
                 }
             }
@@ -108,12 +139,17 @@ class ProfileFragment : Fragment() {
     private fun uploadProfileImage(uri: Uri) {
         val uid = auth.currentUser?.uid ?: return
         binding.profileAvatar.alpha = 0.5f
-        Toast.makeText(requireContext(), "Bild wird hochgeladen...", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), "Wird hochgeladen...", Toast.LENGTH_SHORT).show()
 
         lifecycleScope.launch {
             try {
-                val ref = storage.getReference("profile_images/$uid.jpg")
-                ref.putFile(uri).await()
+                val storage = FirebaseStorage.getInstance()
+                val ref = storage.reference.child("profile_images/$uid.jpg")
+                val inputStream = requireContext().contentResolver.openInputStream(uri)
+                    ?: throw Exception("Bild konnte nicht gelesen werden")
+                val bytes = inputStream.readBytes()
+                inputStream.close()
+                ref.putBytes(bytes).await()
                 val downloadUrl = ref.downloadUrl.await().toString()
 
                 val profile = userRepository.getUserProfile()
@@ -127,7 +163,7 @@ class ProfileFragment : Fragment() {
                     .into(binding.profileAvatar)
 
                 binding.profileAvatar.alpha = 1f
-                Toast.makeText(requireContext(), "Profilbild gespeichert!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "✅ Profilbild gespeichert!", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
                 binding.profileAvatar.alpha = 1f
                 Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_LONG).show()
