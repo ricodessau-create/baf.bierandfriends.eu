@@ -33,10 +33,11 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Print SHA-1 for Google Login
-        run: |
-          keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android 2>/dev/null | grep "SHA1:"
+      # Dieser Schritt erstellt den Keystore und zeigt den SHA-1 im Log an
+      - name: Generate Signing Report (SHA-1 for Firebase)
+        run: ./gradlew signingReport
 
+      # Erstellt die google-services.json aus deinen GitHub Secrets
       - name: Create google-services.json
         run: echo '${{ secrets.GOOGLE_SERVICES_JSON }}' > app/google-services.json
 
@@ -48,3 +49,4 @@ jobs:
         with:
           name: BierAndFriends-Debug
           path: app/build/outputs/apk/debug/*.apk
+          
