@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import baf.bierandfriends.eu.R
 import baf.bierandfriends.eu.data.repository.ForumRepository
 import baf.bierandfriends.eu.databinding.FragmentCommunityBinding
@@ -18,6 +19,7 @@ class CommunityFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val forumRepository = ForumRepository()
+    private var currentTab = "feed"
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,6 +32,8 @@ class CommunityFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        setupTabs()
         loadPosts()
 
         binding.newPostButton.setOnClickListener {
@@ -37,15 +41,44 @@ class CommunityFragment : Fragment() {
         }
     }
 
+    private fun setupTabs() {
+        binding.tabFeed.setOnClickListener {
+            currentTab = "feed"
+            binding.tabFeed.setTextColor(resources.getColor(R.color.baf_gold, null))
+            binding.tabGruppen.setTextColor(resources.getColor(R.color.baf_tab_unselected, null))
+            binding.tabMitglieder.setTextColor(resources.getColor(R.color.baf_tab_unselected, null))
+            binding.tabChat.setTextColor(resources.getColor(R.color.baf_tab_unselected, null))
+            binding.forumRecyclerView.visibility = View.VISIBLE
+            loadPosts()
+        }
+
+        binding.tabChat.setOnClickListener {
+            findNavController().navigate(R.id.action_communityFragment_to_chatFragment)
+        }
+
+        binding.tabGruppen.setOnClickListener {
+            binding.tabGruppen.setTextColor(resources.getColor(R.color.baf_gold, null))
+            binding.tabFeed.setTextColor(resources.getColor(R.color.baf_tab_unselected, null))
+        }
+
+        binding.tabMitglieder.setOnClickListener {
+            binding.tabMitglieder.setTextColor(resources.getColor(R.color.baf_gold, null))
+            binding.tabFeed.setTextColor(resources.getColor(R.color.baf_tab_unselected, null))
+        }
+    }
+
     private fun loadPosts() {
         lifecycleScope.launch {
             val posts = forumRepository.getLatestPosts()
-
             if (posts.isNotEmpty()) {
-                val adapter = ForumAdapter(posts)
+                binding.emptyText.visibility = View.GONE
+                val adapter = ForumAdapter(posts) { post ->
+                    val action = CommunityFragmentDirections
+                        .actionCommunityFragmentToPostDetailFragment(post.id)
+                    findNavController().navigate(action)
+                }
                 binding.forumRecyclerView.adapter = adapter
-                binding.forumRecyclerView.layoutManager =
-                    androidx.recyclerview.widget.LinearLayoutManager(requireContext())
+                binding.forumRecyclerView.layoutManager = LinearLayoutManager(requireContext())
             } else {
                 binding.emptyText.visibility = View.VISIBLE
             }
