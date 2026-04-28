@@ -35,10 +35,7 @@ class NewTicketFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        binding.submitTicketButton.setOnClickListener {
-            submitTicket()
-        }
+        binding.submitTicketButton.setOnClickListener { submitTicket() }
     }
 
     private fun submitTicket() {
