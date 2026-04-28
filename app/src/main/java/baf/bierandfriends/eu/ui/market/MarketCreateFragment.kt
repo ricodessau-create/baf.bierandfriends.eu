@@ -34,7 +34,6 @@ class MarketCreateFragment : Fragment() {
 
     private val repo = MarketRepository()
     private val auth = FirebaseAuth.getInstance()
-    private val storage = FirebaseStorage.getInstance()
     private var selectedImageUri: Uri? = null
 
     private val permissionLauncher = registerForActivityResult(
@@ -48,13 +47,15 @@ class MarketCreateFragment : Fragment() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            selectedImageUri = result.data?.data
-            if (selectedImageUri != null) {
+            val uri = result.data?.data
+            if (uri != null) {
+                selectedImageUri = uri
+                requireContext().contentResolver.takePersistableUriPermission(
+                    uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
                 binding.createImagePlaceholder.visibility = View.GONE
                 binding.createImagePreview.visibility = View.VISIBLE
-                Glide.with(this)
-                    .load(selectedImageUri)
-                    .into(binding.createImagePreview)
+                Glide.with(this).load(uri).into(binding.createImagePreview)
             }
         }
     }
@@ -70,14 +71,8 @@ class MarketCreateFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        binding.createSelectImageButton.setOnClickListener {
-            checkPermissionAndOpenPicker()
-        }
-
-        binding.createSaveButton.setOnClickListener {
-            saveItem()
-        }
+        binding.createSelectImageButton.setOnClickListener { checkPermissionAndOpenPicker() }
+        binding.createSaveButton.setOnClickListener { saveItem() }
     }
 
     private fun checkPermissionAndOpenPicker() {
@@ -86,20 +81,18 @@ class MarketCreateFragment : Fragment() {
         } else {
             Manifest.permission.READ_EXTERNAL_STORAGE
         }
-
-        when {
-            ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_GRANTED -> {
-                openImagePicker()
-            }
-            else -> {
-                permissionLauncher.launch(permission)
-            }
+        if (ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_GRANTED) {
+            openImagePicker()
+        } else {
+            permissionLauncher.launch(permission)
         }
     }
 
     private fun openImagePicker() {
-        val intent = Intent(Intent.ACTION_PICK)
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+        intent.addCategory(Intent.CATEGORY_OPENABLE)
         intent.type = "image/*"
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         imagePicker.launch(intent)
     }
 
@@ -112,12 +105,10 @@ class MarketCreateFragment : Fragment() {
             Toast.makeText(requireContext(), "Bitte einen Titel eingeben.", Toast.LENGTH_SHORT).show()
             return
         }
-
         if (description.isEmpty()) {
             Toast.makeText(requireContext(), "Bitte eine Beschreibung eingeben.", Toast.LENGTH_SHORT).show()
             return
         }
-
         val price = priceText.toDoubleOrNull()
         if (price == null || price <= 0) {
             Toast.makeText(requireContext(), "Bitte einen gültigen Preis eingeben.", Toast.LENGTH_SHORT).show()
@@ -151,19 +142,24 @@ class MarketCreateFragment : Fragment() {
                 )
 
                 repo.createMarketItem(item)
-                Toast.makeText(requireContext(), "Angebot erstellt!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "✅ Angebot erstellt!", Toast.LENGTH_SHORT).show()
                 findNavController().navigateUp()
             } catch (e: Exception) {
                 binding.createSaveButton.isEnabled = true
-                binding.createSaveButton.text = "Angebot erstellen"
+                binding.createSaveButton.text = "ANGEBOT ERSTELLEN"
                 Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }
 
     private suspend fun uploadImage(id: String, uri: Uri): String {
-        val ref = storage.getReference("market_images/$id.jpg")
-        ref.putFile(uri).await()
+        val storage = FirebaseStorage.getInstance()
+        val ref = storage.reference.child("market_images/$id.jpg")
+        val inputStream = requireContext().contentResolver.openInputStream(uri)
+            ?: throw Exception("Bild konnte nicht gelesen werden")
+        val bytes = inputStream.readBytes()
+        inputStream.close()
+        ref.putBytes(bytes).await()
         return ref.downloadUrl.await().toString()
     }
 
