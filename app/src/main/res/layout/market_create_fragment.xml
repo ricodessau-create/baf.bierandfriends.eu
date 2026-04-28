@@ -1,91 +1,131 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    android:background="@android:color/black">
+    android:background="@color/baf_background">
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <!-- Bild-Slot -->
+        <!-- Header -->
+        <TextView
+            android:text="ANGEBOT ERSTELLEN"
+            android:textColor="@color/baf_gold"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <!-- Image -->
         <FrameLayout
-            android:id="@+id/createImageContainer"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:background="#111111"
-            android:foreground="@drawable/gold_border"
-            android:layout_marginBottom="16dp">
+            android:layout_height="180dp"
+            android:layout_marginBottom="12dp"
+            android:background="@color/baf_card">
+
+            <TextView
+                android:id="@+id/createImagePlaceholder"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="📷 Bild auswählen"
+                android:textColor="@color/baf_text_secondary"
+                android:gravity="center"
+                android:textSize="16sp"/>
 
             <ImageView
                 android:id="@+id/createImagePreview"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
-                android:visibility="gone" />
+                android:visibility="gone"
+                android:contentDescription="Vorschau"/>
 
-            <ImageView
-                android:id="@+id/createImagePlaceholder"
-                android:layout_width="64dp"
-                android:layout_height="64dp"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_image_placeholder"
-                android:tint="#FFD700" />
         </FrameLayout>
 
         <Button
             android:id="@+id/createSelectImageButton"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Bild auswählen"
-            android:backgroundTint="#FFD700"
-            android:textColor="@android:color/black"
-            android:layout_marginBottom="16dp" />
+            android:layout_height="44dp"
+            android:text="📷 BILD AUSWÄHLEN"
+            android:textColor="@color/baf_black"
+            android:layout_marginBottom="12dp"
+            style="@style/BAF.Button"/>
+
+        <!-- Titel -->
+        <TextView
+            android:text="Titel *"
+            android:textColor="@color/baf_gold"
+            android:textSize="13sp"
+            android:layout_marginBottom="4dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
         <EditText
             android:id="@+id/createTitle"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Titel"
+            android:layout_height="48dp"
+            android:hint="z.B. Diamantschwert Schärfe V"
             android:textColor="#FFFFFF"
-            android:textColorHint="#888888"
-            android:background="#222222"
+            android:textColorHint="#666666"
+            android:background="@color/baf_card"
             android:padding="12dp"
-            android:layout_marginBottom="12dp" />
+            android:inputType="text"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- Beschreibung -->
+        <TextView
+            android:text="Beschreibung *"
+            android:textColor="@color/baf_gold"
+            android:textSize="13sp"
+            android:layout_marginBottom="4dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
         <EditText
             android:id="@+id/createDescription"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Beschreibung"
+            android:layout_height="100dp"
+            android:hint="Beschreibe dein Angebot..."
             android:textColor="#FFFFFF"
-            android:textColorHint="#888888"
-            android:background="#222222"
+            android:textColorHint="#666666"
+            android:background="@color/baf_card"
             android:padding="12dp"
-            android:layout_marginBottom="12dp" />
+            android:inputType="textMultiLine"
+            android:gravity="top"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- Preis -->
+        <TextView
+            android:text="Preis in HK *"
+            android:textColor="@color/baf_gold"
+            android:textSize="13sp"
+            android:layout_marginBottom="4dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
         <EditText
             android:id="@+id/createPrice"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Preis"
-            android:inputType="numberDecimal"
+            android:layout_height="48dp"
+            android:hint="z.B. 1000"
             android:textColor="#FFFFFF"
-            android:textColorHint="#888888"
-            android:background="#222222"
+            android:textColorHint="#666666"
+            android:background="@color/baf_card"
             android:padding="12dp"
-            android:layout_marginBottom="16dp" />
+            android:inputType="numberDecimal"
+            android:layout_marginBottom="16dp"/>
 
         <Button
             android:id="@+id/createSaveButton"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Speichern"
-            android:backgroundTint="#FFD700"
-            android:textColor="@android:color/black" />
+            android:layout_height="50dp"
+            android:text="ANGEBOT ERSTELLEN"
+            android:textColor="@color/baf_black"
+            style="@style/BAF.Button"/>
 
     </LinearLayout>
 
