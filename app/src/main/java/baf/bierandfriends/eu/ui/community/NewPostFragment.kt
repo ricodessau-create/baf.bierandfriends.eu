@@ -12,7 +12,6 @@ import baf.bierandfriends.eu.data.models.ForumPost
 import baf.bierandfriends.eu.data.repository.ForumRepository
 import baf.bierandfriends.eu.data.repository.UserRepository
 import baf.bierandfriends.eu.databinding.FragmentNewPostBinding
-import com.google.firebase.Timestamp
 import kotlinx.coroutines.launch
 
 class NewPostFragment : Fragment() {
@@ -54,7 +53,7 @@ class NewPostFragment : Fragment() {
                 title = title,
                 content = content,
                 author = authorName,
-                createdAt = Timestamp.now()
+                createdAt = com.google.firebase.Timestamp.now()
             )
 
             forumRepository.createPost(post)
