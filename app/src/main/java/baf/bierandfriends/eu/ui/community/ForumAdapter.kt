@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import baf.bierandfriends.eu.data.models.ForumPost
 import baf.bierandfriends.eu.databinding.ItemForumPostBinding
+import baf.bierandfriends.eu.util.RankHelper
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
