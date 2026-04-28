@@ -1,44 +1,25 @@
-package baf.bierandfriends.eu
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="baf.bierandfriends.eu">
 
-import android.os.Bundle
-import android.view.View
-import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.findNavController
-import androidx.navigation.ui.setupWithNavController
-import baf.bierandfriends.eu.databinding.ActivityMainBinding
-import com.google.firebase.FirebaseApp
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
-class MainActivity : AppCompatActivity() {
+    <application
+        android:allowBackup="true"
+        android:label="BaF"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:theme="@style/Theme.BAF">
 
-    private lateinit var binding: ActivityMainBinding
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
+        </activity>
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    </application>
 
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-
-        FirebaseApp.initializeApp(this)
-
-        val navController = findNavController(R.id.nav_host_fragment)
-        binding.bottomNavigation.setupWithNavController(navController)
-
-        val noBottomNav = setOf(
-            R.id.loginFragment,
-            R.id.registerFragment,
-            R.id.profileFragment,
-            R.id.newPostFragment,
-            R.id.newTicketFragment,
-            R.id.marketCreateFragment,
-            R.id.marketDetailFragment
-        )
-
-        navController.addOnDestinationChangedListener { _, destination, _ ->
-            if (destination.id in noBottomNav) {
-                binding.bottomNavigation.visibility = View.GONE
-            } else {
-                binding.bottomNavigation.visibility = View.VISIBLE
-            }
-        }
-    }
-}
+</manifest>
