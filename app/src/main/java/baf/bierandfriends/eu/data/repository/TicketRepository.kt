@@ -21,7 +21,6 @@ class TicketRepository {
         return try {
             db.collection("tickets")
                 .whereEqualTo("authorUid", uid)
-                .orderBy("createdAt")
                 .get()
                 .await()
                 .toObjects(Ticket::class.java)
@@ -33,7 +32,6 @@ class TicketRepository {
     suspend fun getAllTickets(): List<Ticket> {
         return try {
             db.collection("tickets")
-                .orderBy("createdAt")
                 .get()
                 .await()
                 .toObjects(Ticket::class.java)
@@ -43,9 +41,13 @@ class TicketRepository {
     }
 
     suspend fun updateTicketStatus(id: String, status: String) {
-        db.collection("tickets")
-            .document(id)
-            .update("status", status)
-            .await()
+        try {
+            db.collection("tickets")
+                .document(id)
+                .update("status", status)
+                .await()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }
