@@ -8,14 +8,18 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import baf.bierandfriends.eu.R
+import baf.bierandfriends.eu.data.models.UserProfile
+import baf.bierandfriends.eu.data.repository.UserRepository
 import baf.bierandfriends.eu.databinding.FragmentLoginBinding
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import kotlinx.coroutines.launch
 
 class LoginFragment : Fragment() {
 
@@ -23,6 +27,7 @@ class LoginFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val auth = FirebaseAuth.getInstance()
+    private val userRepository = UserRepository()
 
     private val googleSignInLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -33,8 +38,11 @@ class LoginFragment : Fragment() {
                 val account = task.getResult(ApiException::class.java)
                 firebaseAuthWithGoogle(account.idToken!!)
             } catch (e: ApiException) {
+                binding.loginProgress.visibility = View.GONE
                 Toast.makeText(requireContext(), "Google Login fehlgeschlagen: ${e.message}", Toast.LENGTH_LONG).show()
             }
+        } else {
+            binding.loginProgress.visibility = View.GONE
         }
     }
 
@@ -87,20 +95,34 @@ class LoginFragment : Fragment() {
     }
 
     private fun googleLogin() {
+        binding.loginProgress.visibility = View.VISIBLE
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
-
         val googleSignInClient = GoogleSignIn.getClient(requireActivity(), gso)
-        googleSignInLauncher.launch(googleSignInClient.signInIntent)
+        googleSignInClient.signOut().addOnCompleteListener {
+            googleSignInLauncher.launch(googleSignInClient.signInIntent)
+        }
     }
 
     private fun firebaseAuthWithGoogle(idToken: String) {
-        binding.loginProgress.visibility = View.VISIBLE
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         auth.signInWithCredential(credential)
-            .addOnSuccessListener {
+            .addOnSuccessListener { result ->
+                val isNew = result.additionalUserInfo?.isNewUser ?: false
+                if (isNew) {
+                    val user = auth.currentUser
+                    lifecycleScope.launch {
+                        val profile = UserProfile(
+                            username = user?.displayName ?: "Spieler",
+                            email = user?.email ?: "",
+                            rank = "malzbier",
+                            photoUrl = user?.photoUrl?.toString() ?: ""
+                        )
+                        userRepository.updateUserProfile(profile)
+                    }
+                }
                 binding.loginProgress.visibility = View.GONE
                 findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
             }
