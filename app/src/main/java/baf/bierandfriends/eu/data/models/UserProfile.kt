@@ -6,5 +6,6 @@ data class UserProfile(
     val rank: String = "",
     val minecraftUuid: String = "",
     val minecraftName: String = "",
-    val hopfenkaltschalen: Double = 0.0
+    val hopfenkaltschalen: Double = 0.0,
+    val photoUrl: String = ""
 )
