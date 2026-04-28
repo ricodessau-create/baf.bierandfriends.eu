@@ -5,13 +5,14 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import baf.bierandfriends.eu.data.models.ForumPost
 import baf.bierandfriends.eu.databinding.ItemForumPostBinding
-import baf.bierandfriends.eu.util.RankHelper
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class ForumAdapter(private val items: List<ForumPost>) :
-    RecyclerView.Adapter<ForumAdapter.ForumViewHolder>() {
+class ForumAdapter(
+    private val items: List<ForumPost>,
+    private val onClick: (ForumPost) -> Unit
+) : RecyclerView.Adapter<ForumAdapter.ForumViewHolder>() {
 
     inner class ForumViewHolder(val binding: ItemForumPostBinding) :
         RecyclerView.ViewHolder(binding.root)
@@ -34,7 +35,9 @@ class ForumAdapter(private val items: List<ForumPost>) :
                 .format(Date(it.seconds * 1000))
         } ?: ""
         holder.binding.postDate.text = dateText
+
+        holder.binding.root.setOnClickListener { onClick(post) }
     }
 
     override fun getItemCount(): Int = items.size
-    }
+}
