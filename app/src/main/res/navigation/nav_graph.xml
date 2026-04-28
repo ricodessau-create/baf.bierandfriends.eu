@@ -49,12 +49,32 @@
         <action
             android:id="@+id/action_communityFragment_to_newPostFragment"
             app:destination="@id/newPostFragment" />
+        <action
+            android:id="@+id/action_communityFragment_to_chatFragment"
+            app:destination="@id/chatFragment" />
+        <action
+            android:id="@+id/action_communityFragment_to_postDetailFragment"
+            app:destination="@id/postDetailFragment" />
     </fragment>
 
     <fragment
         android:id="@+id/newPostFragment"
         android:name="baf.bierandfriends.eu.ui.community.NewPostFragment"
         android:label="Neuer Beitrag" />
+
+    <fragment
+        android:id="@+id/postDetailFragment"
+        android:name="baf.bierandfriends.eu.ui.community.PostDetailFragment"
+        android:label="Beitrag">
+        <argument
+            android:name="postId"
+            app:argType="string" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/chatFragment"
+        android:name="baf.bierandfriends.eu.ui.chat.ChatFragment"
+        android:label="Chat" />
 
     <fragment
         android:id="@+id/marketFragment"
