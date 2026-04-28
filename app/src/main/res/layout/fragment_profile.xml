@@ -9,7 +9,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Header -->
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="180dp">
@@ -36,7 +35,6 @@
                 android:letterSpacing="0.15"/>
         </FrameLayout>
 
-        <!-- Profile Info -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -64,11 +62,11 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom"
-                    android:text="✎"
+                    android:text="✎ Ändern"
                     android:textColor="@color/baf_gold"
-                    android:textSize="12sp"
+                    android:textSize="10sp"
                     android:gravity="center"
-                    android:background="#99000000"
+                    android:background="#CC000000"
                     android:padding="2dp"/>
 
             </FrameLayout>
@@ -97,23 +95,19 @@
                     android:textSize="13sp"
                     android:layout_marginTop="2dp"/>
 
-                <com.google.android.material.card.MaterialCardView
+                <TextView
+                    android:id="@+id/profileRank"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/baf_gold"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
                     android:layout_marginTop="6dp"
-                    style="@style/BAF.Card">
-                    <TextView
-                        android:id="@+id/profileRank"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textColor="@color/baf_gold"
-                        android:textSize="12sp"
-                        android:textStyle="bold"
-                        android:paddingStart="10dp"
-                        android:paddingEnd="10dp"
-                        android:paddingTop="4dp"
-                        android:paddingBottom="4dp"/>
-                </com.google.android.material.card.MaterialCardView>
+                    android:paddingStart="10dp"
+                    android:paddingEnd="10dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
+                    android:background="@color/baf_card"/>
 
             </LinearLayout>
 
