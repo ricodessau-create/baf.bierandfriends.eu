@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import baf.bierandfriends.eu.data.models.Ticket
 import baf.bierandfriends.eu.databinding.ItemTicketBinding
+import baf.bierandfriends.eu.util.RankHelper
 
 class TicketsAdapter(
     private val items: List<Ticket>,
@@ -24,8 +25,16 @@ class TicketsAdapter(
     override fun onBindViewHolder(holder: TicketViewHolder, position: Int) {
         val ticket = items[position]
         holder.binding.ticketTitle.text = ticket.title
-        holder.binding.ticketStatus.text = ticket.status.replaceFirstChar { it.uppercase() }
-        holder.binding.ticketAuthor.text = ticket.authorName
+        holder.binding.ticketAuthor.text = "Von: ${ticket.authorName}"
+
+        val statusDisplay = when (ticket.status.lowercase()) {
+            "offen" -> "🔴 Offen"
+            "in bearbeitung" -> "🟡 In Bearbeitung"
+            "geschlossen" -> "🟢 Geschlossen"
+            else -> ticket.status
+        }
+        holder.binding.ticketStatus.text = statusDisplay
+        holder.binding.ticketOpenButton.setOnClickListener { onClick(ticket) }
         holder.binding.root.setOnClickListener { onClick(ticket) }
     }
 
