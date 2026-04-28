@@ -5,23 +5,19 @@
     android:orientation="vertical"
     android:background="@color/baf_background">
 
-    <!-- Header -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="180dp">
-
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@drawable/header_baf_samurai"
             android:scaleType="centerCrop"
             android:contentDescription="BAF Header"/>
-
         <View
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="#99000000"/>
-
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -33,7 +29,6 @@
             android:textStyle="bold"
             android:gravity="center"
             android:letterSpacing="0.15"/>
-
         <ImageView
             android:id="@+id/profileIcon"
             android:layout_width="40dp"
@@ -43,7 +38,6 @@
             android:src="@drawable/ic_profile_gaming"
             android:contentDescription="Profil"
             android:padding="4dp"/>
-
     </FrameLayout>
 
     <ScrollView
@@ -55,6 +49,74 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:padding="12dp">
+
+            <!-- Server Status -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                style="@style/BAF.Card">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="12dp"
+                    android:gravity="center_vertical">
+
+                    <View
+                        android:id="@+id/serverStatusDot"
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:background="#555555"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="12dp">
+
+                        <TextView
+                            android:text="SERVER STATUS"
+                            android:textColor="@color/baf_gold"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+
+                        <TextView
+                            android:id="@+id/serverStatusText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Prüfe Status..."
+                            android:textColor="@color/baf_text_secondary"
+                            android:textSize="13sp"/>
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/serverPlayersText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/baf_gold"
+                        android:textSize="13sp"
+                        android:textStyle="bold"/>
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- News -->
+            <TextView
+                android:text="NEWS"
+                android:textColor="@color/baf_gold"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.1"
+                android:layout_marginBottom="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
 
             <TextView
                 android:id="@+id/emptyText"
@@ -74,14 +136,15 @@
 
             <!-- Schnellzugriff -->
             <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Schnellzugriff"
+                android:text="SCHNELLZUGRIFF"
                 android:textColor="@color/baf_gold"
-                android:textSize="18sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
+                android:letterSpacing="0.1"
                 android:layout_marginTop="16dp"
-                android:layout_marginBottom="8dp"/>
+                android:layout_marginBottom="8dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
