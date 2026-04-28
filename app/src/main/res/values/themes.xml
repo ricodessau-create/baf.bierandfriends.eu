@@ -10,13 +10,6 @@
         <item name="android:windowBackground">@color/baf_background</item>
         <item name="android:statusBarColor">@color/baf_black</item>
         <item name="android:navigationBarColor">@color/baf_black</item>
-        <item name="bottomNavigationStyle">@style/BAF.BottomNav</item>
-    </style>
-
-    <style name="BAF.BottomNav" parent="Widget.MaterialComponents.BottomNavigationView">
-        <item name="android:background">@color/baf_black</item>
-        <item name="itemIconTint">@color/nav_item_colors</item>
-        <item name="itemTextColor">@color/nav_item_colors</item>
     </style>
 
 </resources>
