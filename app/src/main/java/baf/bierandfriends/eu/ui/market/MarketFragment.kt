@@ -1,22 +1,28 @@
 package baf.bierandfriends.eu.ui.market
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import baf.bierandfriends.eu.R
+import baf.bierandfriends.eu.data.models.MarketItem
+import baf.bierandfriends.eu.data.repository.MarketRepository
 import baf.bierandfriends.eu.databinding.FragmentMarketBinding
-import baf.bierandfriends.eu.repository.MarketRepository
+import kotlinx.coroutines.launch
 
 class MarketFragment : Fragment() {
 
     private var _binding: FragmentMarketBinding? = null
     private val binding get() = _binding!!
-    private lateinit var marketRepository: MarketRepository
-    private lateinit var marketAdapter: MarketAdapter
+
+    private val marketRepository = MarketRepository()
+    private var allItems = listOf<MarketItem>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -30,43 +36,46 @@ class MarketFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        marketRepository = MarketRepository()
-        setupRecyclerView()
+        loadItems()
 
-        // Der Click-Listener für das mittige FAB
         binding.marketFab.setOnClickListener {
-            // Stelle sicher, dass diese Action in deiner navigation_graph.xml existiert!
-            try {
-                findNavController().navigate(R.id.action_navigation_market_to_newMarketItemFragment)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            findNavController().navigate(R.id.action_marketFragment_to_marketCreateFragment)
         }
 
-        loadMarketItems()
-    }
-
-    private fun setupRecyclerView() {
-        marketAdapter = MarketAdapter(emptyList())
-        binding.marketRecyclerView.apply {
-            layoutManager = LinearLayoutManager(context)
-            adapter = marketAdapter
-        }
-    }
-
-    private fun loadMarketItems() {
-        marketRepository.getMarketItems { items ->
-            if (isAdded) {
-                if (items.isEmpty()) {
-                    binding.emptyText.visibility = View.VISIBLE
-                    binding.marketRecyclerView.visibility = View.GONE
-                } else {
-                    binding.emptyText.visibility = View.GONE
-                    binding.marketRecyclerView.visibility = View.VISIBLE
-                    marketAdapter.updateItems(items)
+        binding.marketSearch.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                val query = s.toString().lowercase()
+                val filtered = allItems.filter {
+                    it.title.lowercase().contains(query) ||
+                    it.description.lowercase().contains(query)
                 }
+                updateAdapter(filtered)
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
+    }
+
+    private fun loadItems() {
+        lifecycleScope.launch {
+            allItems = marketRepository.getMarketItems()
+            if (allItems.isNotEmpty()) {
+                binding.emptyText.visibility = View.GONE
+                updateAdapter(allItems)
+            } else {
+                binding.emptyText.visibility = View.VISIBLE
             }
         }
+    }
+
+    private fun updateAdapter(items: List<MarketItem>) {
+        val adapter = MarketAdapter(items) { itemId ->
+            val action = MarketFragmentDirections
+                .actionMarketFragmentToMarketDetailFragment(itemId)
+            findNavController().navigate(action)
+        }
+        binding.marketRecyclerView.adapter = adapter
+        binding.marketRecyclerView.layoutManager = LinearLayoutManager(requireContext())
     }
 
     override fun onDestroyView() {
