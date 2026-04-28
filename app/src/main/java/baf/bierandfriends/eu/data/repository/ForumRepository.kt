@@ -10,11 +10,12 @@ class ForumRepository {
 
     suspend fun getLatestPosts(): List<ForumPost> {
         return try {
-            db.collection("forum")
-                .orderBy("createdAt")
+            val snapshot = db.collection("forum")
                 .get()
                 .await()
-                .toObjects(ForumPost::class.java)
+            val posts = snapshot.toObjects(ForumPost::class.java)
+            val ids = snapshot.documents.map { it.id }
+            posts.mapIndexed { i, p -> p.copy(id = ids[i]) }
         } catch (e: Exception) {
             emptyList()
         }
