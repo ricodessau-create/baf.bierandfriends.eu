@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import baf.bierandfriends.eu.data.repository.UserRepository
 import baf.bierandfriends.eu.databinding.FragmentProfileBinding
+import baf.bierandfriends.eu.util.RankHelper
 import com.bumptech.glide.Glide
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -78,7 +79,11 @@ class ProfileFragment : Fragment() {
             if (profile != null) {
                 binding.profileUsername.text = profile.username
                 binding.profileEmail.text = profile.email
-                binding.profileRank.text = profile.rank.replaceFirstChar { it.uppercase() }
+
+                val rankDisplay = RankHelper.getRankDisplayName(profile.rank)
+                val rankColor = RankHelper.getRankColor(requireContext(), profile.rank)
+                binding.profileRank.text = rankDisplay
+                binding.profileRank.setTextColor(rankColor)
 
                 if (profile.photoUrl.isNotEmpty()) {
                     Glide.with(this@ProfileFragment)
@@ -88,12 +93,12 @@ class ProfileFragment : Fragment() {
                 }
 
                 if (profile.minecraftName.isNotEmpty()) {
-                    binding.profileMinecraft.text = "Minecraft: ${profile.minecraftName}"
+                    binding.profileMinecraft.text = "⚔ Minecraft: ${profile.minecraftName}"
                     binding.profileMinecraft.visibility = View.VISIBLE
                 }
 
                 if (profile.hopfenkaltschalen > 0) {
-                    binding.profileHK.text = "${profile.hopfenkaltschalen} HK"
+                    binding.profileHK.text = "🍺 ${profile.hopfenkaltschalen} Hopfenkaltschalen"
                     binding.profileHK.visibility = View.VISIBLE
                 }
             }
@@ -103,6 +108,7 @@ class ProfileFragment : Fragment() {
     private fun uploadProfileImage(uri: Uri) {
         val uid = auth.currentUser?.uid ?: return
         binding.profileAvatar.alpha = 0.5f
+        Toast.makeText(requireContext(), "Bild wird hochgeladen...", Toast.LENGTH_SHORT).show()
 
         lifecycleScope.launch {
             try {
@@ -124,7 +130,7 @@ class ProfileFragment : Fragment() {
                 Toast.makeText(requireContext(), "Profilbild gespeichert!", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
                 binding.profileAvatar.alpha = 1f
-                Toast.makeText(requireContext(), "Fehler beim Hochladen.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }
