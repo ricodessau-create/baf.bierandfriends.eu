@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/baf_background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:text="Benutzername"
+            android:textColor="@color/baf_gold"
+            android:textSize="12sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <EditText
+            android:id="@+id/editUsername"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:textColor="#FFFFFF"
+            android:background="@color/baf_card"
+            android:padding="10dp"
+            android:inputType="text"
+            android:layout_marginBottom="10dp"/>
+
+        <TextView
+            android:text="Über mich (optional)"
+            android:textColor="@color/baf_gold"
+            android:textSize="12sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <EditText
+            android:id="@+id/editBio"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:textColor="#FFFFFF"
+            android:background="@color/baf_card"
+            android:padding="10dp"
+            android:inputType="textMultiLine"
+            android:gravity="top"
+            android:layout_marginBottom="10dp"/>
+
+        <TextView
+            android:text="Ort (optional)"
+            android:textColor="@color/baf_gold"
+            android:textSize="12sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <EditText
+            android:id="@+id/editLocation"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:textColor="#FFFFFF"
+            android:background="@color/baf_card"
+            android:padding="10dp"
+            android:inputType="text"
+            android:layout_marginBottom="10dp"/>
+
+        <TextView
+            android:text="Geburtstag (optional, z.B. 01.01.2000)"
+            android:textColor="@color/baf_gold"
+            android:textSize="12sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <EditText
+            android:id="@+id/editBirthday"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:textColor="#FFFFFF"
+            android:background="@color/baf_card"
+            android:padding="10dp"
+            android:inputType="text"
+            android:layout_marginBottom="10dp"/>
+
+        <TextView
+            android:text="Discord (optional)"
+            android:textColor="@color/baf_gold"
+            android:textSize="12sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <EditText
+            android:id="@+id/editDiscord"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:textColor="#FFFFFF"
+            android:background="@color/baf_card"
+            android:padding="10dp"
+            android:inputType="text"
+            android:layout_marginBottom="10dp"/>
+
+    </LinearLayout>
+
+</ScrollView>
