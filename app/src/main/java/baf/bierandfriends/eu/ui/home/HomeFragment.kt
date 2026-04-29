@@ -33,14 +33,9 @@ class HomeFragment : Fragment() {
     private val ticketRepository = TicketRepository()
     private val marketRepository = MarketRepository()
 
-    // Deine Minecraft Server IP hier eintragen
     private val serverIp = "baf.bierandfriends.eu"
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -50,6 +45,20 @@ class HomeFragment : Fragment() {
 
         binding.profileIcon.setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_profileFragment)
+        }
+
+        // Schnellzugriff klickbar machen
+        binding.statEvents.setOnClickListener {
+            findNavController().navigate(R.id.eventsFragment)
+        }
+        binding.statPosts.setOnClickListener {
+            findNavController().navigate(R.id.communityFragment)
+        }
+        binding.statTickets.setOnClickListener {
+            findNavController().navigate(R.id.ticketsFragment)
+        }
+        binding.statMarket.setOnClickListener {
+            findNavController().navigate(R.id.marketFragment)
         }
 
         loadNews()
@@ -73,21 +82,28 @@ class HomeFragment : Fragment() {
 
     private fun loadStats() {
         lifecycleScope.launch {
-            val events = eventsRepository.getUpcomingEvents()
-            binding.statEventsCount.text = events.size.toString()
+            try {
+                val events = eventsRepository.getUpcomingEvents()
+                binding.statEventsCount.text = events.size.toString()
+            } catch (e: Exception) { binding.statEventsCount.text = "0" }
         }
         lifecycleScope.launch {
-            val posts = forumRepository.getLatestPosts()
-            binding.statPostsCount.text = posts.size.toString()
+            try {
+                val posts = forumRepository.getLatestPosts()
+                binding.statPostsCount.text = posts.size.toString()
+            } catch (e: Exception) { binding.statPostsCount.text = "0" }
         }
         lifecycleScope.launch {
-            val tickets = ticketRepository.getMyTickets()
-            val open = tickets.count { it.status == "offen" }
-            binding.statTicketsCount.text = open.toString()
+            try {
+                val tickets = ticketRepository.getMyTickets()
+                binding.statTicketsCount.text = tickets.count { it.status == "offen" }.toString()
+            } catch (e: Exception) { binding.statTicketsCount.text = "0" }
         }
         lifecycleScope.launch {
-            val items = marketRepository.getMarketItems()
-            binding.statMarketCount.text = items.size.toString()
+            try {
+                val items = marketRepository.getMarketItems()
+                binding.statMarketCount.text = items.size.toString()
+            } catch (e: Exception) { binding.statMarketCount.text = "0" }
         }
     }
 
@@ -101,38 +117,25 @@ class HomeFragment : Fragment() {
                     connection.readTimeout = 5000
                     connection.getInputStream().bufferedReader().readText()
                 }
-
                 val json = JSONObject(result)
                 val online = json.optBoolean("online", false)
 
                 if (online) {
                     val players = json.optJSONObject("players")
-                    val online_count = players?.optInt("online", 0) ?: 0
+                    val onlineCount = players?.optInt("online", 0) ?: 0
                     val max = players?.optInt("max", 0) ?: 0
-
                     binding.serverStatusText.text = "Online"
-                    binding.serverStatusText.setTextColor(
-                        ContextCompat.getColor(requireContext(), R.color.baf_green)
-                    )
-                    binding.serverStatusDot.setBackgroundColor(
-                        ContextCompat.getColor(requireContext(), R.color.baf_green)
-                    )
-                    binding.serverPlayersText.text = "$online_count/$max"
+                    binding.serverStatusText.setTextColor(ContextCompat.getColor(requireContext(), R.color.baf_green))
+                    binding.serverStatusDot.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.baf_green))
+                    binding.serverPlayersText.text = "$onlineCount/$max Spieler"
                 } else {
                     binding.serverStatusText.text = "Offline"
-                    binding.serverStatusText.setTextColor(
-                        ContextCompat.getColor(requireContext(), R.color.baf_red)
-                    )
-                    binding.serverStatusDot.setBackgroundColor(
-                        ContextCompat.getColor(requireContext(), R.color.baf_red)
-                    )
-                    binding.serverPlayersText.text = "0/0"
+                    binding.serverStatusText.setTextColor(ContextCompat.getColor(requireContext(), R.color.baf_red))
+                    binding.serverStatusDot.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.baf_red))
+                    binding.serverPlayersText.text = ""
                 }
             } catch (e: Exception) {
                 binding.serverStatusText.text = "Nicht erreichbar"
-                binding.serverStatusText.setTextColor(
-                    ContextCompat.getColor(requireContext(), R.color.baf_text_secondary)
-                )
             }
         }
     }
