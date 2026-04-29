@@ -17,7 +17,7 @@
                 android:layout_height="match_parent"
                 android:src="@drawable/header_baf_samurai"
                 android:scaleType="centerCrop"
-                android:contentDescription="BAF Header"/>
+                android:contentDescription="Header"/>
             <View
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -31,8 +31,7 @@
                 android:textColor="@color/baf_gold"
                 android:textSize="28sp"
                 android:textStyle="bold"
-                android:gravity="center"
-                android:letterSpacing="0.15"/>
+                android:gravity="center"/>
         </FrameLayout>
 
         <LinearLayout
@@ -45,7 +44,6 @@
             <FrameLayout
                 android:layout_width="80dp"
                 android:layout_height="80dp">
-
                 <ImageView
                     android:id="@+id/profileAvatar"
                     android:layout_width="80dp"
@@ -57,7 +55,6 @@
                     android:contentDescription="Profilbild"
                     android:clickable="true"
                     android:focusable="true"/>
-
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -68,7 +65,6 @@
                     android:gravity="center"
                     android:background="#CC000000"
                     android:padding="2dp"/>
-
             </FrameLayout>
 
             <LinearLayout
@@ -92,7 +88,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textColor="@color/baf_text_secondary"
-                    android:textSize="13sp"
+                    android:textSize="12sp"
                     android:layout_marginTop="2dp"/>
 
                 <TextView
@@ -102,11 +98,11 @@
                     android:textColor="@color/baf_gold"
                     android:textSize="13sp"
                     android:textStyle="bold"
-                    android:layout_marginTop="6dp"
-                    android:paddingStart="10dp"
-                    android:paddingEnd="10dp"
-                    android:paddingTop="4dp"
-                    android:paddingBottom="4dp"
+                    android:layout_marginTop="4dp"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:paddingTop="2dp"
+                    android:paddingBottom="2dp"
                     android:background="@color/baf_card"/>
 
             </LinearLayout>
@@ -120,44 +116,90 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"/>
 
-        <TextView
-            android:id="@+id/profileMinecraft"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="@color/baf_text_secondary"
-            android:textSize="13sp"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="8dp"
-            android:visibility="gone"/>
+            android:orientation="vertical"
+            android:padding="16dp">
 
-        <TextView
-            android:id="@+id/profileHK"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="@color/baf_gold"
-            android:textSize="13sp"
-            android:textStyle="bold"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginTop="4dp"
-            android:visibility="gone"/>
+            <TextView
+                android:id="@+id/profileBio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/baf_text_primary"
+                android:textSize="14sp"
+                android:layout_marginBottom="4dp"
+                android:visibility="gone"/>
+
+            <TextView
+                android:id="@+id/profileLocation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/baf_text_secondary"
+                android:textSize="13sp"
+                android:layout_marginBottom="2dp"
+                android:visibility="gone"/>
+
+            <TextView
+                android:id="@+id/profileBirthday"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/baf_text_secondary"
+                android:textSize="13sp"
+                android:layout_marginBottom="2dp"
+                android:visibility="gone"/>
+
+            <TextView
+                android:id="@+id/profileDiscord"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/baf_text_secondary"
+                android:textSize="13sp"
+                android:layout_marginBottom="2dp"
+                android:visibility="gone"/>
+
+            <TextView
+                android:id="@+id/profileMinecraft"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/baf_text_secondary"
+                android:textSize="13sp"
+                android:layout_marginBottom="2dp"
+                android:visibility="gone"/>
+
+            <TextView
+                android:id="@+id/profileHK"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/baf_gold"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:visibility="gone"/>
+
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginTop="16dp">
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+
+            <Button
+                android:id="@+id/editProfileButton"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="✏️  PROFIL BEARBEITEN"
+                android:textColor="@color/baf_black"
+                android:layout_marginBottom="8dp"
+                style="@style/BAF.Button"/>
 
             <Button
                 android:id="@+id/syncButton"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_height="48dp"
                 android:text="⚔  MINECRAFT ACCOUNT VERKNÜPFEN"
                 android:textColor="@color/baf_black"
-                android:textSize="13sp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
                 android:layout_marginBottom="8dp"
                 style="@style/BAF.Button"/>
 
@@ -165,8 +207,6 @@
                 android:id="@+id/syncTokenCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
                 android:layout_marginBottom="16dp"
                 android:visibility="gone"
                 style="@style/BAF.Card">
@@ -205,19 +245,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="@color/baf_gold_dark"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
                 android:layout_marginBottom="8dp"/>
 
             <Button
                 android:id="@+id/logoutButton"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_height="48dp"
                 android:text="⏻  ABMELDEN"
                 android:textColor="@color/baf_red"
-                android:textSize="13sp"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
                 android:layout_marginBottom="24dp"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
 
