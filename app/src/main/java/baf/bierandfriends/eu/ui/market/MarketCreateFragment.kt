@@ -18,6 +18,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import baf.bierandfriends.eu.data.models.MarketItem
 import baf.bierandfriends.eu.data.repository.MarketRepository
+import baf.bierandfriends.eu.data.repository.UserRepository
 import baf.bierandfriends.eu.databinding.MarketCreateFragmentBinding
 import com.bumptech.glide.Glide
 import com.google.firebase.Timestamp
@@ -33,8 +34,11 @@ class MarketCreateFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val repo = MarketRepository()
+    private val userRepository = UserRepository()
     private val auth = FirebaseAuth.getInstance()
     private var selectedImageUri: Uri? = null
+    private var selectedType = "verkauf"
+    private var selectedCategory = "sonstiges"
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -47,77 +51,99 @@ class MarketCreateFragment : Fragment() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            val uri = result.data?.data
-            if (uri != null) {
-                selectedImageUri = uri
+            val uri = result.data?.data ?: return@registerForActivityResult
+            try {
                 requireContext().contentResolver.takePersistableUriPermission(
-                    uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
                 )
-                binding.createImagePlaceholder.visibility = View.GONE
-                binding.createImagePreview.visibility = View.VISIBLE
-                Glide.with(this).load(uri).into(binding.createImagePreview)
-            }
+            } catch (e: Exception) {}
+            selectedImageUri = uri
+            binding.createImagePlaceholder.visibility = View.GONE
+            binding.createImagePreview.visibility = View.VISIBLE
+            Glide.with(this).load(uri).into(binding.createImagePreview)
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = MarketCreateFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        setupTypeTabs()
+        setupCategoryButtons()
+
         binding.createSelectImageButton.setOnClickListener { checkPermissionAndOpenPicker() }
         binding.createSaveButton.setOnClickListener { saveItem() }
     }
 
-    private fun checkPermissionAndOpenPicker() {
-        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Manifest.permission.READ_MEDIA_IMAGES
-        } else {
-            Manifest.permission.READ_EXTERNAL_STORAGE
+    private fun setupTypeTabs() {
+        binding.typeVerkauf.setOnClickListener {
+            selectedType = "verkauf"
+            binding.typeVerkauf.setBackgroundColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
+            binding.typeVerkauf.setTextColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_black, null))
+            binding.typeKauf.setBackgroundColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_card, null))
+            binding.typeKauf.setTextColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
         }
-        if (ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_GRANTED) {
-            openImagePicker()
-        } else {
-            permissionLauncher.launch(permission)
+        binding.typeKauf.setOnClickListener {
+            selectedType = "kauf"
+            binding.typeKauf.setBackgroundColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
+            binding.typeKauf.setTextColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_black, null))
+            binding.typeVerkauf.setBackgroundColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_card, null))
+            binding.typeVerkauf.setTextColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
         }
     }
 
+    private fun setupCategoryButtons() {
+        val buttons = listOf(
+            binding.catBloecke to "bloecke",
+            binding.catRuestung to "ruestung",
+            binding.catWerkzeuge to "werkzeuge",
+            binding.catGrundstuecke to "grundstuecke",
+            binding.catSonstiges to "sonstiges"
+        )
+        buttons.forEach { (btn, cat) ->
+            btn.setOnClickListener {
+                selectedCategory = cat
+                buttons.forEach { (b, _) ->
+                    b.setBackgroundColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_card, null))
+                    b.setTextColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
+                }
+                btn.setBackgroundColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
+                btn.setTextColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_black, null))
+            }
+        }
+    }
+
+    private fun checkPermissionAndOpenPicker() {
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            Manifest.permission.READ_MEDIA_IMAGES else Manifest.permission.READ_EXTERNAL_STORAGE
+        if (ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_GRANTED)
+            openImagePicker() else permissionLauncher.launch(permission)
+    }
+
     private fun openImagePicker() {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-        intent.addCategory(Intent.CATEGORY_OPENABLE)
-        intent.type = "image/*"
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "image/*"
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+        }
         imagePicker.launch(intent)
     }
 
     private fun saveItem() {
         val title = binding.createTitle.text.toString().trim()
         val description = binding.createDescription.text.toString().trim()
-        val priceText = binding.createPrice.text.toString().trim()
+        val price = binding.createPrice.text.toString().trim().toDoubleOrNull()
 
-        if (title.isEmpty()) {
-            Toast.makeText(requireContext(), "Bitte einen Titel eingeben.", Toast.LENGTH_SHORT).show()
-            return
-        }
-        if (description.isEmpty()) {
-            Toast.makeText(requireContext(), "Bitte eine Beschreibung eingeben.", Toast.LENGTH_SHORT).show()
-            return
-        }
-        val price = priceText.toDoubleOrNull()
-        if (price == null || price <= 0) {
-            Toast.makeText(requireContext(), "Bitte einen gültigen Preis eingeben.", Toast.LENGTH_SHORT).show()
-            return
-        }
+        if (title.isEmpty()) { Toast.makeText(requireContext(), "Bitte Titel eingeben.", Toast.LENGTH_SHORT).show(); return }
+        if (description.isEmpty()) { Toast.makeText(requireContext(), "Bitte Beschreibung eingeben.", Toast.LENGTH_SHORT).show(); return }
+        if (price == null || price <= 0) { Toast.makeText(requireContext(), "Bitte gültigen Preis eingeben.", Toast.LENGTH_SHORT).show(); return }
 
         val ownerUuid = auth.currentUser?.uid ?: run {
-            Toast.makeText(requireContext(), "Nicht eingeloggt.", Toast.LENGTH_SHORT).show()
-            return
+            Toast.makeText(requireContext(), "Nicht eingeloggt.", Toast.LENGTH_SHORT).show(); return
         }
 
         binding.createSaveButton.isEnabled = false
@@ -127,18 +153,22 @@ class MarketCreateFragment : Fragment() {
 
         lifecycleScope.launch {
             try {
-                val imageUrl = if (selectedImageUri != null) {
-                    uploadImage(id, selectedImageUri!!)
-                } else null
+                val profile = userRepository.getUserProfile()
+                val ownerName = profile?.username ?: "Unbekannt"
+
+                val imageUrl = selectedImageUri?.let { uploadImage(id, it) }
 
                 val item = MarketItem(
                     id = id,
                     createdAt = Timestamp.now(),
                     description = description,
                     ownerUuid = ownerUuid,
+                    ownerName = ownerName,
                     price = price,
                     title = title,
-                    imageUrl = imageUrl
+                    imageUrl = imageUrl,
+                    category = selectedCategory,
+                    type = selectedType
                 )
 
                 repo.createMarketItem(item)
@@ -153,12 +183,9 @@ class MarketCreateFragment : Fragment() {
     }
 
     private suspend fun uploadImage(id: String, uri: Uri): String {
-        val storage = FirebaseStorage.getInstance()
-        val ref = storage.reference.child("market_images/$id.jpg")
-        val inputStream = requireContext().contentResolver.openInputStream(uri)
-            ?: throw Exception("Bild konnte nicht gelesen werden")
-        val bytes = inputStream.readBytes()
-        inputStream.close()
+        val ref = FirebaseStorage.getInstance().reference.child("market_images/$id.jpg")
+        val bytes = requireContext().contentResolver.openInputStream(uri)
+            ?.use { it.readBytes() } ?: throw Exception("Bild nicht lesbar")
         ref.putBytes(bytes).await()
         return ref.downloadUrl.await().toString()
     }
