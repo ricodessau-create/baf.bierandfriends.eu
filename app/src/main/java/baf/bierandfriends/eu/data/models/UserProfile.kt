@@ -7,5 +7,10 @@ data class UserProfile(
     val minecraftUuid: String = "",
     val minecraftName: String = "",
     val hopfenkaltschalen: Double = 0.0,
-    val photoUrl: String = ""
+    val photoUrl: String = "",
+    val birthday: String = "",
+    val bio: String = "",
+    val location: String = "",
+    val discord: String = "",
+    val isPrivate: Boolean = false
 )
