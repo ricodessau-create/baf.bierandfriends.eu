@@ -10,7 +10,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import baf.bierandfriends.eu.data.models.ChatMessage
-import baf.bierandfriends.eu.data.models.PrivateMessage
 import baf.bierandfriends.eu.data.repository.ChatRepository
 import baf.bierandfriends.eu.data.repository.UserRepository
 import baf.bierandfriends.eu.databinding.FragmentPrivateChatBinding
