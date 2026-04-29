@@ -17,9 +17,8 @@ class ChatRepository {
         return try {
             db.collection("public_chat")
                 .orderBy("createdAt", Query.Direction.ASCENDING)
-                .limitToLast(50)
-                .get()
-                .await()
+                .limitToLast(100)
+                .get().await()
                 .toObjects(ChatMessage::class.java)
         } catch (e: Exception) {
             emptyList()
@@ -42,12 +41,9 @@ class ChatRepository {
         val uid = auth.currentUser?.uid ?: return emptyList()
         val chatId = if (uid < otherUid) "${uid}_${otherUid}" else "${otherUid}_${uid}"
         return try {
-            db.collection("private_chats")
-                .document(chatId)
-                .collection("messages")
+            db.collection("private_chats").document(chatId).collection("messages")
                 .orderBy("createdAt", Query.Direction.ASCENDING)
-                .get()
-                .await()
+                .get().await()
                 .toObjects(PrivateMessage::class.java)
         } catch (e: Exception) {
             emptyList()
@@ -64,10 +60,7 @@ class ChatRepository {
             receiverUid = receiverUid,
             createdAt = Timestamp.now()
         )
-        db.collection("private_chats")
-            .document(chatId)
-            .collection("messages")
-            .add(message)
-            .await()
+        db.collection("private_chats").document(chatId).collection("messages")
+            .add(message).await()
     }
 }
