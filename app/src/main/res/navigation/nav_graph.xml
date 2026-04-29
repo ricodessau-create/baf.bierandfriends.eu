@@ -3,128 +3,116 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     app:startDestination="@id/loginFragment">
 
-    <fragment
-        android:id="@+id/loginFragment"
+    <fragment android:id="@+id/loginFragment"
         android:name="baf.bierandfriends.eu.ui.auth.LoginFragment"
         android:label="Login">
-        <action
-            android:id="@+id/action_loginFragment_to_homeFragment"
+        <action android:id="@+id/action_loginFragment_to_homeFragment"
             app:destination="@id/homeFragment"
             app:popUpTo="@id/loginFragment"
-            app:popUpToInclusive="true" />
-        <action
-            android:id="@+id/action_loginFragment_to_registerFragment"
-            app:destination="@id/registerFragment" />
+            app:popUpToInclusive="true"/>
+        <action android:id="@+id/action_loginFragment_to_registerFragment"
+            app:destination="@id/registerFragment"/>
     </fragment>
 
-    <fragment
-        android:id="@+id/registerFragment"
+    <fragment android:id="@+id/registerFragment"
         android:name="baf.bierandfriends.eu.ui.auth.RegisterFragment"
         android:label="Registrieren">
-        <action
-            android:id="@+id/action_registerFragment_to_homeFragment"
+        <action android:id="@+id/action_registerFragment_to_homeFragment"
             app:destination="@id/homeFragment"
             app:popUpTo="@id/loginFragment"
-            app:popUpToInclusive="true" />
+            app:popUpToInclusive="true"/>
     </fragment>
 
-    <fragment
-        android:id="@+id/homeFragment"
+    <fragment android:id="@+id/homeFragment"
         android:name="baf.bierandfriends.eu.ui.home.HomeFragment"
         android:label="Home">
-        <action
-            android:id="@+id/action_homeFragment_to_profileFragment"
-            app:destination="@id/profileFragment" />
+        <action android:id="@+id/action_homeFragment_to_profileFragment"
+            app:destination="@id/profileFragment"/>
     </fragment>
 
-    <fragment
-        android:id="@+id/eventsFragment"
+    <fragment android:id="@+id/eventsFragment"
         android:name="baf.bierandfriends.eu.ui.events.EventsFragment"
-        android:label="Events" />
+        android:label="Events"/>
 
-    <fragment
-        android:id="@+id/communityFragment"
+    <fragment android:id="@+id/communityFragment"
         android:name="baf.bierandfriends.eu.ui.community.CommunityFragment"
         android:label="Community">
-        <action
-            android:id="@+id/action_communityFragment_to_newPostFragment"
-            app:destination="@id/newPostFragment" />
-        <action
-            android:id="@+id/action_communityFragment_to_chatFragment"
-            app:destination="@id/chatFragment" />
-        <action
-            android:id="@+id/action_communityFragment_to_postDetailFragment"
-            app:destination="@id/postDetailFragment" />
+        <action android:id="@+id/action_communityFragment_to_newPostFragment"
+            app:destination="@id/newPostFragment"/>
+        <action android:id="@+id/action_communityFragment_to_chatFragment"
+            app:destination="@id/chatFragment"/>
+        <action android:id="@+id/action_communityFragment_to_postDetailFragment"
+            app:destination="@id/postDetailFragment"/>
+        <action android:id="@+id/action_communityFragment_to_userProfileFragment"
+            app:destination="@id/userProfileFragment"/>
     </fragment>
 
-    <fragment
-        android:id="@+id/newPostFragment"
+    <fragment android:id="@+id/newPostFragment"
         android:name="baf.bierandfriends.eu.ui.community.NewPostFragment"
-        android:label="Neuer Beitrag" />
+        android:label="Neuer Beitrag"/>
 
-    <fragment
-        android:id="@+id/postDetailFragment"
+    <fragment android:id="@+id/postDetailFragment"
         android:name="baf.bierandfriends.eu.ui.community.PostDetailFragment"
         android:label="Beitrag">
-        <argument
-            android:name="postId"
-            app:argType="string" />
+        <argument android:name="postId" app:argType="string"/>
     </fragment>
 
-    <fragment
-        android:id="@+id/chatFragment"
-        android:name="baf.bierandfriends.eu.ui.chat.ChatFragment"
-        android:label="Chat" />
+    <fragment android:id="@+id/chatFragment"
+        android:name="baf.bierandfriends.eu.ui.community.ChatFragment"
+        android:label="Chat"/>
 
-    <fragment
-        android:id="@+id/marketFragment"
+    <fragment android:id="@+id/userProfileFragment"
+        android:name="baf.bierandfriends.eu.ui.user.UserProfileFragment"
+        android:label="Profil">
+        <argument android:name="username" app:argType="string"/>
+        <action android:id="@+id/action_userProfileFragment_to_privateChatFragment"
+            app:destination="@id/privateChatFragment"/>
+    </fragment>
+
+    <fragment android:id="@+id/privateChatFragment"
+        android:name="baf.bierandfriends.eu.ui.chat.PrivateChatFragment"
+        android:label="Privatchat">
+        <argument android:name="receiverUid" app:argType="string"/>
+        <argument android:name="receiverName" app:argType="string"/>
+    </fragment>
+
+    <fragment android:id="@+id/marketFragment"
         android:name="baf.bierandfriends.eu.ui.market.MarketFragment"
         android:label="Markt">
-        <action
-            android:id="@+id/action_marketFragment_to_marketCreateFragment"
-            app:destination="@id/marketCreateFragment" />
-        <action
-            android:id="@+id/action_marketFragment_to_marketDetailFragment"
-            app:destination="@id/marketDetailFragment" />
+        <action android:id="@+id/action_marketFragment_to_marketCreateFragment"
+            app:destination="@id/marketCreateFragment"/>
+        <action android:id="@+id/action_marketFragment_to_marketDetailFragment"
+            app:destination="@id/marketDetailFragment"/>
     </fragment>
 
-    <fragment
-        android:id="@+id/marketCreateFragment"
+    <fragment android:id="@+id/marketCreateFragment"
         android:name="baf.bierandfriends.eu.ui.market.MarketCreateFragment"
-        android:label="Neues Angebot" />
+        android:label="Neues Angebot"/>
 
-    <fragment
-        android:id="@+id/marketDetailFragment"
+    <fragment android:id="@+id/marketDetailFragment"
         android:name="baf.bierandfriends.eu.ui.market.MarketDetailFragment"
         android:label="Details">
-        <argument
-            android:name="itemId"
-            app:argType="string" />
+        <argument android:name="itemId" app:argType="string"/>
     </fragment>
 
-    <fragment
-        android:id="@+id/ticketsFragment"
+    <fragment android:id="@+id/ticketsFragment"
         android:name="baf.bierandfriends.eu.ui.tickets.TicketsFragment"
         android:label="Tickets">
-        <action
-            android:id="@+id/action_ticketsFragment_to_newTicketFragment"
-            app:destination="@id/newTicketFragment" />
+        <action android:id="@+id/action_ticketsFragment_to_newTicketFragment"
+            app:destination="@id/newTicketFragment"/>
     </fragment>
 
-    <fragment
-        android:id="@+id/newTicketFragment"
+    <fragment android:id="@+id/newTicketFragment"
         android:name="baf.bierandfriends.eu.ui.tickets.NewTicketFragment"
-        android:label="Neues Ticket" />
+        android:label="Neues Ticket"/>
 
-    <fragment
-        android:id="@+id/profileFragment"
+    <fragment android:id="@+id/profileFragment"
         android:name="baf.bierandfriends.eu.ui.profile.ProfileFragment"
         android:label="Profil">
-        <action
-            android:id="@+id/action_profileFragment_to_loginFragment"
+        <action android:id="@+id/action_profileFragment_to_loginFragment"
             app:destination="@id/loginFragment"
             app:popUpTo="@id/homeFragment"
-            app:popUpToInclusive="true" />
+            app:popUpToInclusive="true"/>
     </fragment>
 
 </navigation>
