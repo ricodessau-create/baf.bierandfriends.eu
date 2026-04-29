@@ -20,12 +20,11 @@ import baf.bierandfriends.eu.data.models.MarketItem
 import baf.bierandfriends.eu.data.repository.MarketRepository
 import baf.bierandfriends.eu.data.repository.UserRepository
 import baf.bierandfriends.eu.databinding.MarketCreateFragmentBinding
+import baf.bierandfriends.eu.util.SupabaseHelper
 import com.bumptech.glide.Glide
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 import java.util.UUID
 
 class MarketCreateFragment : Fragment() {
@@ -71,29 +70,33 @@ class MarketCreateFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         setupTypeTabs()
         setupCategoryButtons()
-
         binding.createSelectImageButton.setOnClickListener { checkPermissionAndOpenPicker() }
         binding.createSaveButton.setOnClickListener { saveItem() }
     }
 
     private fun setupTypeTabs() {
-        binding.typeVerkauf.setOnClickListener {
+        fun setVerkauf() {
             selectedType = "verkauf"
-            binding.typeVerkauf.setBackgroundColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
+            binding.typeVerkauf.backgroundTintList = android.content.res.ColorStateList.valueOf(
+                resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
             binding.typeVerkauf.setTextColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_black, null))
-            binding.typeKauf.setBackgroundColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_card, null))
+            binding.typeKauf.backgroundTintList = android.content.res.ColorStateList.valueOf(
+                resources.getColor(baf.bierandfriends.eu.R.color.baf_card, null))
             binding.typeKauf.setTextColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
         }
-        binding.typeKauf.setOnClickListener {
+        fun setKauf() {
             selectedType = "kauf"
-            binding.typeKauf.setBackgroundColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
+            binding.typeKauf.backgroundTintList = android.content.res.ColorStateList.valueOf(
+                resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
             binding.typeKauf.setTextColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_black, null))
-            binding.typeVerkauf.setBackgroundColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_card, null))
+            binding.typeVerkauf.backgroundTintList = android.content.res.ColorStateList.valueOf(
+                resources.getColor(baf.bierandfriends.eu.R.color.baf_card, null))
             binding.typeVerkauf.setTextColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
         }
+        binding.typeVerkauf.setOnClickListener { setVerkauf() }
+        binding.typeKauf.setOnClickListener { setKauf() }
     }
 
     private fun setupCategoryButtons() {
@@ -108,10 +111,12 @@ class MarketCreateFragment : Fragment() {
             btn.setOnClickListener {
                 selectedCategory = cat
                 buttons.forEach { (b, _) ->
-                    b.setBackgroundColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_card, null))
+                    b.backgroundTintList = android.content.res.ColorStateList.valueOf(
+                        resources.getColor(baf.bierandfriends.eu.R.color.baf_card, null))
                     b.setTextColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
                 }
-                btn.setBackgroundColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
+                btn.backgroundTintList = android.content.res.ColorStateList.valueOf(
+                    resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
                 btn.setTextColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_black, null))
             }
         }
@@ -156,7 +161,11 @@ class MarketCreateFragment : Fragment() {
                 val profile = userRepository.getUserProfile()
                 val ownerName = profile?.username ?: "Unbekannt"
 
-                val imageUrl = selectedImageUri?.let { uploadImage(id, it) }
+                val imageUrl = selectedImageUri?.let { uri ->
+                    val bytes = requireContext().contentResolver.openInputStream(uri)
+                        ?.use { it.readBytes() } ?: throw Exception("Bild nicht lesbar")
+                    SupabaseHelper.uploadImage(bytes, "market_images", "$id.jpg")
+                }
 
                 val item = MarketItem(
                     id = id,
@@ -180,14 +189,6 @@ class MarketCreateFragment : Fragment() {
                 Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
-    }
-
-    private suspend fun uploadImage(id: String, uri: Uri): String {
-        val ref = FirebaseStorage.getInstance().reference.child("market_images/$id.jpg")
-        val bytes = requireContext().contentResolver.openInputStream(uri)
-            ?.use { it.readBytes() } ?: throw Exception("Bild nicht lesbar")
-        ref.putBytes(bytes).await()
-        return ref.downloadUrl.await().toString()
     }
 
     override fun onDestroyView() {
