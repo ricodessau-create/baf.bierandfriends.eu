@@ -30,10 +30,8 @@ class CommunityFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         setupTabs()
         loadPosts()
-
         binding.newPostButton.setOnClickListener {
             findNavController().navigate(R.id.action_communityFragment_to_newPostFragment)
         }
@@ -41,15 +39,13 @@ class CommunityFragment : Fragment() {
 
     private fun setupTabs() {
         fun resetTabs() {
-            listOf(binding.tabFeed, binding.tabGruppen, binding.tabMitglieder, binding.tabChat).forEach {
-                it.setTextColor(resources.getColor(R.color.baf_tab_unselected, null))
-            }
+            listOf(binding.tabFeed, binding.tabGruppen, binding.tabMitglieder, binding.tabChat)
+                .forEach { it.setTextColor(resources.getColor(R.color.baf_tab_unselected, null)) }
         }
 
         binding.tabFeed.setOnClickListener {
             resetTabs()
             binding.tabFeed.setTextColor(resources.getColor(R.color.baf_gold, null))
-            binding.forumRecyclerView.visibility = View.VISIBLE
             binding.newPostButton.visibility = View.VISIBLE
             loadPosts()
         }
@@ -61,9 +57,9 @@ class CommunityFragment : Fragment() {
         binding.tabGruppen.setOnClickListener {
             resetTabs()
             binding.tabGruppen.setTextColor(resources.getColor(R.color.baf_gold, null))
-            binding.forumRecyclerView.visibility = View.GONE
             binding.newPostButton.visibility = View.GONE
-            binding.emptyText.text = "Gruppen-Feature kommt bald!"
+            binding.forumRecyclerView.visibility = View.GONE
+            binding.emptyText.text = "Gruppen-Feature kommt bald! 🍺"
             binding.emptyText.visibility = View.VISIBLE
         }
 
@@ -71,6 +67,7 @@ class CommunityFragment : Fragment() {
             resetTabs()
             binding.tabMitglieder.setTextColor(resources.getColor(R.color.baf_gold, null))
             binding.newPostButton.visibility = View.GONE
+            binding.emptyText.visibility = View.GONE
             loadMembers()
         }
     }
@@ -81,9 +78,8 @@ class CommunityFragment : Fragment() {
             val posts = forumRepository.getLatestPosts()
             if (posts.isNotEmpty()) {
                 val adapter = ForumAdapter(posts) { post ->
-                    val action = CommunityFragmentDirections
-                        .actionCommunityFragmentToPostDetailFragment(post.id)
-                    findNavController().navigate(action)
+                    val bundle = android.os.Bundle().apply { putString("postId", post.id) }
+                    findNavController().navigate(R.id.action_communityFragment_to_postDetailFragment, bundle)
                 }
                 binding.forumRecyclerView.adapter = adapter
                 binding.forumRecyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -91,6 +87,7 @@ class CommunityFragment : Fragment() {
             } else {
                 binding.emptyText.text = "Noch keine Beiträge."
                 binding.emptyText.visibility = View.VISIBLE
+                binding.forumRecyclerView.visibility = View.GONE
             }
         }
     }
@@ -101,9 +98,8 @@ class CommunityFragment : Fragment() {
             if (users.isNotEmpty()) {
                 binding.emptyText.visibility = View.GONE
                 val adapter = UserAdapter(users) { user ->
-                    val action = CommunityFragmentDirections
-                        .actionCommunityFragmentToUserProfileFragment(user.username)
-                    findNavController().navigate(action)
+                    val bundle = android.os.Bundle().apply { putString("username", user.username) }
+                    findNavController().navigate(R.id.action_communityFragment_to_userProfileFragment, bundle)
                 }
                 binding.forumRecyclerView.adapter = adapter
                 binding.forumRecyclerView.layoutManager = LinearLayoutManager(requireContext())
