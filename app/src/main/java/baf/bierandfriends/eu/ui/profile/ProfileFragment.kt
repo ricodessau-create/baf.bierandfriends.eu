@@ -18,13 +18,12 @@ import androidx.lifecycle.lifecycleScope
 import baf.bierandfriends.eu.data.repository.UserRepository
 import baf.bierandfriends.eu.databinding.FragmentProfileBinding
 import baf.bierandfriends.eu.util.RankHelper
+import baf.bierandfriends.eu.util.SupabaseHelper
 import com.bumptech.glide.Glide
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.tasks.await
 
 class ProfileFragment : Fragment() {
 
@@ -37,8 +36,8 @@ class ProfileFragment : Fragment() {
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
-        if (granted) openImagePicker() else
-            Toast.makeText(requireContext(), "Berechtigung verweigert.", Toast.LENGTH_SHORT).show()
+        if (granted) openImagePicker()
+        else Toast.makeText(requireContext(), "Berechtigung verweigert.", Toast.LENGTH_SHORT).show()
     }
 
     private val imagePicker = registerForActivityResult(
@@ -65,12 +64,8 @@ class ProfileFragment : Fragment() {
         loadProfile()
 
         binding.profileAvatar.setOnClickListener { checkAndPickImage() }
-
+        binding.editProfileButton.setOnClickListener { showEditDialog() }
         binding.syncButton.setOnClickListener { generateToken() }
-
-        binding.editProfileButton.setOnClickListener {
-            showEditDialog()
-        }
 
         binding.logoutButton.setOnClickListener {
             val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
@@ -106,30 +101,12 @@ class ProfileFragment : Fragment() {
             binding.profileRank.text = RankHelper.getRankDisplayName(profile.rank)
             binding.profileRank.setTextColor(RankHelper.getRankColor(requireContext(), profile.rank))
 
-            if (profile.bio.isNotEmpty()) {
-                binding.profileBio.text = profile.bio
-                binding.profileBio.visibility = View.VISIBLE
-            }
-            if (profile.location.isNotEmpty()) {
-                binding.profileLocation.text = "📍 ${profile.location}"
-                binding.profileLocation.visibility = View.VISIBLE
-            }
-            if (profile.birthday.isNotEmpty()) {
-                binding.profileBirthday.text = "🎂 ${profile.birthday}"
-                binding.profileBirthday.visibility = View.VISIBLE
-            }
-            if (profile.discord.isNotEmpty()) {
-                binding.profileDiscord.text = "💬 Discord: ${profile.discord}"
-                binding.profileDiscord.visibility = View.VISIBLE
-            }
-            if (profile.minecraftName.isNotEmpty()) {
-                binding.profileMinecraft.text = "⚔ Minecraft: ${profile.minecraftName}"
-                binding.profileMinecraft.visibility = View.VISIBLE
-            }
-            if (profile.hopfenkaltschalen > 0) {
-                binding.profileHK.text = "🍺 ${profile.hopfenkaltschalen} HK"
-                binding.profileHK.visibility = View.VISIBLE
-            }
+            if (profile.bio.isNotEmpty()) { binding.profileBio.text = profile.bio; binding.profileBio.visibility = View.VISIBLE }
+            if (profile.location.isNotEmpty()) { binding.profileLocation.text = "📍 ${profile.location}"; binding.profileLocation.visibility = View.VISIBLE }
+            if (profile.birthday.isNotEmpty()) { binding.profileBirthday.text = "🎂 ${profile.birthday}"; binding.profileBirthday.visibility = View.VISIBLE }
+            if (profile.discord.isNotEmpty()) { binding.profileDiscord.text = "💬 Discord: ${profile.discord}"; binding.profileDiscord.visibility = View.VISIBLE }
+            if (profile.minecraftName.isNotEmpty()) { binding.profileMinecraft.text = "⚔ Minecraft: ${profile.minecraftName}"; binding.profileMinecraft.visibility = View.VISIBLE }
+            if (profile.hopfenkaltschalen > 0) { binding.profileHK.text = "🍺 ${profile.hopfenkaltschalen} HK"; binding.profileHK.visibility = View.VISIBLE }
             if (profile.photoUrl.isNotEmpty()) {
                 Glide.with(this@ProfileFragment).load(profile.photoUrl).circleCrop().into(binding.profileAvatar)
             }
@@ -139,7 +116,6 @@ class ProfileFragment : Fragment() {
     private fun showEditDialog() {
         lifecycleScope.launch {
             val profile = userRepository.getUserProfile() ?: return@launch
-            val dialog = android.app.AlertDialog.Builder(requireContext())
             val dialogView = layoutInflater.inflate(baf.bierandfriends.eu.R.layout.dialog_edit_profile, null)
 
             val etUsername = dialogView.findViewById<android.widget.EditText>(baf.bierandfriends.eu.R.id.editUsername)
@@ -154,7 +130,8 @@ class ProfileFragment : Fragment() {
             etBirthday.setText(profile.birthday)
             etDiscord.setText(profile.discord)
 
-            dialog.setView(dialogView)
+            android.app.AlertDialog.Builder(requireContext())
+                .setView(dialogView)
                 .setTitle("Profil bearbeiten")
                 .setPositiveButton("Speichern") { _, _ ->
                     lifecycleScope.launch {
@@ -182,14 +159,10 @@ class ProfileFragment : Fragment() {
 
         lifecycleScope.launch {
             try {
-                val storage = FirebaseStorage.getInstance()
-                val ref = storage.reference.child("profile_images/$uid.jpg")
-
                 val bytes = requireContext().contentResolver.openInputStream(uri)
-                    ?.use { it.readBytes() } ?: throw Exception("Bild konnte nicht gelesen werden")
+                    ?.use { it.readBytes() } ?: throw Exception("Bild nicht lesbar")
 
-                ref.putBytes(bytes).await()
-                val downloadUrl = ref.downloadUrl.await().toString()
+                val downloadUrl = SupabaseHelper.uploadImage(bytes, "profile_images", "$uid.jpg")
 
                 val profile = userRepository.getUserProfile()
                 val updated = (profile ?: baf.bierandfriends.eu.data.models.UserProfile()).copy(photoUrl = downloadUrl)
