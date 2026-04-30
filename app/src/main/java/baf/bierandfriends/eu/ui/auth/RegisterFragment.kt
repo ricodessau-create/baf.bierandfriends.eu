@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -36,10 +37,15 @@ class RegisterFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.btnRegister.setOnClickListener { register() }
-        
+
         binding.txtTermsLink.setOnClickListener {
             showTermsDialog()
         }
+
+        // Fix: Button-Farbe korrekt setzen
+        binding.btnRegister.setBackgroundColor(
+            ContextCompat.getColor(requireContext(), R.color.baf_gold)
+        )
     }
 
     private fun register() {
@@ -58,6 +64,7 @@ class RegisterFragment : Fragment() {
         }
 
         binding.registerProgress.visibility = View.VISIBLE
+
         auth.createUserWithEmailAndPassword(email, password)
             .addOnSuccessListener {
                 lifecycleScope.launch {
@@ -78,26 +85,11 @@ class RegisterFragment : Fragment() {
     }
 
     private fun showTermsDialog() {
-        val builder = AlertDialog.Builder(requireContext())
-        builder.setTitle("Nutzungsbedingungen")
-        builder.setMessage("Hier stehen die Nutzungsbedingungen der Bier & Friends App...")
-        
-        builder.setPositiveButton("Akzeptieren") { dialog, _ ->
-            binding.checkTerms.isChecked = true
-            dialog.dismiss()
-        }
-        
-        builder.setNegativeButton("Ablehnen") { dialog, _ ->
-            dialog.dismiss()
-        }
-
-        // Fix: Erst erstellen und anzeigen
-        val dialog = builder.create()
-        dialog.show()
-
-        // Fix: Styling erst NACH dem Anzeigen anwenden
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(resources.getColor(R.color.primary, null))
-        dialog.window?.setBackgroundDrawableResource(R.drawable.dialog_bg)
+        AlertDialog.Builder(requireContext())
+            .setTitle("Nutzungsbedingungen")
+            .setMessage(getString(R.string.terms_of_service_text))
+            .setPositiveButton("OK", null)
+            .show()
     }
 
     override fun onDestroyView() {
