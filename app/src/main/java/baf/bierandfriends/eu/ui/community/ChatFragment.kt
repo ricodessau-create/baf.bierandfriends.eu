@@ -36,7 +36,6 @@ class ChatFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         binding.chatBackButton.setOnClickListener { findNavController().navigateUp() }
-
         binding.chatSendButton.setOnClickListener { sendMessage() }
 
         binding.chatInput.setOnEditorActionListener { _, _, _ ->
@@ -56,13 +55,18 @@ class ChatFragment : Fragment() {
 
     private fun loadMessages() {
         lifecycleScope.launch {
-            val messages = chatRepository.getPublicMessages()
-            val adapter = ChatAdapter(messages, auth.currentUser?.uid ?: "")
-            binding.chatRecyclerView.adapter = adapter
-            val lm = LinearLayoutManager(requireContext()).apply { stackFromEnd = true }
-            binding.chatRecyclerView.layoutManager = lm
-            if (messages.isNotEmpty()) {
-                binding.chatRecyclerView.scrollToPosition(messages.size - 1)
+            try {
+                val messages = chatRepository.getPublicMessages()
+                val adapter = ChatAdapter(messages, auth.currentUser?.uid ?: "")
+                binding.chatRecyclerView.adapter = adapter
+                binding.chatRecyclerView.layoutManager = LinearLayoutManager(requireContext()).apply {
+                    stackFromEnd = true
+                }
+                if (messages.isNotEmpty()) {
+                    binding.chatRecyclerView.scrollToPosition(messages.size - 1)
+                }
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Chat Fehler: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -72,11 +76,10 @@ class ChatFragment : Fragment() {
         if (text.isEmpty()) return
 
         lifecycleScope.launch {
-            val profile = userRepository.getUserProfile()
-            val name = profile?.username ?: "Unbekannt"
-            val rank = profile?.rank ?: "malzbier"
-
             try {
+                val profile = userRepository.getUserProfile()
+                val name = profile?.username ?: "Unbekannt"
+                val rank = profile?.rank ?: "malzbier"
                 chatRepository.sendPublicMessage(text, name, rank)
                 binding.chatInput.setText("")
                 loadMessages()
