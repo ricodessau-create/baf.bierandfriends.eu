@@ -77,26 +77,21 @@ class MarketCreateFragment : Fragment() {
     }
 
     private fun setupTypeTabs() {
-        fun setVerkauf() {
-            selectedType = "verkauf"
-            binding.typeVerkauf.backgroundTintList = android.content.res.ColorStateList.valueOf(
+        fun highlight(isVerkauf: Boolean) {
+            val gold = android.content.res.ColorStateList.valueOf(
                 resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
-            binding.typeVerkauf.setTextColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_black, null))
-            binding.typeKauf.backgroundTintList = android.content.res.ColorStateList.valueOf(
+            val card = android.content.res.ColorStateList.valueOf(
                 resources.getColor(baf.bierandfriends.eu.R.color.baf_card, null))
-            binding.typeKauf.setTextColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
+            val black = resources.getColor(baf.bierandfriends.eu.R.color.baf_black, null)
+            val goldColor = resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null)
+
+            binding.typeVerkauf.backgroundTintList = if (isVerkauf) gold else card
+            binding.typeVerkauf.setTextColor(if (isVerkauf) black else goldColor)
+            binding.typeKauf.backgroundTintList = if (!isVerkauf) gold else card
+            binding.typeKauf.setTextColor(if (!isVerkauf) black else goldColor)
         }
-        fun setKauf() {
-            selectedType = "kauf"
-            binding.typeKauf.backgroundTintList = android.content.res.ColorStateList.valueOf(
-                resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
-            binding.typeKauf.setTextColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_black, null))
-            binding.typeVerkauf.backgroundTintList = android.content.res.ColorStateList.valueOf(
-                resources.getColor(baf.bierandfriends.eu.R.color.baf_card, null))
-            binding.typeVerkauf.setTextColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
-        }
-        binding.typeVerkauf.setOnClickListener { setVerkauf() }
-        binding.typeKauf.setOnClickListener { setKauf() }
+        binding.typeVerkauf.setOnClickListener { selectedType = "verkauf"; highlight(true) }
+        binding.typeKauf.setOnClickListener { selectedType = "kauf"; highlight(false) }
     }
 
     private fun setupCategoryButtons() {
@@ -110,13 +105,15 @@ class MarketCreateFragment : Fragment() {
         buttons.forEach { (btn, cat) ->
             btn.setOnClickListener {
                 selectedCategory = cat
+                val gold = android.content.res.ColorStateList.valueOf(
+                    resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
+                val card = android.content.res.ColorStateList.valueOf(
+                    resources.getColor(baf.bierandfriends.eu.R.color.baf_card, null))
                 buttons.forEach { (b, _) ->
-                    b.backgroundTintList = android.content.res.ColorStateList.valueOf(
-                        resources.getColor(baf.bierandfriends.eu.R.color.baf_card, null))
+                    b.backgroundTintList = card
                     b.setTextColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
                 }
-                btn.backgroundTintList = android.content.res.ColorStateList.valueOf(
-                    resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
+                btn.backgroundTintList = gold
                 btn.setTextColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_black, null))
             }
         }
@@ -164,7 +161,7 @@ class MarketCreateFragment : Fragment() {
                 val imageUrl = selectedImageUri?.let { uri ->
                     val bytes = requireContext().contentResolver.openInputStream(uri)
                         ?.use { it.readBytes() } ?: throw Exception("Bild nicht lesbar")
-                    SupabaseHelper.uploadImage(bytes, "market_images", "$id.jpg")
+                    SupabaseHelper.uploadMarketImage(bytes, id)
                 }
 
                 val item = MarketItem(
