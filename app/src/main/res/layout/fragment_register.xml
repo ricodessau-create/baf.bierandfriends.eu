@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
+    android:background="@color/baf_background"
     android:fillViewport="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -11,16 +11,18 @@
         android:layout_height="wrap_content"
         android:padding="24dp">
 
+        <!-- Logo -->
         <ImageView
             android:id="@+id/logo"
             android:layout_width="120dp"
             android:layout_height="120dp"
-            android:src="@drawable/logo_baf"
+            android:src="@drawable/ic_profile_gaming"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="32dp" />
 
+        <!-- Titel -->
         <TextView
             android:id="@+id/title"
             android:layout_width="wrap_content"
@@ -28,88 +30,106 @@
             android:text="Registrieren"
             android:textSize="28sp"
             android:textStyle="bold"
-            android:textColor="@color/text_primary"
+            android:textColor="@color/baf_gold"
             app:layout_constraintTop_toBottomOf="@id/logo"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="24dp" />
 
+        <!-- Username -->
         <EditText
             android:id="@+id/editUsername"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:background="@color/baf_card"
+            android:textColor="#FFFFFF"
+            android:padding="12dp"
             android:hint="Benutzername"
-            android:background="@drawable/edittext_bg"
-            android:paddingHorizontal="16dp"
-            android:inputType="textPersonName"
+            android:textColorHint="@color/baf_text_secondary"
             app:layout_constraintTop_toBottomOf="@id/title"
-            android:layout_marginTop="32dp" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="24dp" />
 
+        <!-- Email -->
         <EditText
             android:id="@+id/editEmail"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:background="@color/baf_card"
+            android:textColor="#FFFFFF"
+            android:padding="12dp"
             android:hint="E-Mail"
-            android:background="@drawable/edittext_bg"
-            android:paddingHorizontal="16dp"
             android:inputType="textEmailAddress"
+            android:textColorHint="@color/baf_text_secondary"
             app:layout_constraintTop_toBottomOf="@id/editUsername"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="16dp" />
 
+        <!-- Passwort -->
         <EditText
             android:id="@+id/editPassword"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:background="@color/baf_card"
+            android:textColor="#FFFFFF"
+            android:padding="12dp"
             android:hint="Passwort"
-            android:background="@drawable/edittext_bg"
-            android:paddingHorizontal="16dp"
             android:inputType="textPassword"
+            android:textColorHint="@color/baf_text_secondary"
             app:layout_constraintTop_toBottomOf="@id/editEmail"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="16dp" />
 
-        <com.google.android.flexbox.FlexboxLayout
-            android:id="@+id/termsContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:flexWrap="wrap"
-            app:alignItems="center"
-            app:layout_constraintTop_toBottomOf="@id/editPassword"
-            android:layout_marginTop="24dp">
-
-            <CheckBox
-                android:id="@+id/checkTerms"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:buttonTint="@color/primary" />
-
-            <TextView
-                android:id="@+id/txtTermsLink"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Ich akzeptiere die Nutzungsbedingungen"
-                android:textColor="@color/primary"
-                android:textStyle="bold" />
-        </com.google.android.flexbox.FlexboxLayout>
-
-        <Button
-            android:id="@+id/btnRegister"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:text="Konto erstellen"
-            android:backgroundTint="@color/primary"
-            android:textColor="@android:color/white"
-            app:layout_constraintTop_toBottomOf="@id/termsContainer"
-            android:layout_marginTop="32dp" />
-
-        <ProgressBar
-            android:id="@+id/registerProgress"
+        <!-- Nutzungsbedingungen -->
+        <CheckBox
+            android:id="@+id/checkTerms"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="GONE"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_bottom_toBottomOf="parent"
+            android:text="Ich akzeptiere die Nutzungsbedingungen"
+            android:textColor="@color/baf_text_secondary"
+            app:layout_constraintTop_toBottomOf="@id/editPassword"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:layout_marginTop="16dp" />
+
+        <!-- Link zu den Nutzungsbedingungen -->
+        <TextView
+            android:id="@+id/txtTermsLink"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nutzungsbedingungen anzeigen"
+            android:textColor="@color/baf_gold"
+            android:textStyle="bold"
+            app:layout_constraintTop_toBottomOf="@id/checkTerms"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="8dp" />
+
+        <!-- Register Button -->
+        <Button
+            android:id="@+id/btnRegister"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:text="Registrieren"
+            android:textColor="@color/baf_black"
+            android:backgroundTint="@color/baf_gold"
+            app:layout_constraintTop_toBottomOf="@id/txtTermsLink"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="24dp" />
+
+        <!-- Progress -->
+        <ProgressBar
+            android:id="@+id/registerProgress"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/btnRegister"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
+
 </ScrollView>
