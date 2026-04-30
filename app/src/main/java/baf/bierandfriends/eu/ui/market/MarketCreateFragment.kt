@@ -20,7 +20,6 @@ import baf.bierandfriends.eu.data.models.MarketItem
 import baf.bierandfriends.eu.data.repository.MarketRepository
 import baf.bierandfriends.eu.data.repository.UserRepository
 import baf.bierandfriends.eu.databinding.MarketCreateFragmentBinding
-import baf.bierandfriends.eu.util.SupabaseHelper
 import com.bumptech.glide.Glide
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -53,7 +52,8 @@ class MarketCreateFragment : Fragment() {
             val uri = result.data?.data ?: return@registerForActivityResult
             try {
                 requireContext().contentResolver.takePersistableUriPermission(
-                    uri, Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+                    uri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
                 )
             } catch (e: Exception) {}
             selectedImageUri = uri
@@ -63,7 +63,9 @@ class MarketCreateFragment : Fragment() {
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
         _binding = MarketCreateFragmentBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -77,11 +79,13 @@ class MarketCreateFragment : Fragment() {
     }
 
     private fun setupTypeTabs() {
-        fun highlight(isVerkauf: Boolean) {
+        fun setActive(isVerkauf: Boolean) {
             val gold = android.content.res.ColorStateList.valueOf(
-                resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
+                resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null)
+            )
             val card = android.content.res.ColorStateList.valueOf(
-                resources.getColor(baf.bierandfriends.eu.R.color.baf_card, null))
+                resources.getColor(baf.bierandfriends.eu.R.color.baf_card, null)
+            )
             val black = resources.getColor(baf.bierandfriends.eu.R.color.baf_black, null)
             val goldColor = resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null)
 
@@ -90,11 +94,20 @@ class MarketCreateFragment : Fragment() {
             binding.typeKauf.backgroundTintList = if (!isVerkauf) gold else card
             binding.typeKauf.setTextColor(if (!isVerkauf) black else goldColor)
         }
-        binding.typeVerkauf.setOnClickListener { selectedType = "verkauf"; highlight(true) }
-        binding.typeKauf.setOnClickListener { selectedType = "kauf"; highlight(false) }
+        binding.typeVerkauf.setOnClickListener { selectedType = "verkauf"; setActive(true) }
+        binding.typeKauf.setOnClickListener { selectedType = "kauf"; setActive(false) }
     }
 
     private fun setupCategoryButtons() {
+        val gold = android.content.res.ColorStateList.valueOf(
+            resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null)
+        )
+        val card = android.content.res.ColorStateList.valueOf(
+            resources.getColor(baf.bierandfriends.eu.R.color.baf_card, null)
+        )
+        val black = resources.getColor(baf.bierandfriends.eu.R.color.baf_black, null)
+        val goldColor = resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null)
+
         val buttons = listOf(
             binding.catBloecke to "bloecke",
             binding.catRuestung to "ruestung",
@@ -102,35 +115,39 @@ class MarketCreateFragment : Fragment() {
             binding.catGrundstuecke to "grundstuecke",
             binding.catSonstiges to "sonstiges"
         )
+
         buttons.forEach { (btn, cat) ->
             btn.setOnClickListener {
                 selectedCategory = cat
-                val gold = android.content.res.ColorStateList.valueOf(
-                    resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
-                val card = android.content.res.ColorStateList.valueOf(
-                    resources.getColor(baf.bierandfriends.eu.R.color.baf_card, null))
                 buttons.forEach { (b, _) ->
                     b.backgroundTintList = card
-                    b.setTextColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_gold, null))
+                    b.setTextColor(goldColor)
                 }
                 btn.backgroundTintList = gold
-                btn.setTextColor(resources.getColor(baf.bierandfriends.eu.R.color.baf_black, null))
+                btn.setTextColor(black)
             }
         }
     }
 
     private fun checkPermissionAndOpenPicker() {
         val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-            Manifest.permission.READ_MEDIA_IMAGES else Manifest.permission.READ_EXTERNAL_STORAGE
-        if (ContextCompat.checkSelfPermission(requireContext(), permission) == PackageManager.PERMISSION_GRANTED)
-            openImagePicker() else permissionLauncher.launch(permission)
+            Manifest.permission.READ_MEDIA_IMAGES
+        else Manifest.permission.READ_EXTERNAL_STORAGE
+
+        if (ContextCompat.checkSelfPermission(requireContext(), permission)
+            == PackageManager.PERMISSION_GRANTED
+        ) openImagePicker()
+        else permissionLauncher.launch(permission)
     }
 
     private fun openImagePicker() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
             type = "image/*"
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+            addFlags(
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+            )
         }
         imagePicker.launch(intent)
     }
@@ -140,12 +157,22 @@ class MarketCreateFragment : Fragment() {
         val description = binding.createDescription.text.toString().trim()
         val price = binding.createPrice.text.toString().trim().toDoubleOrNull()
 
-        if (title.isEmpty()) { Toast.makeText(requireContext(), "Bitte Titel eingeben.", Toast.LENGTH_SHORT).show(); return }
-        if (description.isEmpty()) { Toast.makeText(requireContext(), "Bitte Beschreibung eingeben.", Toast.LENGTH_SHORT).show(); return }
-        if (price == null || price <= 0) { Toast.makeText(requireContext(), "Bitte gültigen Preis eingeben.", Toast.LENGTH_SHORT).show(); return }
+        if (title.isEmpty()) {
+            Toast.makeText(requireContext(), "Bitte Titel eingeben.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (description.isEmpty()) {
+            Toast.makeText(requireContext(), "Bitte Beschreibung eingeben.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (price == null || price <= 0) {
+            Toast.makeText(requireContext(), "Bitte gültigen Preis eingeben.", Toast.LENGTH_SHORT).show()
+            return
+        }
 
         val ownerUuid = auth.currentUser?.uid ?: run {
-            Toast.makeText(requireContext(), "Nicht eingeloggt.", Toast.LENGTH_SHORT).show(); return
+            Toast.makeText(requireContext(), "Nicht eingeloggt.", Toast.LENGTH_SHORT).show()
+            return
         }
 
         binding.createSaveButton.isEnabled = false
@@ -158,10 +185,12 @@ class MarketCreateFragment : Fragment() {
                 val profile = userRepository.getUserProfile()
                 val ownerName = profile?.username ?: "Unbekannt"
 
+                // Bild hochladen via MarketRepository → SupabaseHelper
                 val imageUrl = selectedImageUri?.let { uri ->
                     val bytes = requireContext().contentResolver.openInputStream(uri)
-                        ?.use { it.readBytes() } ?: throw Exception("Bild nicht lesbar")
-                    SupabaseHelper.uploadMarketImage(bytes, id)
+                        ?.use { it.readBytes() }
+                        ?: throw Exception("Bild nicht lesbar")
+                    repo.uploadImage(bytes, id)
                 }
 
                 val item = MarketItem(
@@ -183,7 +212,9 @@ class MarketCreateFragment : Fragment() {
             } catch (e: Exception) {
                 binding.createSaveButton.isEnabled = true
                 binding.createSaveButton.text = "ANGEBOT ERSTELLEN"
-                Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    requireContext(), "Fehler: ${e.message}", Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
