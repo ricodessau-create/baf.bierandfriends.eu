@@ -1,6 +1,9 @@
 package baf.bierandfriends.eu.data.repository
 
+import baf.bierandfriends.eu.data.models.MarketItem
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -8,35 +11,64 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.asRequestBody
 import java.io.File
-import com.google.firebase.firestore.FirebaseFirestore
 
 class MarketRepository {
 
+    private val firestore = FirebaseFirestore.getInstance()
+
+    // Supabase
     private val supabaseUrl = "https://ghobutfhqaoopvlznrqr.supabase.co"
-    private val supabaseKey = "sb_publishable_wPIM_MdaMrfj-Ls..."   // NICHT Secret Key!
+    private val supabaseKey = "sb-pub-..."   // dein PUBLIC Key
     private val bucket = "market"
 
     private val client = OkHttpClient()
-    private val firestore = FirebaseFirestore.getInstance()
 
-    /**
-     * Holt ein MarketItem aus Firestore
-     */
+    // ---------------------------------------------------------
+    // MARKT – FIRESTORE
+    // ---------------------------------------------------------
+
+    suspend fun getMarketItems(): List<MarketItem> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            firestore.collection("market")
+                .orderBy("createdAt")
+                .get()
+                .await()
+                .toObjects(MarketItem::class.java)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
     suspend fun getMarketItemById(id: String): MarketItem? = withContext(Dispatchers.IO) {
-        val doc = firestore.collection("market").document(id).get().await()
-        return@withContext doc.toObject(MarketItem::class.java)
+        return@withContext try {
+            firestore.collection("market")
+                .document(id)
+                .get()
+                .await()
+                .toObject(MarketItem::class.java)
+        } catch (e: Exception) {
+            null
+        }
     }
 
-    /**
-     * Löscht ein MarketItem aus Firestore
-     */
+    suspend fun createMarketItem(item: MarketItem) = withContext(Dispatchers.IO) {
+        firestore.collection("market")
+            .document(item.id)
+            .set(item)
+            .await()
+    }
+
     suspend fun deleteMarketItem(id: String) = withContext(Dispatchers.IO) {
-        firestore.collection("market").document(id).delete().await()
+        firestore.collection("market")
+            .document(id)
+            .delete()
+            .await()
     }
 
-    /**
-     * Upload einer Datei zu Supabase Storage
-     */
+    // ---------------------------------------------------------
+    // SUPABASE – BILDER
+    // ---------------------------------------------------------
+
     suspend fun uploadImage(file: File, id: String): String? = withContext(Dispatchers.IO) {
         val path = "$id.jpg"
         val mediaType = "image/jpeg".toMediaTypeOrNull()
@@ -63,9 +95,6 @@ class MarketRepository {
         }
     }
 
-    /**
-     * Löscht ein Bild aus Supabase Storage
-     */
     suspend fun deleteImage(id: String) = withContext(Dispatchers.IO) {
         val path = "$id.jpg"
 
