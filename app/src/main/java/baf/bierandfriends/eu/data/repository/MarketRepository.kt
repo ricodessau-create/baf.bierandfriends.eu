@@ -1,45 +1,81 @@
 package baf.bierandfriends.eu.data.repository
 
-import baf.bierandfriends.eu.data.models.MarketItem
-import baf.bierandfriends.eu.util.SupabaseHelper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.asRequestBody
+import java.io.File
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
 
 class MarketRepository {
 
-    private val db = FirebaseFirestore.getInstance()
+    private val supabaseUrl = "https://ghobutfhqaoopvlznrqr.supabase.co"
+    private val supabaseKey = "sb_publishable_wPIM_MdaMrfj-Ls..."   // NICHT Secret Key!
+    private val bucket = "market"
 
-    suspend fun getMarketItems(): List<MarketItem> {
-        return try {
-            db.collection("market").get().await()
-                .toObjects(MarketItem::class.java)
-        } catch (e: Exception) {
-            emptyList()
-        }
+    private val client = OkHttpClient()
+    private val firestore = FirebaseFirestore.getInstance()
+
+    /**
+     * Holt ein MarketItem aus Firestore
+     */
+    suspend fun getMarketItemById(id: String): MarketItem? = withContext(Dispatchers.IO) {
+        val doc = firestore.collection("market").document(id).get().await()
+        return@withContext doc.toObject(MarketItem::class.java)
     }
 
-    suspend fun createMarketItem(item: MarketItem) {
-        db.collection("market").document(item.id).set(item).await()
+    /**
+     * Löscht ein MarketItem aus Firestore
+     */
+    suspend fun deleteMarketItem(id: String) = withContext(Dispatchers.IO) {
+        firestore.collection("market").document(id).delete().await()
     }
 
-    suspend fun getMarketItemById(id: String): MarketItem? {
-        return try {
-            db.collection("market").document(id).get().await()
-                .toObject(MarketItem::class.java)
-        } catch (e: Exception) {
+    /**
+     * Upload einer Datei zu Supabase Storage
+     */
+    suspend fun uploadImage(file: File, id: String): String? = withContext(Dispatchers.IO) {
+        val path = "$id.jpg"
+        val mediaType = "image/jpeg".toMediaTypeOrNull()
+        val body = file.asRequestBody(mediaType)
+
+        val multipart = MultipartBody.Builder()
+            .setType(MultipartBody.FORM)
+            .addFormDataPart("file", file.name, body)
+            .build()
+
+        val request = Request.Builder()
+            .url("$supabaseUrl/storage/v1/object/$bucket/$path")
+            .addHeader("apikey", supabaseKey)
+            .addHeader("Authorization", "Bearer $supabaseKey")
+            .post(multipart)
+            .build()
+
+        val response = client.newCall(request).execute()
+
+        return@withContext if (response.isSuccessful) {
+            "$supabaseUrl/storage/v1/object/public/$bucket/$path"
+        } else {
             null
         }
     }
 
-    suspend fun deleteMarketItem(id: String) {
-        db.collection("market").document(id).delete().await()
-    }
-
     /**
-     * Marktbild via Supabase Storage hochladen.
-     * Gibt die öffentliche URL zurück.
+     * Löscht ein Bild aus Supabase Storage
      */
-    suspend fun uploadImage(bytes: ByteArray, itemId: String): String {
-        return SupabaseHelper.uploadMarketImage(bytes, itemId)
+    suspend fun deleteImage(id: String) = withContext(Dispatchers.IO) {
+        val path = "$id.jpg"
+
+        val request = Request.Builder()
+            .url("$supabaseUrl/storage/v1/object/$bucket/$path")
+            .addHeader("apikey", supabaseKey)
+            .addHeader("Authorization", "Bearer $supabaseKey")
+            .delete()
+            .build()
+
+        client.newCall(request).execute()
     }
 }
