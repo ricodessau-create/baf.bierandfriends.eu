@@ -97,7 +97,8 @@ class ProfileFragment : Fragment() {
         lifecycleScope.launch {
             val profile = userRepository.getUserProfile() ?: return@launch
             binding.profileUsername.text = profile.username
-            binding.profileEmail.text = profile.email
+            // E-Mail NICHT anzeigen (DSGVO)
+            binding.profileEmail.visibility = View.GONE
             binding.profileRank.text = RankHelper.getRankDisplayName(profile.rank)
             binding.profileRank.setTextColor(RankHelper.getRankColor(requireContext(), profile.rank))
 
@@ -162,7 +163,7 @@ class ProfileFragment : Fragment() {
                 val bytes = requireContext().contentResolver.openInputStream(uri)
                     ?.use { it.readBytes() } ?: throw Exception("Bild nicht lesbar")
 
-                val downloadUrl = SupabaseHelper.uploadImage(bytes, "profile_images", "$uid.jpg")
+                val downloadUrl = SupabaseHelper.uploadProfileImage(bytes, uid)
 
                 val profile = userRepository.getUserProfile()
                 val updated = (profile ?: baf.bierandfriends.eu.data.models.UserProfile()).copy(photoUrl = downloadUrl)
