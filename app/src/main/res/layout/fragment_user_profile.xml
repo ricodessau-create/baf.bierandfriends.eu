@@ -67,13 +67,14 @@
                     android:textSize="20sp"
                     android:textStyle="bold"/>
 
+                <!-- E-Mail versteckt – DSGVO -->
                 <TextView
                     android:id="@+id/userEmail"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textColor="@color/baf_text_secondary"
                     android:textSize="12sp"
-                    android:layout_marginTop="2dp"/>
+                    android:visibility="gone"/>
 
                 <TextView
                     android:id="@+id/userRank"
