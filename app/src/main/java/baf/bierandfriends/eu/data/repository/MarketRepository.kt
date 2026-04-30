@@ -9,8 +9,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody.Companion.asRequestBody
-import java.io.File
+import okhttp3.RequestBody.Companion.toRequestBody
 
 class MarketRepository {
 
@@ -66,17 +65,17 @@ class MarketRepository {
     }
 
     // ---------------------------------------------------------
-    // SUPABASE – BILDER
+    // SUPABASE – BILDER (ByteArray statt File)
     // ---------------------------------------------------------
 
-    suspend fun uploadImage(file: File, id: String): String? = withContext(Dispatchers.IO) {
+    suspend fun uploadImage(bytes: ByteArray, id: String): String? = withContext(Dispatchers.IO) {
         val path = "$id.jpg"
-        val mediaType = "image/jpeg".toMediaTypeOrNull()
-        val body = file.asRequestBody(mediaType)
+
+        val body = bytes.toRequestBody("image/jpeg".toMediaTypeOrNull())
 
         val multipart = MultipartBody.Builder()
             .setType(MultipartBody.FORM)
-            .addFormDataPart("file", file.name, body)
+            .addFormDataPart("file", "$id.jpg", body)
             .build()
 
         val request = Request.Builder()
@@ -90,9 +89,7 @@ class MarketRepository {
 
         return@withContext if (response.isSuccessful) {
             "$supabaseUrl/storage/v1/object/public/$bucket/$path"
-        } else {
-            null
-        }
+        } else null
     }
 
     suspend fun deleteImage(id: String) = withContext(Dispatchers.IO) {
