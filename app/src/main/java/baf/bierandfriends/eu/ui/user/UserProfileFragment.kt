@@ -70,7 +70,9 @@ class UserProfileFragment : Fragment() {
                 val user = doc.toObject(baf.bierandfriends.eu.data.models.UserProfile::class.java) ?: return@launch
 
                 binding.userUsername.text = user.username
-                binding.userEmail.text = user.email
+                // E-Mail NICHT anzeigen (DSGVO)
+                binding.userEmail.visibility = View.GONE
+
                 binding.userRank.text = RankHelper.getRankDisplayName(user.rank)
                 binding.userRank.setTextColor(RankHelper.getRankColor(requireContext(), user.rank))
 
@@ -88,7 +90,7 @@ class UserProfileFragment : Fragment() {
                     binding.ignoreButton.visibility = View.GONE
                 } else {
                     isIgnored = userRepository.isUserIgnored(targetUid)
-                    binding.ignoreButton.text = if (isIgnored) "🔕 Ignoriert" else "🔇 Ignorieren"
+                    binding.ignoreButton.text = if (isIgnored) "🔕 Nicht mehr ignorieren" else "🔇 Ignorieren"
                 }
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -107,7 +109,7 @@ class UserProfileFragment : Fragment() {
             } else {
                 userRepository.ignoreUser(targetUid)
                 isIgnored = true
-                binding.ignoreButton.text = "🔕 Ignoriert"
+                binding.ignoreButton.text = "🔕 Nicht mehr ignorieren"
                 Toast.makeText(requireContext(), "Nutzer ignoriert.", Toast.LENGTH_SHORT).show()
             }
         }
