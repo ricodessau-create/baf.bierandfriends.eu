@@ -25,7 +25,8 @@ class MarketFragment : Fragment() {
     private val marketRepository = MarketRepository()
     private val auth = FirebaseAuth.getInstance()
     private var allItems = listOf<MarketItem>()
-    private var showingMyItems = false
+    private var currentTypeFilter = "verkauf"
+    private var currentCategoryFilter = "alle"
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,80 +40,129 @@ class MarketFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupTabs()
-        loadItems()
+        setupTypeTabs()
+        setupCategoryFilters()
+        loadItems("verkauf")
 
         binding.marketFab.setOnClickListener {
             findNavController().navigate(R.id.action_marketFragment_to_marketCreateFragment)
         }
 
         binding.marketSearch.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {
-                filterItems(s.toString())
-            }
+            override fun afterTextChanged(s: Editable?) { applyFilters() }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         })
     }
 
-    private fun setupTabs() {
+    private fun setupTypeTabs() {
         binding.tabVerkaufen.setOnClickListener {
-            showingMyItems = false
+            currentTypeFilter = "verkauf"
+            currentCategoryFilter = "alle"
             binding.tabVerkaufen.setTextColor(resources.getColor(R.color.baf_gold, null))
             binding.tabKaufen.setTextColor(resources.getColor(R.color.baf_tab_unselected, null))
             binding.marketFab.visibility = View.VISIBLE
-            loadItems()
+            resetCategoryButtons()
+            loadItems("verkauf")
         }
 
         binding.tabKaufen.setOnClickListener {
-            showingMyItems = true
+            currentTypeFilter = "kauf"
+            currentCategoryFilter = "alle"
             binding.tabKaufen.setTextColor(resources.getColor(R.color.baf_gold, null))
             binding.tabVerkaufen.setTextColor(resources.getColor(R.color.baf_tab_unselected, null))
             binding.marketFab.visibility = View.GONE
-            loadMyItems()
+            resetCategoryButtons()
+            loadItems("kauf")
         }
     }
 
-    private fun loadItems() {
-        lifecycleScope.launch {
-            allItems = marketRepository.getMarketItems()
-            if (allItems.isNotEmpty()) {
-                binding.emptyText.visibility = View.GONE
-                updateAdapter(allItems)
-            } else {
-                binding.emptyText.visibility = View.VISIBLE
+    private fun setupCategoryFilters() {
+        val gold = resources.getColor(R.color.baf_gold, null)
+        val unselected = resources.getColor(R.color.baf_tab_unselected, null)
+
+        val filterMap = mapOf(
+            binding.filterAll to "alle",
+            binding.filterBloecke to "bloecke",
+            binding.filterRuestung to "ruestung",
+            binding.filterWerkzeuge to "werkzeuge",
+            binding.filterGrundstuecke to "grundstuecke",
+            binding.filterSonstiges to "sonstiges"
+        )
+
+        filterMap.forEach { (button, category) ->
+            button.setOnClickListener {
+                currentCategoryFilter = category
+                // Alle zurücksetzen
+                filterMap.keys.forEach { btn ->
+                    btn.setTextColor(unselected)
+                    btn.backgroundTintList = android.content.res.ColorStateList.valueOf(
+                        resources.getColor(R.color.baf_card, null)
+                    )
+                }
+                // Ausgewählten hervorheben
+                button.setTextColor(resources.getColor(R.color.baf_black, null))
+                button.backgroundTintList = android.content.res.ColorStateList.valueOf(gold)
+                applyFilters()
             }
         }
     }
 
-    private fun loadMyItems() {
-        val uid = auth.currentUser?.uid ?: return
+    private fun resetCategoryButtons() {
+        val gold = resources.getColor(R.color.baf_gold, null)
+        val card = resources.getColor(R.color.baf_card, null)
+        val black = resources.getColor(R.color.baf_black, null)
+
+        listOf(
+            binding.filterBloecke, binding.filterRuestung,
+            binding.filterWerkzeuge, binding.filterGrundstuecke, binding.filterSonstiges
+        ).forEach { btn ->
+            btn.setTextColor(gold)
+            btn.backgroundTintList = android.content.res.ColorStateList.valueOf(card)
+        }
+        // "Alle" aktiv
+        binding.filterAll.setTextColor(black)
+        binding.filterAll.backgroundTintList = android.content.res.ColorStateList.valueOf(gold)
+    }
+
+    private fun loadItems(type: String) {
         lifecycleScope.launch {
-            allItems = marketRepository.getMarketItems()
-            val myItems = allItems.filter { it.ownerUuid == uid }
-            if (myItems.isNotEmpty()) {
-                binding.emptyText.visibility = View.GONE
-                updateAdapter(myItems)
-            } else {
-                binding.emptyText.text = "Du hast noch keine Angebote erstellt."
-                binding.emptyText.visibility = View.VISIBLE
-            }
+            allItems = marketRepository.getMarketItems().filter { it.type == type }
+            applyFilters()
         }
     }
 
-    private fun filterItems(query: String) {
-        val filtered = allItems.filter {
-            it.title.lowercase().contains(query.lowercase()) ||
-            it.description.lowercase().contains(query.lowercase())
+    private fun applyFilters() {
+        val query = binding.marketSearch.text.toString().lowercase()
+
+        var filtered = allItems
+
+        if (currentCategoryFilter != "alle") {
+            filtered = filtered.filter { it.category == currentCategoryFilter }
         }
-        updateAdapter(filtered)
+
+        if (query.isNotEmpty()) {
+            filtered = filtered.filter {
+                it.title.lowercase().contains(query) ||
+                it.description.lowercase().contains(query)
+            }
+        }
+
+        if (filtered.isNotEmpty()) {
+            binding.emptyText.visibility = View.GONE
+            updateAdapter(filtered)
+        } else {
+            binding.emptyText.visibility = View.VISIBLE
+            binding.emptyText.text = "Keine Angebote gefunden."
+        }
     }
 
     private fun updateAdapter(items: List<MarketItem>) {
         val adapter = MarketAdapter(items) { itemId ->
-            val action = MarketFragmentDirections
-                .actionMarketFragmentToMarketDetailFragment(itemId)
-            findNavController().navigate(action)
+            val bundle = Bundle().apply { putString("itemId", itemId) }
+            findNavController().navigate(
+                R.id.action_marketFragment_to_marketDetailFragment, bundle
+            )
         }
         binding.marketRecyclerView.adapter = adapter
         binding.marketRecyclerView.layoutManager = LinearLayoutManager(requireContext())
