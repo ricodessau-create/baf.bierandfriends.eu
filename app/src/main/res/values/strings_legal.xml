@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="privacy_policy_title">Datenschutzerklärung</string>
+    <string name="terms_title">Nutzungsbedingungen</string>
+
+    <string name="privacy_policy_text"><![CDATA[
+<b>Datenschutzerklärung – BierAndFriends App</b><br/>
+<i>Stand: April 2026</i><br/><br/>
+
+<b>1. Verantwortlicher</b><br/>
+Verantwortlich für die Datenverarbeitung in dieser App ist die BierAndFriends-Community (nachfolgend „wir", „uns").<br/>
+Kontakt: bierandfriends@gmail.com<br/><br/>
+
+<b>2. Welche Daten wir erheben</b><br/>
+Bei der Nutzung der App erheben wir folgende Daten:<br/>
+• <b>Registrierungsdaten:</b> E-Mail-Adresse, selbst gewählter Benutzername<br/>
+• <b>Profildaten (freiwillig):</b> Profilbild, Geburtstag, Standort, Discord-Name, Bio<br/>
+• <b>Minecraft-Daten (freiwillig):</b> Minecraft-UUID, Minecraft-Benutzername, Rang<br/>
+• <b>Inhalte:</b> Forenbeiträge, Marktnachrichten, Chat-Nachrichten, Support-Tickets<br/>
+• <b>Technische Daten:</b> Firebase Authentication UID (anonymisierter Bezeichner)<br/><br/>
+
+<b>3. Zweck der Datenverarbeitung</b><br/>
+• Bereitstellung der App-Funktionen (Authentifizierung, Community-Funktionen)<br/>
+• Minecraft-Account-Synchronisierung<br/>
+• Marktplatz-Funktionen<br/>
+• Community-Chat und Nachrichtendienst<br/>
+• Support-Ticket-System<br/><br/>
+
+<b>4. Rechtsgrundlage</b><br/>
+Die Verarbeitung erfolgt auf Basis von Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung) sowie Art. 6 Abs. 1 lit. a DSGVO (Einwilligung) für freiwillig angegebene Daten.<br/><br/>
+
+<b>5. Drittanbieter und Datenübertragung</b><br/>
+Wir nutzen folgende Drittanbieter:<br/>
+• <b>Google Firebase</b> (Authentifizierung, Datenbank): Google LLC, USA. Angemessenes Schutzniveau durch EU-Standardvertragsklauseln. Datenschutzhinweise: https://firebase.google.com/support/privacy<br/>
+• <b>Supabase</b> (Bildspeicherung): Supabase Inc. Server in EU (Frankfurt). Datenschutzhinweise: https://supabase.com/privacy<br/><br/>
+
+<b>6. Speicherdauer</b><br/>
+Deine Daten werden gespeichert, solange dein Konto aktiv ist. Nach Löschung deines Kontos werden alle personenbezogenen Daten innerhalb von 30 Tagen gelöscht.<br/><br/>
+
+<b>7. Deine Rechte</b><br/>
+Du hast das Recht auf:<br/>
+• <b>Auskunft</b> über deine gespeicherten Daten (Art. 15 DSGVO)<br/>
+• <b>Berichtigung</b> falscher Daten (Art. 16 DSGVO)<br/>
+• <b>Löschung</b> deiner Daten (Art. 17 DSGVO)<br/>
+• <b>Einschränkung</b> der Verarbeitung (Art. 18 DSGVO)<br/>
+• <b>Datenübertragbarkeit</b> (Art. 20 DSGVO)<br/>
+• <b>Widerspruch</b> gegen die Verarbeitung (Art. 21 DSGVO)<br/>
+• <b>Beschwerde</b> bei einer Datenschutzbehörde<br/><br/>
+Zur Ausübung deiner Rechte wende dich an: admin@bierandfriends.eu<br/><br/>
+
+<b>8. Keine Weitergabe an Dritte</b><br/>
+Wir verkaufen oder vermieten deine Daten nicht. Eine Weitergabe erfolgt nur an die oben genannten Dienstleister im Rahmen der App-Funktionalität.<br/><br/>
+
+<b>9. Minderjährige</b><br/>
+Die Nutzung der App ist erst ab 16 Jahren gestattet. Mit der Registrierung bestätigst du, mindestens 16 Jahre alt zu sein.<br/><br/>
+
+<b>10. Änderungen</b><br/>
+Wir behalten uns vor, diese Datenschutzerklärung bei Bedarf anzupassen. Du wirst über wesentliche Änderungen informiert.
+    ]]></string>
+
+    <string name="terms_of_service_text"><![CDATA[
+<b>Nutzungsbedingungen – BierAndFriends App</b><br/>
+<i>Stand: April 2026</i><br/><br/>
+
+<b>1. Geltungsbereich</b><br/>
+Diese Nutzungsbedingungen gelten für die Nutzung der BierAndFriends App (nachfolgend „App") und aller darin enthaltenen Dienste.<br/><br/>
+
+<b>2. Nutzungsvoraussetzungen</b><br/>
+• Du musst mindestens 16 Jahre alt sein<br/>
+• Du darfst nur ein Konto pro Person erstellen<br/>
+• Deine Anmeldedaten sind vertraulich zu behandeln<br/>
+• Du bist für alle Aktivitäten unter deinem Konto verantwortlich<br/><br/>
+
+<b>3. Erlaubte Nutzung</b><br/>
+Die App dient der BierAndFriends Minecraft-Community und umfasst:<br/>
+• Community-Kommunikation (Forum, Chat)<br/>
+• Minecraft-Marktplatz für virtuelle Gegenstände<br/>
+• Account-Synchronisierung mit dem Minecraft-Server<br/>
+• Support-Ticket-System<br/><br/>
+
+<b>4. Verbotene Inhalte und Verhaltensweisen</b><br/>
+Folgendes ist ausdrücklich verboten:<br/>
+• Beleidigungen, Harassment oder Mobbing anderer Nutzer<br/>
+• Rassistische, sexistische oder diskriminierende Inhalte<br/>
+• Spam, Werbung ohne Erlaubnis<br/>
+• Verbreitung von Malware oder schädlichen Links<br/>
+• Betrug beim Marktplatz (falsche Beschreibungen, Nichtlieferung)<br/>
+• Mehrfachkonten zur Umgehung von Sperren<br/>
+• Inhalte, die gegen geltendes Recht verstoßen<br/><br/>
+
+<b>5. Marktplatz-Regeln</b><br/>
+• Angebote müssen wahrheitsgemäß beschrieben sein<br/>
+• Nur Minecraft-bezogene virtuelle Güter sind erlaubt<br/>
+• Kein Handel mit echtem Geld über den App-Marktplatz<br/>
+• Transaktionen erfolgen auf eigenes Risiko<br/>
+• Bei Streitigkeiten kann das Team vermitteln, haftet aber nicht<br/><br/>
+
+<b>6. Inhalte der Nutzer</b><br/>
+• Du behältst die Rechte an deinen Inhalten<br/>
+• Du räumst uns das Recht ein, deine Inhalte im Rahmen der App darzustellen<br/>
+• Wir behalten uns vor, regelwidrige Inhalte ohne Vorankündigung zu entfernen<br/><br/>
+
+<b>7. Konsequenzen bei Verstößen</b><br/>
+Bei Verstößen gegen diese Bedingungen können wir:<br/>
+• Eine Verwarnung aussprechen<br/>
+• Inhalte entfernen<br/>
+• Das Konto temporär oder dauerhaft sperren<br/>
+Schwerwiegende Verstöße werden ohne Vorwarnung sanktioniert.<br/><br/>
+
+<b>8. Verfügbarkeit</b><br/>
+Wir bemühen uns um eine hohe Verfügbarkeit der App, können diese aber nicht garantieren. Wartungsarbeiten oder technische Probleme können zu Unterbrechungen führen.<br/><br/>
+
+<b>9. Haftungsausschluss</b><br/>
+• Wir haften nicht für Schäden durch Nutzerfehler oder Dritte<br/>
+• Wir haften nicht für Verluste durch Marktplatz-Transaktionen zwischen Nutzern<br/>
+• Die App wird im aktuellen Zustand bereitgestellt<br/><br/>
+
+<b>10. Änderungen der Nutzungsbedingungen</b><br/>
+Wir behalten uns vor, diese Bedingungen anzupassen. Bei wesentlichen Änderungen wirst du in der App benachrichtigt. Die weitere Nutzung nach Benachrichtigung gilt als Zustimmung.<br/><br/>
+
+<b>11. Anwendbares Recht</b><br/>
+Es gilt deutsches Recht. Gerichtsstand ist Deutschland.<br/><br/>
+
+<b>12. Kontakt</b><br/>
+Bei Fragen: admin@bierandfriends.eu
+    ]]></string>
+
+</resources>
