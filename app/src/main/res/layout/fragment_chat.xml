@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:orientation="horizontal"
-        android:background="@color/baf_black"
+        android:background="#1A1200"
         android:gravity="center_vertical"
         android:padding="12dp">
 
@@ -18,9 +18,10 @@
             android:id="@+id/chatBackButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="← "
+            android:text="←"
             android:textColor="@color/baf_gold"
-            android:textSize="20sp"
+            android:textSize="22sp"
+            android:padding="8dp"
             android:clickable="true"
             android:focusable="true"/>
 
@@ -35,6 +36,11 @@
 
     </LinearLayout>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/baf_gold_dark"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatRecyclerView"
         android:layout_width="match_parent"
@@ -43,13 +49,18 @@
         android:padding="8dp"
         android:clipToPadding="false"/>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/baf_gold_dark"/>
+
     <!-- Input -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:background="@color/baf_black"
-        android:padding="8dp"
+        android:background="#1A1200"
+        android:padding="10dp"
         android:gravity="center_vertical">
 
         <EditText
@@ -57,22 +68,25 @@
             android:layout_width="0dp"
             android:layout_height="44dp"
             android:layout_weight="1"
-            android:hint="Nachricht..."
+            android:hint="Nachricht schreiben..."
             android:textColor="#FFFFFF"
-            android:textColorHint="#666666"
-            android:background="@color/baf_card"
-            android:padding="10dp"
+            android:textColorHint="#888888"
+            android:background="#2A2000"
+            android:paddingStart="14dp"
+            android:paddingEnd="14dp"
             android:inputType="text"
-            android:imeOptions="actionSend"/>
+            android:imeOptions="actionSend"
+            android:maxLines="1"/>
 
         <Button
             android:id="@+id/chatSendButton"
-            android:layout_width="wrap_content"
+            android:layout_width="48dp"
             android:layout_height="44dp"
             android:text="➤"
             android:textColor="@color/baf_black"
+            android:textSize="16sp"
             android:layout_marginStart="8dp"
-            style="@style/BAF.Button"/>
+            android:backgroundTint="@color/baf_gold"/>
 
     </LinearLayout>
 
