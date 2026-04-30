@@ -15,11 +15,14 @@ class ChatRepository {
 
     suspend fun getPublicMessages(): List<ChatMessage> {
         return try {
-            db.collection("public_chat")
-                .orderBy("createdAt", Query.Direction.ASCENDING)
-                .limitToLast(100)
+            // Ohne orderBy – kein Index nötig
+            val docs = db.collection("public_chat")
                 .get().await()
-                .toObjects(ChatMessage::class.java)
+            val messages = docs.documents.mapNotNull { doc ->
+                doc.toObject(ChatMessage::class.java)?.copy(id = doc.id)
+            }
+            // In der App nach Zeit sortieren
+            messages.sortedBy { it.createdAt?.seconds ?: 0L }
         } catch (e: Exception) {
             emptyList()
         }
@@ -27,12 +30,14 @@ class ChatRepository {
 
     suspend fun sendPublicMessage(text: String, authorName: String, authorRank: String) {
         val uid = auth.currentUser?.uid ?: return
-        val message = ChatMessage(
-            text = text,
-            authorUid = uid,
-            authorName = authorName,
-            authorRank = authorRank,
-            createdAt = Timestamp.now()
+        val message = hashMapOf(
+            "text" to text,
+            "authorUid" to uid,
+            "authorName" to authorName,
+            "authorRank" to authorRank,
+            "createdAt" to Timestamp.now(),
+            "id" to "",
+            "photoUrl" to ""
         )
         db.collection("public_chat").add(message).await()
     }
@@ -41,10 +46,14 @@ class ChatRepository {
         val uid = auth.currentUser?.uid ?: return emptyList()
         val chatId = if (uid < otherUid) "${uid}_${otherUid}" else "${otherUid}_${uid}"
         return try {
-            db.collection("private_chats").document(chatId).collection("messages")
-                .orderBy("createdAt", Query.Direction.ASCENDING)
+            val docs = db.collection("private_chats")
+                .document(chatId)
+                .collection("messages")
                 .get().await()
-                .toObjects(PrivateMessage::class.java)
+            val messages = docs.documents.mapNotNull { doc ->
+                doc.toObject(PrivateMessage::class.java)?.copy(id = doc.id)
+            }
+            messages.sortedBy { it.createdAt?.seconds ?: 0L }
         } catch (e: Exception) {
             emptyList()
         }
@@ -53,14 +62,17 @@ class ChatRepository {
     suspend fun sendPrivateMessage(text: String, receiverUid: String, senderName: String) {
         val uid = auth.currentUser?.uid ?: return
         val chatId = if (uid < receiverUid) "${uid}_${receiverUid}" else "${receiverUid}_${uid}"
-        val message = PrivateMessage(
-            text = text,
-            senderUid = uid,
-            senderName = senderName,
-            receiverUid = receiverUid,
-            createdAt = Timestamp.now()
+        val message = hashMapOf(
+            "text" to text,
+            "senderUid" to uid,
+            "senderName" to senderName,
+            "receiverUid" to receiverUid,
+            "createdAt" to Timestamp.now(),
+            "id" to ""
         )
-        db.collection("private_chats").document(chatId).collection("messages")
+        db.collection("private_chats")
+            .document(chatId)
+            .collection("messages")
             .add(message).await()
     }
 }
