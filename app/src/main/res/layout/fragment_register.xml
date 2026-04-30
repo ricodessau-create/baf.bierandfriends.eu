@@ -2,94 +2,287 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/baf_black">
+    android:background="@color/baf_background"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp"
-        android:gravity="center_horizontal">
+        android:padding="24dp">
+
+        <!-- Header -->
+        <ImageView
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:layout_gravity="center"
+            android:src="@mipmap/ic_launcher"
+            android:contentDescription="BAF Logo"
+            android:layout_marginBottom="8dp"/>
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Registrieren"
+            android:text="BIERANDFRIENDS"
             android:textColor="@color/baf_gold"
-            android:textSize="28sp"
+            android:textSize="22sp"
             android:textStyle="bold"
-            android:layout_marginBottom="32dp" />
+            android:gravity="center"
+            android:letterSpacing="0.1"
+            android:layout_marginBottom="4dp"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Konto erstellen"
+            android:textColor="@color/baf_text_secondary"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- Benutzername -->
+        <TextView
+            android:text="Benutzername *"
+            android:textColor="@color/baf_gold"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
         <EditText
             android:id="@+id/registerUsername"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:hint="Benutzername"
-            android:padding="12dp"
-            android:background="#222222"
+            android:hint="Dein Spielername"
             android:textColor="#FFFFFF"
-            android:textColorHint="#888888"
-            android:layout_marginBottom="16dp" />
+            android:textColorHint="#555555"
+            android:background="@color/baf_card"
+            android:padding="12dp"
+            android:inputType="text"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- E-Mail -->
+        <TextView
+            android:text="E-Mail-Adresse *"
+            android:textColor="@color/baf_gold"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
         <EditText
             android:id="@+id/registerEmail"
             android:layout_width="match_parent"
             android:layout_height="48dp"
-            android:hint="E-Mail"
-            android:padding="12dp"
-            android:background="#222222"
+            android:hint="deine@email.de"
             android:textColor="#FFFFFF"
-            android:textColorHint="#888888"
+            android:textColorHint="#555555"
+            android:background="@color/baf_card"
+            android:padding="12dp"
             android:inputType="textEmailAddress"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="12dp"/>
+
+        <!-- Passwort -->
+        <TextView
+            android:text="Passwort * (min. 6 Zeichen)"
+            android:textColor="@color/baf_gold"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
         <EditText
             android:id="@+id/registerPassword"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:hint="Passwort"
-            android:padding="12dp"
-            android:background="#222222"
             android:textColor="#FFFFFF"
-            android:textColorHint="#888888"
+            android:textColorHint="#555555"
+            android:background="@color/baf_card"
+            android:padding="12dp"
             android:inputType="textPassword"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="12dp"/>
+
+        <!-- Passwort wiederholen -->
+        <TextView
+            android:text="Passwort wiederholen *"
+            android:textColor="@color/baf_gold"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
         <EditText
             android:id="@+id/registerPasswordConfirm"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:hint="Passwort wiederholen"
-            android:padding="12dp"
-            android:background="#222222"
             android:textColor="#FFFFFF"
-            android:textColorHint="#888888"
+            android:textColorHint="#555555"
+            android:background="@color/baf_card"
+            android:padding="12dp"
             android:inputType="textPassword"
-            android:layout_marginBottom="24dp" />
+            android:layout_marginBottom="20dp"/>
 
+        <!-- Alter-Bestätigung -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <CheckBox
+                android:id="@+id/checkboxAge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:buttonTint="@color/baf_gold"/>
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Ich bestätige, dass ich mindestens 16 Jahre alt bin."
+                android:textColor="@color/baf_text_secondary"
+                android:textSize="13sp"
+                android:layout_marginStart="8dp"/>
+
+        </LinearLayout>
+
+        <!-- Datenschutz -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <CheckBox
+                android:id="@+id/checkboxPrivacy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:buttonTint="@color/baf_gold"/>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:layout_marginStart="8dp"
+                android:flexWrap="wrap">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ich habe die "
+                    android:textColor="@color/baf_text_secondary"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/linkPrivacy"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Datenschutzerklärung"
+                    android:textColor="@color/baf_gold"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:clickable="true"
+                    android:focusable="true"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" gelesen und stimme zu."
+                    android:textColor="@color/baf_text_secondary"
+                    android:textSize="13sp"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Nutzungsbedingungen -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="24dp">
+
+            <CheckBox
+                android:id="@+id/checkboxTerms"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:buttonTint="@color/baf_gold"/>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:layout_marginStart="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ich stimme den "
+                    android:textColor="@color/baf_text_secondary"
+                    android:textSize="13sp"/>
+
+                <TextView
+                    android:id="@+id/linkTerms"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Nutzungsbedingungen"
+                    android:textColor="@color/baf_gold"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    android:clickable="true"
+                    android:focusable="true"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=" zu."
+                    android:textColor="@color/baf_text_secondary"
+                    android:textSize="13sp"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Registrieren Button -->
         <Button
             android:id="@+id/registerButton"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="Account erstellen"
-            android:backgroundTint="@color/baf_gold"
-            android:textColor="@android:color/black" />
+            android:layout_height="50dp"
+            android:text="KONTO ERSTELLEN"
+            android:textColor="@color/baf_black"
+            android:layout_marginBottom="12dp"
+            style="@style/BAF.Button"/>
 
+        <!-- Progress -->
         <ProgressBar
             android:id="@+id/registerProgress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:visibility="gone" />
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:layout_marginBottom="12dp"/>
 
-        <Button
+        <!-- Zurück zum Login -->
+        <TextView
             android:id="@+id/backToLoginButton"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="Zurück zum Login"
-            android:backgroundTint="@android:color/transparent"
+            android:layout_height="wrap_content"
+            android:text="Bereits registriert? Zum Login"
             android:textColor="@color/baf_gold"
-            android:layout_marginTop="8dp" />
+            android:textSize="14sp"
+            android:gravity="center"
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginBottom="16dp"/>
 
     </LinearLayout>
+
 </ScrollView>
