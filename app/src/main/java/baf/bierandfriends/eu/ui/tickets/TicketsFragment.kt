@@ -54,10 +54,7 @@ class TicketsFragment : Fragment() {
     private fun loadTicketAndMessages() {
         lifecycleScope.launch {
             if (ticket == null && ticketId != null) {
-                try {
-                    ticket = ticketRepository.getAllTickets().firstOrNull { it.id == ticketId }
-                } catch (e: Exception) {
-                }
+                ticket = ticketRepository.getAllTickets().firstOrNull { it.id == ticketId }
             }
             ticketId?.let { id ->
                 val messages = ticketRepository.getTicketMessages(id)
@@ -78,28 +75,22 @@ class TicketsFragment : Fragment() {
         }
         lifecycleScope.launch {
             val profile: UserProfile? = userRepository.getUserProfile()
-            val authorUid = ticket?.authorUid ?: run {
-                ticketId?.let { id ->
-                    ticketRepository.getAllTickets().firstOrNull { it.id == id }?.authorUid
-                }
+            val authorUid = ticket?.authorUid ?: ticketId?.let { id ->
+                ticketRepository.getAllTickets().firstOrNull { it.id == id }?.authorUid
             }
             val allowed = PermissionUtils.canWriteTicket(profile, authorUid, currentUid)
             if (!allowed) {
                 Toast.makeText(requireContext(), "Du darfst in diesem Ticket nicht schreiben.", Toast.LENGTH_SHORT).show()
                 return@launch
             }
-            try {
-                val displayName = profile?.username ?: auth.currentUser?.displayName ?: "Unbekannt"
-                ticketId?.let { id ->
-                    ticketRepository.addTicketMessage(id, text, displayName)
-                    binding.messageInput.setText("")
-                    Toast.makeText(requireContext(), "Nachricht gesendet.", Toast.LENGTH_SHORT).show()
-                    loadTicketAndMessages()
-                } ?: run {
-                    Toast.makeText(requireContext(), "Ticket nicht gefunden.", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Fehler beim Senden: ${e.message}", Toast.LENGTH_LONG).show()
+            val displayName = profile?.username ?: auth.currentUser?.displayName ?: "Unbekannt"
+            ticketId?.let { id ->
+                ticketRepository.addTicketMessage(id, text, displayName)
+                binding.messageInput.setText("")
+                Toast.makeText(requireContext(), "Nachricht gesendet.", Toast.LENGTH_SHORT).show()
+                loadTicketAndMessages()
+            } ?: run {
+                Toast.makeText(requireContext(), "Ticket nicht gefunden.", Toast.LENGTH_SHORT).show()
             }
         }
     }
