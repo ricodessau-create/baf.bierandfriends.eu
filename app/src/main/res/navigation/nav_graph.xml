@@ -100,11 +100,19 @@
         android:label="Tickets">
         <action android:id="@+id/action_ticketsFragment_to_newTicketFragment"
             app:destination="@id/newTicketFragment"/>
+        <action android:id="@+id/action_ticketsFragment_to_ticketDetailFragment"
+            app:destination="@id/ticketDetailFragment"/>
     </fragment>
 
     <fragment android:id="@+id/newTicketFragment"
         android:name="baf.bierandfriends.eu.ui.tickets.NewTicketFragment"
         android:label="Neues Ticket"/>
+
+    <fragment android:id="@+id/ticketDetailFragment"
+        android:name="baf.bierandfriends.eu.ui.tickets.TicketDetailFragment"
+        android:label="Ticket Details">
+        <argument android:name="ticketId" app:argType="string"/>
+    </fragment>
 
     <fragment android:id="@+id/profileFragment"
         android:name="baf.bierandfriends.eu.ui.profile.ProfileFragment"
