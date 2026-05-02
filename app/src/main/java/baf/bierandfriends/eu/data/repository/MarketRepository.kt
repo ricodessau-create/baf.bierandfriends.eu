@@ -11,10 +11,6 @@ class MarketRepository {
 
     private val firestore = FirebaseFirestore.getInstance()
 
-    // ---------------------------------------------------------
-    // MARKT – FIRESTORE (BLEIBT UNVERÄNDERT)
-    // ---------------------------------------------------------
-
     suspend fun getMarketItems(): List<MarketItem> = withContext(Dispatchers.IO) {
         return@withContext try {
             firestore.collection("market")
@@ -55,10 +51,6 @@ class MarketRepository {
             .await()
     }
 
-    // ---------------------------------------------------------
-    // SUPABASE – BILDER (FIXED)
-    // ---------------------------------------------------------
-
     suspend fun uploadImage(bytes: ByteArray, id: String): String? = withContext(Dispatchers.IO) {
         return@withContext try {
             SupabaseHelper.uploadMarketImage(bytes, id)
@@ -69,10 +61,5 @@ class MarketRepository {
     }
 
     suspend fun deleteImage(fullPath: String) = withContext(Dispatchers.IO) {
-        try {
-            SupabaseHelper.deleteImage(fullPath)
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
     }
 }
