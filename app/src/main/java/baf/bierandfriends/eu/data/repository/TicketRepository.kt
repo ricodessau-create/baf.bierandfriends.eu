@@ -11,18 +11,12 @@ class TicketRepository {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
 
-    /**
-     * Erstellt ein neues Ticket (Metadaten).
-     */
     suspend fun createTicket(ticket: Ticket) {
         db.collection("tickets")
             .add(ticket)
             .await()
     }
 
-    /**
-     * Liefert die Tickets des aktuell eingeloggten Nutzers.
-     */
     suspend fun getMyTickets(): List<Ticket> {
         val uid = auth.currentUser?.uid ?: return emptyList()
         return try {
@@ -36,9 +30,6 @@ class TicketRepository {
         }
     }
 
-    /**
-     * Liefert alle Tickets (Admin/Support-Views).
-     */
     suspend fun getAllTickets(): List<Ticket> {
         return try {
             db.collection("tickets")
@@ -50,9 +41,6 @@ class TicketRepository {
         }
     }
 
-    /**
-     * Aktualisiert den Status eines Tickets.
-     */
     suspend fun updateTicketStatus(id: String, status: String) {
         try {
             db.collection("tickets")
@@ -64,10 +52,6 @@ class TicketRepository {
         }
     }
 
-    /**
-     * Fügt eine Nachricht/Kommentar zur Ticket-Subcollection hinzu.
-     * Struktur: tickets/{ticketId}/messages/{msgId}
-     */
     suspend fun addTicketMessage(ticketId: String, text: String, authorName: String) {
         val uid = auth.currentUser?.uid ?: return
         val msg = hashMapOf(
@@ -83,9 +67,6 @@ class TicketRepository {
             .await()
     }
 
-    /**
-     * Holt alle Nachrichten eines Tickets (sortiert nach Zeit).
-     */
     suspend fun getTicketMessages(ticketId: String): List<Map<String, Any>> {
         return try {
             val snapshot = db.collection("tickets")
