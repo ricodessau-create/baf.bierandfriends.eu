@@ -46,11 +46,7 @@ class LoginFragment : Fragment() {
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -85,6 +81,9 @@ class LoginFragment : Fragment() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnSuccessListener {
                 binding.loginProgress.visibility = View.GONE
+                lifecycleScope.launch {
+                    userRepository.getUserProfile()
+                }
                 findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
             }
             .addOnFailureListener {
@@ -122,6 +121,9 @@ class LoginFragment : Fragment() {
                         )
                         userRepository.updateUserProfile(profile)
                     }
+                }
+                lifecycleScope.launch {
+                    userRepository.getUserProfile()
                 }
                 binding.loginProgress.visibility = View.GONE
                 findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
