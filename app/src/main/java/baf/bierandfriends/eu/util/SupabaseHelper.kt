@@ -13,7 +13,7 @@ object SupabaseHelper {
 
     private val client = OkHttpClient()
 
-    suspend fun uploadProfileImage(bytes: ByteArray, userId: String): String {
+    fun uploadProfileImage(bytes: ByteArray, userId: String): String {
         val fileName = "$userId-${UUID.randomUUID()}.jpg"
         val bucket = "avatars"
         val request = Request.Builder()
@@ -29,7 +29,7 @@ object SupabaseHelper {
         return "$SUPABASE_URL/storage/v1/object/public/$bucket/$fileName"
     }
 
-    suspend fun uploadMarketImage(bytes: ByteArray, itemId: String): String {
+    fun uploadMarketImage(bytes: ByteArray, itemId: String): String {
         val fileName = "$itemId-${UUID.randomUUID()}.jpg"
         val bucket = "market"
         val request = Request.Builder()
@@ -45,7 +45,7 @@ object SupabaseHelper {
         return "$SUPABASE_URL/storage/v1/object/public/$bucket/$fileName"
     }
 
-    suspend fun deleteImage(fullPath: String): Boolean {
+    fun deleteImage(fullPath: String): Boolean {
         val request = Request.Builder()
             .url("$SUPABASE_URL/storage/v1/object/$fullPath")
             .addHeader("apikey", SUPABASE_KEY)
@@ -57,7 +57,7 @@ object SupabaseHelper {
         return response.isSuccessful
     }
 
-    suspend fun resetToken(token: String?): Boolean {
+    fun resetToken(token: String?): Boolean {
         if (token.isNullOrBlank()) return false
         val url = "$SUPABASE_URL/rest/v1/sync_tokens?token=eq.$token"
         val request = Request.Builder()
