@@ -1,29 +1,18 @@
 package baf.bierandfriends.eu.data.repository
 
 import baf.bierandfriends.eu.data.models.MarketItem
+import baf.bierandfriends.eu.util.SupabaseHelper
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 
 class MarketRepository {
 
     private val firestore = FirebaseFirestore.getInstance()
 
-    // Supabase
-    private val supabaseUrl = "https://ghobutfhqaoopvlznrqr.supabase.co"
-    private val supabaseKey = "sb-pub-..."   // dein PUBLIC Key
-    private val bucket = "market"
-
-    private val client = OkHttpClient()
-
     // ---------------------------------------------------------
-    // MARKT – FIRESTORE
+    // MARKT – FIRESTORE (BLEIBT UNVERÄNDERT)
     // ---------------------------------------------------------
 
     suspend fun getMarketItems(): List<MarketItem> = withContext(Dispatchers.IO) {
@@ -34,6 +23,7 @@ class MarketRepository {
                 .await()
                 .toObjects(MarketItem::class.java)
         } catch (e: Exception) {
+            e.printStackTrace()
             emptyList()
         }
     }
@@ -46,6 +36,7 @@ class MarketRepository {
                 .await()
                 .toObject(MarketItem::class.java)
         } catch (e: Exception) {
+            e.printStackTrace()
             null
         }
     }
@@ -65,43 +56,23 @@ class MarketRepository {
     }
 
     // ---------------------------------------------------------
-    // SUPABASE – BILDER (ByteArray statt File)
+    // SUPABASE – BILDER (FIXED)
     // ---------------------------------------------------------
 
     suspend fun uploadImage(bytes: ByteArray, id: String): String? = withContext(Dispatchers.IO) {
-        val path = "$id.jpg"
-
-        val body = bytes.toRequestBody("image/jpeg".toMediaTypeOrNull())
-
-        val multipart = MultipartBody.Builder()
-            .setType(MultipartBody.FORM)
-            .addFormDataPart("file", "$id.jpg", body)
-            .build()
-
-        val request = Request.Builder()
-            .url("$supabaseUrl/storage/v1/object/$bucket/$path")
-            .addHeader("apikey", supabaseKey)
-            .addHeader("Authorization", "Bearer $supabaseKey")
-            .post(multipart)
-            .build()
-
-        val response = client.newCall(request).execute()
-
-        return@withContext if (response.isSuccessful) {
-            "$supabaseUrl/storage/v1/object/public/$bucket/$path"
-        } else null
+        return@withContext try {
+            SupabaseHelper.uploadMarketImage(bytes, id)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
     }
 
-    suspend fun deleteImage(id: String) = withContext(Dispatchers.IO) {
-        val path = "$id.jpg"
-
-        val request = Request.Builder()
-            .url("$supabaseUrl/storage/v1/object/$bucket/$path")
-            .addHeader("apikey", supabaseKey)
-            .addHeader("Authorization", "Bearer $supabaseKey")
-            .delete()
-            .build()
-
-        client.newCall(request).execute()
+    suspend fun deleteImage(fullPath: String) = withContext(Dispatchers.IO) {
+        try {
+            SupabaseHelper.deleteImage(fullPath)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }
