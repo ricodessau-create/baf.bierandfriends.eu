@@ -30,7 +30,12 @@ class MainActivity : AppCompatActivity() {
             R.id.newPostFragment,
             R.id.newTicketFragment,
             R.id.marketCreateFragment,
-            R.id.marketDetailFragment
+            R.id.marketDetailFragment,
+            R.id.chatFragment,
+            R.id.privateChatFragment,
+            R.id.postDetailFragment,
+            R.id.userProfileFragment,
+            R.id.ticketDetailFragment
         )
 
         navController.addOnDestinationChangedListener { _, destination, _ ->
