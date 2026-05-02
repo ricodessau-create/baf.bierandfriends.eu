@@ -1,7 +1,6 @@
 package baf.bierandfriends.eu.ui.profile
 
 import android.app.AlertDialog
-import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
@@ -14,6 +13,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import baf.bierandfriends.eu.data.models.UserProfile
+import baf.bierandfriends.eu.data.repository.UserRepository
 import baf.bierandfriends.eu.databinding.FragmentProfileBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -23,22 +24,19 @@ class ProfileFragment : Fragment() {
 
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
+    private val userRepository = UserRepository()
 
     private val pickImageLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
+        if (result.resultCode == android.app.Activity.RESULT_OK) {
             val data: Intent? = result.data
             val uri: Uri? = data?.data
             if (uri != null) lifecycleScope.launch { handleAvatarPicked(uri) }
         }
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentProfileBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -49,8 +47,8 @@ class ProfileFragment : Fragment() {
         lifecycleScope.launch { loadProfileAndTickets() }
         binding.editProfileButton.setOnClickListener { openEditProfileIfAllowed() }
         binding.profileAvatar.setOnClickListener { pickImageFromGallery() }
-        binding.syncButton.setOnClickListener { lifecycleScope.launch { generateAndShowSyncToken() } }
-        binding.btnResetToken.setOnClickListener { lifecycleScope.launch { resetSyncToken() } }
+        binding.syncButton.setOnClickListener { lifecycleScope.launch { onGenerateTokenClicked() } }
+        binding.btnResetToken.setOnClickListener { lifecycleScope.launch { onResetTokenClicked() } }
         binding.logoutButton.setOnClickListener { confirmAndLogout() }
     }
 
@@ -59,73 +57,45 @@ class ProfileFragment : Fragment() {
         binding.profileRank.text = "Gast"
         binding.profileEmail.text = ""
         binding.syncTokenCard.isVisible = false
+        setActionAvailability(false)
     }
 
     private suspend fun loadProfileAndTickets() {
-        val userData: Map<String, Any?>? = withContext(Dispatchers.IO) {
-            try {
-                mapOf(
-                    "username" to null,
-                    "email" to null,
-                    "rank" to "malzbier",
-                    "bio" to "",
-                    "location" to "",
-                    "birthday" to "",
-                    "discord" to "",
-                    "minecraft" to "",
-                    "hk" to "",
-                    "syncToken" to null
-                )
-            } catch (e: Exception) {
-                null
-            }
-        }
-
-        if (userData == null) {
-            withContext(Dispatchers.Main) {
-                showGuestState()
-            }
+        val profile = withContext(Dispatchers.IO) { userRepository.getUserProfile() }
+        if (profile == null) {
+            withContext(Dispatchers.Main) { showGuestState() }
             return
         }
-
-        val username = userData["username"]?.toString().orEmpty()
-        val email = userData["email"]?.toString().orEmpty()
-        val rankKey = userData["rank"]?.toString().orEmpty()
-        val bio = userData["bio"]?.toString().orEmpty()
-        val location = userData["location"]?.toString().orEmpty()
-        val birthday = userData["birthday"]?.toString().orEmpty()
-        val discord = userData["discord"]?.toString().orEmpty()
-        val minecraft = userData["minecraft"]?.toString().orEmpty()
-        val hk = userData["hk"]?.toString().orEmpty()
-        val syncTokenAny = userData["syncToken"]
-
-        val displayRank = mapRoleToDisplay(rankKey, syncTokenAny)
-        val hasSync = syncTokenAny is String && syncTokenAny.isNotBlank()
-
-        withContext(Dispatchers.Main) {
-            binding.profileUsername.text = if (username.isBlank()) "Gast" else username
-            binding.profileEmail.text = email
-            binding.profileRank.text = displayRank
-            binding.profileBio.text = bio
-            binding.profileLocation.text = location
-            binding.profileBirthday.text = birthday
-            binding.profileDiscord.text = discord
-            binding.profileMinecraft.text = minecraft
-            binding.profileHK.text = hk
-            if (hasSync) {
-                binding.syncTokenText.text = syncTokenAny as String
-                binding.syncTokenCard.isVisible = true
-            } else {
-                binding.syncTokenCard.isVisible = false
-            }
-            setActionAvailability(hasSync)
-        }
-
+        withContext(Dispatchers.Main) { applyProfileToUi(profile) }
+        val hasSync = !profile.syncToken.isNullOrBlank()
         lifecycleScope.launch { loadTicketsIfAllowed(hasSync) }
     }
 
-    private fun mapRoleToDisplay(roleKey: String, syncTokenAny: Any?): String {
-        val hasSynced = syncTokenAny is String && syncTokenAny.isNotBlank()
+    private fun applyProfileToUi(profile: UserProfile) {
+        val username = profile.username.ifBlank { "" }
+        val displayName = if (username.isBlank()) "Gast" else username
+        val hasSync = !profile.syncToken.isNullOrBlank()
+        val displayRank = mapRoleToDisplay(profile.rank, profile.syncToken)
+        binding.profileUsername.text = displayName
+        binding.profileEmail.text = profile.email
+        binding.profileRank.text = displayRank
+        binding.profileBio.text = profile.bio
+        binding.profileLocation.text = profile.location
+        binding.profileBirthday.text = profile.birthday
+        binding.profileDiscord.text = profile.discord
+        binding.profileMinecraft.text = profile.minecraftName
+        binding.profileHK.text = profile.hopfenkaltschalen.toString()
+        if (hasSync) {
+            binding.syncTokenText.text = profile.syncToken
+            binding.syncTokenCard.isVisible = true
+        } else {
+            binding.syncTokenCard.isVisible = false
+        }
+        setActionAvailability(hasSync)
+    }
+
+    private fun mapRoleToDisplay(roleKey: String, syncToken: String?): String {
+        val hasSynced = !syncToken.isNullOrBlank()
         val base = when (roleKey.lowercase()) {
             "malzbier" -> "Malzbier"
             "feierabendbier" -> "Feierabendbier"
@@ -149,19 +119,9 @@ class ProfileFragment : Fragment() {
     }
 
     private suspend fun loadTicketsIfAllowed(hasSync: Boolean) {
-        val allowed = withContext(Dispatchers.IO) {
-            try {
-                hasSync
-            } catch (e: Exception) {
-                false
-            }
-        }
-
         withContext(Dispatchers.Main) {
-            if (!allowed) {
-                // no tickets shown
+            if (!hasSync) {
             } else {
-                // load and show tickets if implemented
             }
         }
     }
@@ -177,34 +137,19 @@ class ProfileFragment : Fragment() {
 
     private suspend fun handleAvatarPicked(uri: Uri) {
         val bitmap: Bitmap? = withContext(Dispatchers.IO) {
-            try {
-                MediaStore.Images.Media.getBitmap(requireContext().contentResolver, uri)
-            } catch (e: Exception) {
-                null
-            }
+            try { MediaStore.Images.Media.getBitmap(requireContext().contentResolver, uri) } catch (e: Exception) { null }
         }
         if (bitmap != null) {
-            withContext(Dispatchers.IO) {
-                try {
-                    // upload if implemented
-                } catch (_: Exception) { }
-            }
         }
     }
 
-    private suspend fun generateAndShowSyncToken() {
+    private suspend fun onGenerateTokenClicked() {
         binding.syncTokenCard.isVisible = false
         binding.syncTokenText.text = ""
-        val tokenResult: String? = withContext(Dispatchers.IO) {
-            try {
-                "demo-sync-token-1234"
-            } catch (e: Exception) {
-                null
-            }
-        }
+        val token = withContext(Dispatchers.IO) { userRepository.generateSyncToken() }
         withContext(Dispatchers.Main) {
-            if (!tokenResult.isNullOrBlank()) {
-                binding.syncTokenText.text = tokenResult
+            if (!token.isNullOrBlank()) {
+                binding.syncTokenText.text = token
                 binding.syncTokenCard.isVisible = true
                 lifecycleScope.launch { loadProfileAndTickets() }
             } else {
@@ -214,20 +159,13 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    private suspend fun resetSyncToken() {
+    private suspend fun onResetTokenClicked() {
         val displayed = try { binding.syncTokenText.text?.toString() } catch (e: Exception) { null }
-        val tokenString = displayed?.takeIf { it.isNotBlank() }
-        if (tokenString.isNullOrBlank()) {
+        val token = displayed?.takeIf { it.isNotBlank() } ?: run {
             withContext(Dispatchers.Main) { binding.syncTokenText.text = "Kein Token vorhanden" }
             return
         }
-        val success = withContext(Dispatchers.IO) {
-            try {
-                true
-            } catch (e: Exception) {
-                false
-            }
-        }
+        val success = withContext(Dispatchers.IO) { userRepository.resetSyncToken(token) }
         withContext(Dispatchers.Main) {
             if (success) {
                 binding.syncTokenText.text = "Token zurückgesetzt"
@@ -245,28 +183,15 @@ class ProfileFragment : Fragment() {
             .setTitle("Abmelden")
             .setMessage("Möchtest du dich wirklich abmelden?")
             .setNegativeButton("Abbrechen", null)
-            .setPositiveButton("Abmelden") { _, _ -> lifecycleScope.launch { performLogoutSafely() } }
+            .setPositiveButton("Abmelden") { _, _ -> lifecycleScope.launch { performLogout() } }
             .show()
     }
 
-    private suspend fun performLogoutSafely() {
-        val ok = withContext(Dispatchers.IO) {
-            try {
-                true
-            } catch (e: Exception) {
-                false
-            }
-        }
-        withContext(Dispatchers.Main) {
-            if (ok) {
-                // navigate to login if implemented
-            } else {
-                // show failure if implemented
-            }
+    private suspend fun performLogout() {
+        withContext(Dispatchers.IO) {
+            try { com.google.firebase.auth.FirebaseAuth.getInstance().signOut() } catch (_: Exception) { }
         }
     }
-
-    private fun getStringSafe(value: String): String = value
 
     override fun onDestroyView() {
         super.onDestroyView()
