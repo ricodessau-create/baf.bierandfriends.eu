@@ -25,7 +25,7 @@ object SupabaseHelper {
             .build()
         val response = client.newCall(request).execute()
         val body = response.body?.string()
-        if (!response.isSuccessful) throw Exception("Avatar Upload failed: ${response.code} - $body")
+        if (!response.isSuccessful) throw Exception("Avatar upload failed: ${response.code} - $body")
         return "$SUPABASE_URL/storage/v1/object/public/$bucket/$fileName"
     }
 
@@ -41,7 +41,7 @@ object SupabaseHelper {
             .build()
         val response = client.newCall(request).execute()
         val body = response.body?.string()
-        if (!response.isSuccessful) throw Exception("Market Upload failed: ${response.code} - $body")
+        if (!response.isSuccessful) throw Exception("Market upload failed: ${response.code} - $body")
         return "$SUPABASE_URL/storage/v1/object/public/$bucket/$fileName"
     }
 
@@ -57,7 +57,7 @@ object SupabaseHelper {
         return response.isSuccessful
     }
 
-    suspend fun resetToken(token: String?): Boolean {
+    fun resetToken(token: String?): Boolean {
         if (token.isNullOrBlank()) return false
         val url = "$SUPABASE_URL/rest/v1/sync_tokens?token=eq.$token"
         val request = Request.Builder()
