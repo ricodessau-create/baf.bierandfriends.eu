@@ -7,10 +7,17 @@
     <color name="baf_gold_dark">#A07800</color>
     <color name="baf_black">#050500</color>
     <color name="baf_dark_gray">#1A1200</color>
+
+    <!-- Ergänzte / kompatible Farben -->
+    <color name="baf_gray">#9E9E9E</color>
     <color name="baf_text_primary">#FFFFFF</color>
     <color name="baf_text_secondary">#AAAAAA</color>
-    <color name="baf_red">#FF3333</color>
-    <color name="baf_green">#00CC44</color>
+
+    <!-- Status / Utility -->
+    <color name="baf_success">#4CAF50</color>
+    <color name="baf_error">#F44336</color>
+
+    <!-- Zusätzliche UI Farben -->
     <color name="background_dark">#0A0A0A</color>
     <color name="baf_border">#FFB800</color>
     <color name="baf_tab_selected">#FFB800</color>
