@@ -12,14 +12,14 @@ import baf.bierandfriends.eu.data.models.Ticket
 import baf.bierandfriends.eu.data.models.UserProfile
 import baf.bierandfriends.eu.data.repository.TicketRepository
 import baf.bierandfriends.eu.data.repository.UserRepository
-import baf.bierandfriends.eu.databinding.FragmentTicketBinding
+import baf.bierandfriends.eu.databinding.FragmentTicketsBinding
 import baf.bierandfriends.eu.util.PermissionUtils
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
 class TicketsFragment : Fragment() {
 
-    private var _binding: FragmentTicketBinding? = null
+    private var _binding: FragmentTicketsBinding? = null
     private val binding get() = _binding!!
 
     private val ticketRepository = TicketRepository()
@@ -36,13 +36,13 @@ class TicketsFragment : Fragment() {
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        _binding = FragmentTicketBinding.inflate(inflater, container, false)
+        _binding = FragmentTicketsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.messagesRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        binding.messagesRecycler.layoutManager = LinearLayoutManager(requireContext())
         loadTicketAndMessages()
         binding.sendMessageButton.setOnClickListener { sendMessage() }
     }
@@ -54,7 +54,7 @@ class TicketsFragment : Fragment() {
             }
             ticketId?.let { id ->
                 val messages = ticketRepository.getTicketMessages(id)
-                // update adapter if present
+                // Adapter aktualisieren, falls vorhanden
             }
         }
     }
