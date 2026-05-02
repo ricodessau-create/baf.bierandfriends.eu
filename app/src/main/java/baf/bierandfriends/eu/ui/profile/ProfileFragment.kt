@@ -1,5 +1,6 @@
 package baf.bierandfriends.eu.ui.profile
 
+import android.app.AlertDialog
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Bitmap
@@ -19,20 +20,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Vollständiges ProfileFragment
+ * Robuste ProfileFragment-Version
  *
- * Hinweise zur Integration:
- * - Ersetze die TODOs mit deinen echten Repository/Supabase/Firebase-Aufrufen.
- * - Erwartetes Layout: fragment_profile.xml mit IDs wie in den Kommentaren.
- * - Dieses Fragment zeigt zunächst "Gast" bis echte Userdaten geladen sind.
- * - Rollen werden nur nach erfolgreichem Laden gesetzt; solange kein Sync-Token vorhanden ist,
- *   bleibt der Status unverändert (z. B. Malzbier erst nach erfolgreicher Synchronisation).
+ * - Zeigt lokal gespeicherte Rolle (z. B. Malzbier) an, markiert aber fehlende Sync-Rechte.
+ * - Deaktiviert kritische Aktionen, wenn keine Berechtigung vorhanden.
+ * - Zeigt Tickets aus lokalem Cache, falls vorhanden.
+ * - Logout mit Bestätigung, verhindert inkonsistente Zustände.
  *
- * Erwartete Layout-IDs:
- * profileAvatar, editProfileButton, syncButton, logoutButton, btnResetToken,
- * syncTokenText, syncTokenCard, profileUsername, profileEmail, profileRank,
- * profileBio, profileLocation, profileBirthday, profileDiscord, profileMinecraft, profileHK,
- * ticketsRecyclerView (falls Tickets angezeigt werden sollen)
+ * TODO: Ersetze die TODO-Abschnitte mit deinen echten Repositories/Managern.
  */
 
 class ProfileFragment : Fragment() {
@@ -40,10 +35,11 @@ class ProfileFragment : Fragment() {
     private var _binding: FragmentProfileBinding? = null
     private val binding get() = _binding!!
 
-    // TODO: Ersetze diese Platzhalter durch deine echten Implementierungen
+    // TODO: Ersetze durch deine Implementierungen
     // private val userRepository = UserRepository.instance
     // private val authManager = AuthManager.instance
     // private val ticketRepository = TicketRepository.instance
+    // private val localCache = LocalCache.instance
 
     private val pickImageLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -51,9 +47,7 @@ class ProfileFragment : Fragment() {
         if (result.resultCode == Activity.RESULT_OK) {
             val data: Intent? = result.data
             val uri: Uri? = data?.data
-            if (uri != null) {
-                lifecycleScope.launch { handleAvatarPicked(uri) }
-            }
+            if (uri != null) lifecycleScope.launch { handleAvatarPicked(uri) }
         }
     }
 
@@ -69,77 +63,88 @@ class ProfileFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Zeige vorläufige Gast-Ansicht, bis echte Daten geladen sind
-        showGuestState()
+        // Zeige sofort lokale/platzhalter Daten, damit UI nicht "leer" ist
+        showLocalCachedProfile()
 
-        // Lade Userdaten asynchron
-        lifecycleScope.launch { loadProfileAndTickets() }
+        // Lade remote Daten asynchron, aber überschreibe nicht sofort kritische UI ohne Prüfung
+        lifecycleScope.launch { loadProfileSafely() }
 
-        binding.editProfileButton.setOnClickListener { openEditProfile() }
+        binding.editProfileButton.setOnClickListener { openEditProfileIfAllowed() }
         binding.profileAvatar.setOnClickListener { pickImageFromGallery() }
         binding.syncButton.setOnClickListener { lifecycleScope.launch { generateAndShowSyncToken() } }
         binding.btnResetToken.setOnClickListener { lifecycleScope.launch { resetSyncToken() } }
-        binding.logoutButton.setOnClickListener { lifecycleScope.launch { performLogoutSafely() } }
+        binding.logoutButton.setOnClickListener { confirmAndLogout() }
     }
 
-    private fun showGuestState() {
-        binding.profileUsername.text = getStringSafe("Unbekannt")
-        binding.profileRank.text = getStringSafe("Gast")
-        binding.profileEmail.text = ""
-        binding.syncTokenCard.isVisible = false
-        // Tickets ausblenden oder Hinweis anzeigen
-        // binding.ticketsRecyclerView.isVisible = false
+    private fun showLocalCachedProfile() {
+        // Versuche lokale Werte aus Cache zu lesen (Platzhalter)
+        val cached = mapOf<String, Any?>(
+            "username" to "Ricardo",
+            "email" to "ricardo@example.com",
+            "rank" to "malzbier",
+            "syncToken" to null
+        )
+
+        val username = cached["username"]?.toString().orEmpty()
+        val email = cached["email"]?.toString().orEmpty()
+        val rankKey = cached["rank"]?.toString().orEmpty()
+        val syncTokenAny = cached["syncToken"]
+
+        binding.profileUsername.text = username.ifEmpty { "Unbekannt" }
+        binding.profileEmail.text = email
+        binding.profileRank.text = mapRoleToDisplay(rankKey, syncTokenAny)
+
+        // Buttons: wenn kein Sync, Aktionen einschränken (nicht entfernen)
+        val hasSync = syncTokenAny is String && syncTokenAny.isNotBlank()
+        setActionAvailability(hasSync)
     }
 
-    private suspend fun loadProfileAndTickets() {
-        // Lade Userdaten aus Repository / Auth
-        val userData: Map<String, Any?>? = withContext(Dispatchers.IO) {
+    private suspend fun loadProfileSafely() {
+        val remote: Map<String, Any?>? = withContext(Dispatchers.IO) {
             try {
-                // TODO: return@withContext userRepository.getCachedOrRemoteUser()
-                // Beispiel-Rückgabe (Platzhalter)
+                // TODO: return@withContext userRepository.getUserProfileRemoteOrCached()
+                // Beispiel: remote data (simulate)
                 mapOf(
                     "username" to "Ricardo",
                     "email" to "ricardo@example.com",
-                    "rank" to "malzbier", // interne Rolle
+                    "rank" to "malzbier",
                     "bio" to "Prost!",
                     "location" to "Köln",
                     "birthday" to "1990-01-01",
                     "discord" to "ricardo#1234",
                     "minecraft" to "ricardo_mc",
                     "hk" to "42",
-                    "syncToken" to null // falls bereits synchronisiert, hier String
+                    "syncToken" to null // oder "token-xyz" wenn synchronisiert
                 )
             } catch (e: Exception) {
                 null
             }
         }
 
-        if (userData == null) {
-            // Bleibe im Gast-Modus, zeige Fehlerhinweis
+        if (remote == null) {
+            // Keine Remote-Daten: belasse lokale Ansicht, zeige Hinweis
             withContext(Dispatchers.Main) {
-                binding.profileUsername.text = getStringSafe("Unbekannt")
-                binding.profileRank.text = getStringSafe("Gast")
+                // Optional: Snackbar/Toast anzeigen
             }
             return
         }
 
-        // Sichere Konvertierung aller Felder zu Strings
-        val username = userData["username"]?.toString().orEmpty()
-        val email = userData["email"]?.toString().orEmpty()
-        val rankKey = userData["rank"]?.toString().orEmpty()
-        val bio = userData["bio"]?.toString().orEmpty()
-        val location = userData["location"]?.toString().orEmpty()
-        val birthday = userData["birthday"]?.toString().orEmpty()
-        val discord = userData["discord"]?.toString().orEmpty()
-        val minecraft = userData["minecraft"]?.toString().orEmpty()
-        val hk = userData["hk"]?.toString().orEmpty()
-        val syncTokenAny = userData["syncToken"]
+        val username = remote["username"]?.toString().orEmpty()
+        val email = remote["email"]?.toString().orEmpty()
+        val rankKey = remote["rank"]?.toString().orEmpty()
+        val bio = remote["bio"]?.toString().orEmpty()
+        val location = remote["location"]?.toString().orEmpty()
+        val birthday = remote["birthday"]?.toString().orEmpty()
+        val discord = remote["discord"]?.toString().orEmpty()
+        val minecraft = remote["minecraft"]?.toString().orEmpty()
+        val hk = remote["hk"]?.toString().orEmpty()
+        val syncTokenAny = remote["syncToken"]
 
-        // Mappe interne Rollen auf Anzeige-Strings
         val displayRank = mapRoleToDisplay(rankKey, syncTokenAny)
+        val hasSync = syncTokenAny is String && syncTokenAny.isNotBlank()
 
         withContext(Dispatchers.Main) {
-            binding.profileUsername.text = username.ifEmpty { getStringSafe("Unbekannt") }
+            binding.profileUsername.text = username.ifEmpty { "Unbekannt" }
             binding.profileEmail.text = email
             binding.profileRank.text = displayRank
             binding.profileBio.text = bio
@@ -149,45 +154,52 @@ class ProfileFragment : Fragment() {
             binding.profileMinecraft.text = minecraft
             binding.profileHK.text = hk
 
-            // Wenn ein Sync-Token vorhanden ist, zeige ihn
-            if (syncTokenAny is String && syncTokenAny.isNotBlank()) {
-                binding.syncTokenText.text = syncTokenAny
+            if (hasSync) {
+                binding.syncTokenText.text = syncTokenAny as String
                 binding.syncTokenCard.isVisible = true
             } else {
                 binding.syncTokenCard.isVisible = false
             }
+
+            setActionAvailability(hasSync)
         }
 
-        // Lade Tickets nur wenn berechtigt / angemeldet
-        lifecycleScope.launch {
-            loadTicketsIfAllowed()
-        }
+        // Tickets laden (nur wenn Berechtigung)
+        lifecycleScope.launch { loadTicketsIfAllowed(hasSync) }
     }
 
     private fun mapRoleToDisplay(roleKey: String, syncTokenAny: Any?): String {
-        // Wenn noch kein Sync erfolgt ist, zeige Gast oder die lokale Rolle, aber ohne Rechte
         val hasSynced = syncTokenAny is String && syncTokenAny.isNotBlank()
-        return when (roleKey.lowercase()) {
-            "malzbier" -> if (hasSynced) "Malzbier" else "Gast"
-            "feierabendbier" -> if (hasSynced) "Feierabendbier" else "Gast"
-            "vollwieneimer" -> if (hasSynced) "Vollwieneimer" else "Gast"
-            "absturzlegende" -> if (hasSynced) "Absturzlegende" else "Gast"
-            "builder" -> if (hasSynced) "Builder" else "Gast"
-            "moderator" -> if (hasSynced) "Moderator" else "Gast"
-            "supporter" -> if (hasSynced) "Supporter" else "Gast"
-            "trainee" -> if (hasSynced) "Trainee" else "Gast"
-            "admin" -> if (hasSynced) "Admin" else "Gast"
-            "cheffe" -> if (hasSynced) "Cheffe" else "Gast"
-            else -> if (hasSynced && roleKey.isNotBlank()) roleKey.replaceFirstChar { it.uppercase() } else "Gast"
+        // Wenn lokal Rolle vorhanden, zeige sie, aber wenn nicht synchronisiert -> markiere eingeschränkt
+        val base = when (roleKey.lowercase()) {
+            "malzbier" -> "Malzbier"
+            "feierabendbier" -> "Feierabendbier"
+            "vollwieneimer" -> "Vollwieneimer"
+            "absturzlegende" -> "Absturzlegende"
+            "builder" -> "Builder"
+            "moderator" -> "Moderator"
+            "supporter" -> "Supporter"
+            "trainee" -> "Trainee"
+            "admin" -> "Admin"
+            "cheffe" -> "Cheffe"
+            else -> roleKey.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }.ifEmpty { "Gast" }
         }
+        return if (hasSynced) base else "$base (eingeschränkt)"
     }
 
-    private suspend fun loadTicketsIfAllowed() {
-        // Prüfe Berechtigung anhand Rolle oder Auth-Status
+    private fun setActionAvailability(hasSync: Boolean) {
+        // Wenn nicht synchronisiert, Aktionen deaktivieren, aber nicht entfernen
+        binding.editProfileButton.isEnabled = hasSync
+        binding.syncButton.isEnabled = true // Sync immer erlaubt
+        binding.btnResetToken.isEnabled = hasSync
+        // Tickets / Markt / Angebote Buttons sollten ebenfalls geprüft werden (TODO)
+    }
+
+    private suspend fun loadTicketsIfAllowed(hasSync: Boolean) {
         val allowed = withContext(Dispatchers.IO) {
             try {
-                // TODO: return@withContext authManager.isLoggedIn() && authManager.hasTicketAccess()
-                true // Platzhalter: falls du echte Prüfung hast, ersetze hier
+                // TODO: Prüfe echte Berechtigung: authManager.isLoggedIn() && authManager.hasTicketAccess()
+                hasSync // Platzhalter: nur wenn synchronisiert
             } catch (e: Exception) {
                 false
             }
@@ -195,7 +207,7 @@ class ProfileFragment : Fragment() {
 
         withContext(Dispatchers.Main) {
             if (!allowed) {
-                // Tickets nicht anzeigen, Hinweis setzen
+                // Zeige leere Ticketsicht mit Hinweis
                 // binding.ticketsRecyclerView.isVisible = false
                 // binding.ticketsEmptyText.isVisible = true
             } else {
@@ -207,7 +219,11 @@ class ProfileFragment : Fragment() {
         }
     }
 
-    private fun openEditProfile() {
+    private fun openEditProfileIfAllowed() {
+        if (!binding.editProfileButton.isEnabled) {
+            // Optional: Snackbar "Bitte zuerst synchronisieren"
+            return
+        }
         // TODO: Navigation zur Edit-Seite
     }
 
@@ -224,13 +240,11 @@ class ProfileFragment : Fragment() {
                 null
             }
         }
-
         if (bitmap != null) {
             withContext(Dispatchers.IO) {
                 try {
-                    // TODO: userRepository.uploadAvatar(bitmapToByteArray(bitmap))
-                } catch (_: Exception) {
-                }
+                    // TODO: userRepository.uploadAvatar(...)
+                } catch (_: Exception) { }
             }
         }
     }
@@ -242,7 +256,7 @@ class ProfileFragment : Fragment() {
         val tokenResult: String? = withContext(Dispatchers.IO) {
             try {
                 // TODO: return@withContext userRepository.generateSyncToken()
-                "demo-sync-token-1234" // Platzhalter
+                "demo-sync-token-1234"
             } catch (e: Exception) {
                 null
             }
@@ -252,8 +266,8 @@ class ProfileFragment : Fragment() {
             if (!tokenResult.isNullOrBlank()) {
                 binding.syncTokenText.text = tokenResult
                 binding.syncTokenCard.isVisible = true
-                // Optional: nach Token-Generierung Rolle aktualisieren
-                // lifecycleScope.launch { loadProfileAndTickets() }
+                // Nach erfolgreichem Token ggf. Profil neu laden
+                lifecycleScope.launch { loadProfileSafely() }
             } else {
                 binding.syncTokenText.text = getStringSafe("Fehler beim Erzeugen des Tokens")
                 binding.syncTokenCard.isVisible = true
@@ -262,20 +276,17 @@ class ProfileFragment : Fragment() {
     }
 
     private suspend fun resetSyncToken() {
-        val displayedToken = try { binding.syncTokenText.text?.toString() } catch (e: Exception) { null }
-        val tokenString = displayedToken?.takeIf { it.isNotBlank() }
-
+        val displayed = try { binding.syncTokenText.text?.toString() } catch (e: Exception) { null }
+        val tokenString = displayed?.takeIf { it.isNotBlank() }
         if (tokenString.isNullOrBlank()) {
-            withContext(Dispatchers.Main) {
-                binding.syncTokenText.text = getStringSafe("Kein Token vorhanden")
-            }
+            withContext(Dispatchers.Main) { binding.syncTokenText.text = getStringSafe("Kein Token vorhanden") }
             return
         }
 
         val success = withContext(Dispatchers.IO) {
             try {
                 // TODO: return@withContext SupabaseHelper.resetToken(tokenString)
-                true // Platzhalter
+                true
             } catch (e: Exception) {
                 false
             }
@@ -285,8 +296,7 @@ class ProfileFragment : Fragment() {
             if (success) {
                 binding.syncTokenText.text = getStringSafe("Token zurückgesetzt")
                 binding.syncTokenCard.isVisible = false
-                // Rolle neu laden, Tickets neu laden
-                lifecycleScope.launch { loadProfileAndTickets() }
+                lifecycleScope.launch { loadProfileSafely() }
             } else {
                 binding.syncTokenText.text = getStringSafe("Fehler beim Zurücksetzen")
                 binding.syncTokenCard.isVisible = true
@@ -294,8 +304,18 @@ class ProfileFragment : Fragment() {
         }
     }
 
+    private fun confirmAndLogout() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Abmelden")
+            .setMessage("Möchtest du dich wirklich abmelden?")
+            .setNegativeButton("Abbrechen", null)
+            .setPositiveButton("Abmelden") { _, _ ->
+                lifecycleScope.launch { performLogoutSafely() }
+            }
+            .show()
+    }
+
     private suspend fun performLogoutSafely() {
-        // Führe Logout im Hintergrund aus, aber navigiere erst, wenn sauber abgeschlossen
         val ok = withContext(Dispatchers.IO) {
             try {
                 // TODO: authManager.signOut()
@@ -307,11 +327,10 @@ class ProfileFragment : Fragment() {
 
         withContext(Dispatchers.Main) {
             if (ok) {
-                // Navigation zur Login-Seite oder Start-Activity
+                // Navigation zur Login-Seite
                 // Navigation.findNavController(requireView()).navigate(R.id.action_profile_to_login)
             } else {
-                // Zeige Fehler, verhindere inkonsistenten Zustand
-                // z.B. Snackbar: "Abmelden fehlgeschlagen"
+                // Optional: Snackbar "Abmelden fehlgeschlagen"
             }
         }
     }
