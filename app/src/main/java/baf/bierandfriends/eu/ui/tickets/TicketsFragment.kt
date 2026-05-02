@@ -54,6 +54,7 @@ class TicketsFragment : Fragment() {
             }
             ticketId?.let { id ->
                 val messages = ticketRepository.getTicketMessages(id)
+                // update adapter if present
             }
         }
     }
