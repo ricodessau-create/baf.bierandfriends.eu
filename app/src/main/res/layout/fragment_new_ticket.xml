@@ -2,7 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/baf_black">
+    android:background="@color/baf_background">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -11,53 +11,69 @@
         android:padding="16dp">
 
         <TextView
-            android:text="Neues Ticket"
+            android:text="NEUES TICKET"
             android:textColor="@color/baf_gold"
             android:textSize="22sp"
             android:textStyle="bold"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="8dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
-        <com.google.android.material.textfield.TextInputLayout
+        <TextView
+            android:text="Beschreibe dein Problem, wir helfen dir so schnell wie möglich."
+            android:textColor="@color/baf_text_secondary"
+            android:textSize="13sp"
+            android:layout_marginBottom="20dp"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Titel"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            android:layout_height="wrap_content"/>
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/ticketTitleInput"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/baf_text_primary"
-                android:inputType="text"/>
+        <TextView
+            android:text="Titel *"
+            android:textColor="@color/baf_gold"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <com.google.android.material.textfield.TextInputLayout
+        <EditText
+            android:id="@+id/ticketTitleInput"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:hint="Problem beschreiben"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+            android:layout_height="48dp"
+            android:hint="Kurze Beschreibung des Problems"
+            android:textColor="@color/baf_text_primary"
+            android:textColorHint="@color/baf_text_secondary"
+            android:background="@color/baf_card"
+            android:padding="12dp"
+            android:inputType="text"
+            android:layout_marginBottom="12dp"/>
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/ticketDescriptionInput"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/baf_text_primary"
-                android:inputType="textMultiLine"
-                android:minLines="5"
-                android:gravity="top"/>
+        <TextView
+            android:text="Beschreibung *"
+            android:textColor="@color/baf_gold"
+            android:textSize="12sp"
+            android:layout_marginBottom="4dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
 
-        </com.google.android.material.textfield.TextInputLayout>
+        <EditText
+            android:id="@+id/ticketDescriptionInput"
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            android:hint="Beschreibe das Problem so genau wie möglich..."
+            android:textColor="@color/baf_text_primary"
+            android:textColorHint="@color/baf_text_secondary"
+            android:background="@color/baf_card"
+            android:padding="12dp"
+            android:inputType="textMultiLine"
+            android:gravity="top"
+            android:layout_marginBottom="20dp"/>
 
         <Button
             android:id="@+id/submitTicketButton"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Ticket absenden"
+            android:layout_height="50dp"
+            android:text="🎫 TICKET ABSENDEN"
+            android:textColor="@color/baf_black"
             style="@style/BAF.Button"/>
 
     </LinearLayout>
