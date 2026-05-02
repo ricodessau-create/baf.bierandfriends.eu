@@ -208,7 +208,6 @@ class ProfileFragment : Fragment() {
                     ?.use { it.readBytes() }
                     ?: throw Exception("Bild konnte nicht gelesen werden")
 
-                // Via UserRepository (nutzt SupabaseHelper mit Anonymous Auth)
                 val downloadUrl = userRepository.uploadAvatar(bytes)
 
                 val profile = userRepository.getUserProfile()
