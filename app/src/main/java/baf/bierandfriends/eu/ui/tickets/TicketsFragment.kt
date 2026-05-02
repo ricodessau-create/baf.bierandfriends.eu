@@ -35,11 +35,7 @@ class TicketsFragment : Fragment() {
         ticket = arguments?.getParcelable("ticket")
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentTicketBinding.inflate(inflater, container, false)
         return binding.root
     }
