@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -22,9 +21,7 @@ class TicketsFragment : Fragment() {
     private val ticketRepository = TicketRepository()
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         _binding = FragmentTicketsBinding.inflate(inflater, container, false)
         return binding.root
@@ -59,30 +56,23 @@ class TicketsFragment : Fragment() {
 
     private fun loadTickets() {
         lifecycleScope.launch {
-            try {
-                val tickets = ticketRepository.getMyTickets()
-                if (tickets.isNotEmpty()) {
-                    binding.emptyText.visibility = View.GONE
-                    val adapter = TicketsAdapter(tickets) { ticket ->
-                        Toast.makeText(
-                            requireContext(),
-                            "Ticket: ${ticket.title}\nStatus: ${ticket.status}",
-                            Toast.LENGTH_LONG
-                        ).show()
+            val tickets = ticketRepository.getMyTickets()
+            if (tickets.isNotEmpty()) {
+                binding.emptyText.visibility = View.GONE
+                val adapter = TicketsAdapter(tickets) { ticket ->
+                    // Ticket öffnen
+                    val bundle = Bundle().apply {
+                        putString("ticketId", ticket.id)
                     }
-                    binding.ticketsRecyclerView.adapter = adapter
-                    binding.ticketsRecyclerView.layoutManager =
-                        LinearLayoutManager(requireContext())
-                } else {
-                    binding.emptyText.visibility = View.VISIBLE
-                    binding.emptyText.text = "Noch keine Tickets erstellt."
+                    findNavController().navigate(
+                        R.id.action_ticketsFragment_to_ticketDetailFragment, bundle
+                    )
                 }
-            } catch (e: Exception) {
-                Toast.makeText(
-                    requireContext(),
-                    "Fehler: ${e.message}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                binding.ticketsRecyclerView.adapter = adapter
+                binding.ticketsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+            } else {
+                binding.emptyText.visibility = View.VISIBLE
+                binding.emptyText.text = "Noch keine Tickets erstellt.\nTippe auf + um ein Ticket zu erstellen."
             }
         }
     }
