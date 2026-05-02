@@ -9,13 +9,10 @@ import java.util.UUID
 object SupabaseHelper {
 
     private const val SUPABASE_URL = "https://ghobutfhqaoopvlznrqr.supabase.co"
-    private const val SUPABASE_KEY = "sb-pub-..." // DEIN PUBLIC KEY
+    private const val SUPABASE_KEY = "sb-pub-..." // dein Key
 
     private val client = OkHttpClient()
 
-    // ---------------------------------------------------------
-    // AVATAR UPLOAD
-    // ---------------------------------------------------------
     suspend fun uploadProfileImage(bytes: ByteArray, userId: String): String {
         val fileName = "$userId-${UUID.randomUUID()}.jpg"
         val bucket = "avatars"
@@ -29,19 +26,15 @@ object SupabaseHelper {
             .build()
 
         val response = client.newCall(request).execute()
-
-        val responseBody = response.body?.string()
+        val body = response.body?.string()
 
         if (!response.isSuccessful) {
-            throw Exception("Upload fehlgeschlagen: ${response.code} - $responseBody")
+            throw Exception("Avatar Upload fehlgeschlagen: ${response.code} - $body")
         }
 
         return "$SUPABASE_URL/storage/v1/object/public/$bucket/$fileName"
     }
 
-    // ---------------------------------------------------------
-    // MARKET IMAGE UPLOAD
-    // ---------------------------------------------------------
     suspend fun uploadMarketImage(bytes: ByteArray, itemId: String): String {
         val fileName = "$itemId-${UUID.randomUUID()}.jpg"
         val bucket = "market"
@@ -55,22 +48,18 @@ object SupabaseHelper {
             .build()
 
         val response = client.newCall(request).execute()
-
-        val responseBody = response.body?.string()
+        val body = response.body?.string()
 
         if (!response.isSuccessful) {
-            throw Exception("Upload fehlgeschlagen: ${response.code} - $responseBody")
+            throw Exception("Market Upload fehlgeschlagen: ${response.code} - $body")
         }
 
         return "$SUPABASE_URL/storage/v1/object/public/$bucket/$fileName"
     }
 
-    // ---------------------------------------------------------
-    // DELETE IMAGE
-    // ---------------------------------------------------------
-    fun deleteImage(path: String) {
+    fun deleteImage(fullPath: String) {
         val request = Request.Builder()
-            .url("$SUPABASE_URL/storage/v1/object/$path")
+            .url("$SUPABASE_URL/storage/v1/object/$fullPath")
             .addHeader("apikey", SUPABASE_KEY)
             .addHeader("Authorization", "Bearer $SUPABASE_KEY")
             .delete()
