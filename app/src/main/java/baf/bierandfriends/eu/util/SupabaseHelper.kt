@@ -1,66 +1,81 @@
 package baf.bierandfriends.eu.util
 
-import android.util.Log
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.util.concurrent.TimeUnit
+import java.util.UUID
 
 object SupabaseHelper {
 
     private const val SUPABASE_URL = "https://ghobutfhqaoopvlznrqr.supabase.co"
-    private const val SUPABASE_ANON_KEY = "sb_publishable_wPIM_MdaMrfj-LsBkQWEhg_sU0PROr0"
-    const val BUCKET_AVATARS = "avatars"
-    const val BUCKET_MARKET = "market"
+    private const val SUPABASE_KEY = "sb-pub-..." // DEIN PUBLIC KEY
 
-    private val client = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(60, TimeUnit.SECONDS)
-        .writeTimeout(120, TimeUnit.SECONDS)
-        .build()
+    private val client = OkHttpClient()
 
+    // ---------------------------------------------------------
+    // AVATAR UPLOAD
+    // ---------------------------------------------------------
     suspend fun uploadProfileImage(bytes: ByteArray, userId: String): String {
-        return upload(bytes, BUCKET_AVATARS, "profile_images/$userId.jpg")
-    }
+        val fileName = "$userId-${UUID.randomUUID()}.jpg"
+        val bucket = "avatars"
 
-    suspend fun uploadMarketImage(bytes: ByteArray, itemId: String): String {
-        return upload(bytes, BUCKET_MARKET, "market_images/$itemId.jpg")
-    }
+        val request = Request.Builder()
+            .url("$SUPABASE_URL/storage/v1/object/$bucket/$fileName")
+            .addHeader("apikey", SUPABASE_KEY)
+            .addHeader("Authorization", "Bearer $SUPABASE_KEY")
+            .addHeader("Content-Type", "image/jpeg")
+            .post(bytes.toRequestBody("image/jpeg".toMediaType()))
+            .build()
 
-    private suspend fun upload(bytes: ByteArray, bucket: String, path: String): String {
-        return withContext(Dispatchers.IO) {
-            val url = "$SUPABASE_URL/storage/v1/object/$bucket/$path"
-            val body = bytes.toRequestBody("image/jpeg".toMediaType())
+        val response = client.newCall(request).execute()
 
-            // Anon Key direkt als Bearer – kein Anonymous Sign-In nötig
-            val request = Request.Builder()
-                .url(url)
-                .put(body)
-                .addHeader("apikey", SUPABASE_ANON_KEY)
-                .addHeader("Authorization", "Bearer $SUPABASE_ANON_KEY")
-                .addHeader("Content-Type", "image/jpeg")
-                .addHeader("x-upsert", "true")
-                .build()
+        val responseBody = response.body?.string()
 
-            val response = client.newCall(request).execute()
-            val responseBody = response.body?.string() ?: ""
-
-            if (!response.isSuccessful) {
-                Log.e("Supabase", "Upload fehlgeschlagen: ${response.code} $responseBody")
-                throw Exception("Upload fehlgeschlagen (${response.code}): $responseBody")
-            }
-
-            Log.d("Supabase", "Upload erfolgreich: $path")
-            getPublicUrl(bucket, path)
+        if (!response.isSuccessful) {
+            throw Exception("Upload fehlgeschlagen: ${response.code} - $responseBody")
         }
+
+        return "$SUPABASE_URL/storage/v1/object/public/$bucket/$fileName"
     }
 
-    fun getPublicUrl(bucket: String, path: String): String {
-        return "$SUPABASE_URL/storage/v1/object/public/$bucket/$path"
+    // ---------------------------------------------------------
+    // MARKET IMAGE UPLOAD
+    // ---------------------------------------------------------
+    suspend fun uploadMarketImage(bytes: ByteArray, itemId: String): String {
+        val fileName = "$itemId-${UUID.randomUUID()}.jpg"
+        val bucket = "market"
+
+        val request = Request.Builder()
+            .url("$SUPABASE_URL/storage/v1/object/$bucket/$fileName")
+            .addHeader("apikey", SUPABASE_KEY)
+            .addHeader("Authorization", "Bearer $SUPABASE_KEY")
+            .addHeader("Content-Type", "image/jpeg")
+            .post(bytes.toRequestBody("image/jpeg".toMediaType()))
+            .build()
+
+        val response = client.newCall(request).execute()
+
+        val responseBody = response.body?.string()
+
+        if (!response.isSuccessful) {
+            throw Exception("Upload fehlgeschlagen: ${response.code} - $responseBody")
+        }
+
+        return "$SUPABASE_URL/storage/v1/object/public/$bucket/$fileName"
     }
 
-    fun resetToken() {} // Leer lassen – kein Token mehr nötig
+    // ---------------------------------------------------------
+    // DELETE IMAGE
+    // ---------------------------------------------------------
+    fun deleteImage(path: String) {
+        val request = Request.Builder()
+            .url("$SUPABASE_URL/storage/v1/object/$path")
+            .addHeader("apikey", SUPABASE_KEY)
+            .addHeader("Authorization", "Bearer $SUPABASE_KEY")
+            .delete()
+            .build()
+
+        client.newCall(request).execute()
+    }
 }
