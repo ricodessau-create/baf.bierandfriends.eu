@@ -12,19 +12,21 @@ class TicketRepository {
     private val auth = FirebaseAuth.getInstance()
 
     suspend fun createTicket(ticket: Ticket) {
-        db.collection("tickets")
-            .add(ticket)
-            .await()
+        val ref = db.collection("tickets").add(ticket).await()
+        // ID ins Dokument schreiben
+        db.collection("tickets").document(ref.id).update("id", ref.id).await()
     }
 
     suspend fun getMyTickets(): List<Ticket> {
         val uid = auth.currentUser?.uid ?: return emptyList()
         return try {
-            db.collection("tickets")
+            val snapshot = db.collection("tickets")
                 .whereEqualTo("authorUid", uid)
                 .get()
                 .await()
-                .toObjects(Ticket::class.java)
+            snapshot.documents.mapNotNull { doc ->
+                doc.toObject(Ticket::class.java)?.copy(id = doc.id)
+            }
         } catch (e: Exception) {
             emptyList()
         }
@@ -32,10 +34,10 @@ class TicketRepository {
 
     suspend fun getAllTickets(): List<Ticket> {
         return try {
-            db.collection("tickets")
-                .get()
-                .await()
-                .toObjects(Ticket::class.java)
+            val snapshot = db.collection("tickets").get().await()
+            snapshot.documents.mapNotNull { doc ->
+                doc.toObject(Ticket::class.java)?.copy(id = doc.id)
+            }
         } catch (e: Exception) {
             emptyList()
         }
@@ -43,10 +45,7 @@ class TicketRepository {
 
     suspend fun updateTicketStatus(id: String, status: String) {
         try {
-            db.collection("tickets")
-                .document(id)
-                .update("status", status)
-                .await()
+            db.collection("tickets").document(id).update("status", status).await()
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -60,24 +59,15 @@ class TicketRepository {
             "authorName" to authorName,
             "createdAt" to Timestamp.now()
         )
-        db.collection("tickets")
-            .document(ticketId)
-            .collection("messages")
-            .add(msg)
-            .await()
+        db.collection("tickets").document(ticketId)
+            .collection("messages").add(msg).await()
     }
 
     suspend fun getTicketMessages(ticketId: String): List<Map<String, Any>> {
         return try {
-            val snapshot = db.collection("tickets")
-                .document(ticketId)
-                .collection("messages")
-                .get()
-                .await()
-            snapshot.documents.map { doc ->
-                val map = doc.data ?: emptyMap()
-                map + mapOf("id" to doc.id)
-            }
+            db.collection("tickets").document(ticketId)
+                .collection("messages").get().await()
+                .documents.map { (it.data ?: emptyMap()) + mapOf("id" to it.id) }
         } catch (e: Exception) {
             emptyList()
         }
