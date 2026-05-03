@@ -1,59 +1,109 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/ticketRoot"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/baf_background"
-    android:padding="12dp">
-
-    <TextView
-        android:id="@+id/ticketTitle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Ticket"
-        android:textColor="@color/baf_gray"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:paddingBottom="8dp" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/messagesRecycler"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:clipToPadding="false"
-        android:paddingBottom="8dp" />
+    android:background="@color/baf_background">
 
     <LinearLayout
-        android:id="@+id/messageInputContainer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingTop="8dp">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/messageInput"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_weight="1"
-            android:hint="Nachricht..."
-            android:textColor="@color/baf_text_primary"
-            android:textColorHint="@color/baf_text_secondary"
-            android:background="@color/baf_card"
-            android:padding="10dp"
-            android:inputType="textMultiLine"
-            android:maxLines="4" />
+        <!-- Header -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="180dp">
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/header_baf_samurai"
+                android:scaleType="centerCrop"
+                android:contentDescription="Header"/>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#99000000"/>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom|center"
+                android:layout_marginBottom="16dp"
+                android:text="TICKETS"
+                android:textColor="@color/baf_gold"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:gravity="center"/>
+        </FrameLayout>
 
-        <Button
-            android:id="@+id/sendMessageButton"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:text="Senden"
-            android:backgroundTint="@color/baf_gold"
-            android:textColor="@color/baf_black" />
+        <!-- Tabs -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@color/baf_black">
+
+            <TextView
+                android:id="@+id/tabMeineTickets"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Meine Tickets"
+                android:textColor="@color/baf_gold"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:padding="14dp"/>
+
+            <TextView
+                android:id="@+id/tabNeuesTicket"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Neues Ticket"
+                android:textColor="@color/baf_tab_unselected"
+                android:textSize="14sp"
+                android:gravity="center"
+                android:padding="14dp"/>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/baf_gold_dark"/>
+
+        <TextView
+            android:id="@+id/emptyText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Noch keine Tickets erstellt.\nTippe auf + um ein Ticket zu erstellen."
+            android:textColor="@color/baf_text_secondary"
+            android:textSize="15sp"
+            android:gravity="center"
+            android:layout_margin="32dp"
+            android:visibility="gone"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/ticketsRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="12dp"
+            android:paddingBottom="80dp"
+            android:clipToPadding="false"/>
 
     </LinearLayout>
-</LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/newTicketButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="80dp"
+        android:src="@drawable/ic_add"
+        android:contentDescription="Neues Ticket"
+        app:backgroundTint="@color/baf_gold"
+        app:tint="@android:color/black"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
