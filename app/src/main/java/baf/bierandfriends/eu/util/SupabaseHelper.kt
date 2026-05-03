@@ -30,16 +30,30 @@ object SupabaseHelper {
 
     private suspend fun upload(bytes: ByteArray, bucket: String, path: String): String {
         return withContext(Dispatchers.IO) {
+            // Erst versuchen zu löschen (falls vorhanden), dann neu hochladen
+            try {
+                val deleteUrl = "$SUPABASE_URL/storage/v1/object/$bucket/$path"
+                val deleteReq = Request.Builder()
+                    .url(deleteUrl)
+                    .delete()
+                    .addHeader("apikey", SUPABASE_KEY)
+                    .addHeader("Authorization", "Bearer $SUPABASE_KEY")
+                    .build()
+                client.newCall(deleteReq).execute().close()
+            } catch (e: Exception) {
+                // Ignorieren falls Datei nicht existiert
+            }
+
+            // POST für Upload (INSERT)
             val url = "$SUPABASE_URL/storage/v1/object/$bucket/$path"
             val body = bytes.toRequestBody("image/jpeg".toMediaType())
 
             val request = Request.Builder()
                 .url(url)
-                .put(body)
+                .post(body)
                 .addHeader("apikey", SUPABASE_KEY)
                 .addHeader("Authorization", "Bearer $SUPABASE_KEY")
                 .addHeader("Content-Type", "image/jpeg")
-                .addHeader("x-upsert", "true")
                 .build()
 
             val response = client.newCall(request).execute()
