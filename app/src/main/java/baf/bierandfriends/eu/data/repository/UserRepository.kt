@@ -18,11 +18,10 @@ class UserRepository {
                 doc.toObject(UserProfile::class.java)
             } else {
                 val defaultProfile = UserProfile(
-                    username = auth.currentUser?.displayName ?: "",
+                    username = auth.currentUser?.displayName ?: "Spieler",
                     email = auth.currentUser?.email ?: "",
                     rank = "malzbier",
-                    photoUrl = auth.currentUser?.photoUrl?.toString() ?: "",
-                    syncToken = null
+                    photoUrl = auth.currentUser?.photoUrl?.toString() ?: ""
                 )
                 db.collection("users").document(uid).set(defaultProfile).await()
                 defaultProfile
@@ -34,7 +33,8 @@ class UserRepository {
 
     suspend fun getUserProfileById(uid: String): UserProfile? {
         return try {
-            db.collection("users").document(uid).get().await().toObject(UserProfile::class.java)
+            db.collection("users").document(uid).get().await()
+                .toObject(UserProfile::class.java)
         } catch (e: Exception) {
             null
         }
@@ -45,41 +45,25 @@ class UserRepository {
         db.collection("users").document(uid).set(profile).await()
     }
 
-    suspend fun uploadAvatar(bytes: ByteArray): String {
-        val uid = auth.currentUser?.uid ?: throw Exception("Nicht eingeloggt")
-        return baf.bierandfriends.eu.util.SupabaseHelper.uploadProfileImage(bytes, uid)
-    }
-
-    suspend fun generateSyncToken(): String? {
-        val uid = auth.currentUser?.uid ?: return null
+    suspend fun getAllUsers(): List<UserProfile> {
         return try {
-            val token = (100000..999999).random().toString()
-            val tokenRef = db.collection("sync_tokens").document(token)
-            val userRef = db.collection("users").document(uid)
-            db.runTransaction { transaction ->
-                transaction.set(tokenRef, mapOf("uid" to uid))
-                transaction.update(userRef, "syncToken", token)
-                token
-            }.await()
+            db.collection("users").get().await()
+                .documents.mapNotNull { it.toObject(UserProfile::class.java) }
         } catch (e: Exception) {
-            null
+            emptyList()
         }
     }
 
+    suspend fun generateSyncToken(): String {
+        val uid = auth.currentUser?.uid ?: return ""
+        val token = (100000..999999).random().toString()
+        db.collection("sync_tokens").document(token).set(mapOf("uid" to uid)).await()
+        return token
+    }
+
     suspend fun resetSyncToken(token: String): Boolean {
-        val uid = auth.currentUser?.uid ?: return false
         return try {
-            val tokenRef = db.collection("sync_tokens").document(token)
-            val tokenSnap = tokenRef.get().await()
-            val ownerUid = tokenSnap.getString("uid")
-            if (ownerUid == null || ownerUid != uid) {
-                return false
-            }
-            val userRef = db.collection("users").document(uid)
-            db.runTransaction { transaction ->
-                transaction.delete(tokenRef)
-                transaction.update(userRef, "syncToken", null)
-            }.await()
+            db.collection("sync_tokens").document(token).delete().await()
             true
         } catch (e: Exception) {
             false
@@ -108,14 +92,6 @@ class UserRepository {
                 .get().await().exists()
         } catch (e: Exception) {
             false
-        }
-    }
-
-    suspend fun getAllUsers(): List<UserProfile> {
-        return try {
-            db.collection("users").get().await().toObjects(UserProfile::class.java)
-        } catch (e: Exception) {
-            emptyList()
         }
     }
 }
