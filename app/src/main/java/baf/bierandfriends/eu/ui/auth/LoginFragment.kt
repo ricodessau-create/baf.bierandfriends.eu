@@ -39,14 +39,20 @@ class LoginFragment : Fragment() {
                 firebaseAuthWithGoogle(account.idToken!!)
             } catch (e: ApiException) {
                 binding.loginProgress.visibility = View.GONE
-                Toast.makeText(requireContext(), "Google Login fehlgeschlagen: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Google Login fehlgeschlagen: ${e.statusCode}",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         } else {
             binding.loginProgress.visibility = View.GONE
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentLoginBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -60,10 +66,12 @@ class LoginFragment : Fragment() {
         }
 
         binding.loginButton.setOnClickListener { login() }
+
         binding.registerButton.setOnClickListener {
             findNavController().navigate(R.id.action_loginFragment_to_registerFragment)
         }
-        binding.googleLoginButton.setOnClickListener { googleLogin() }
+
+        binding.googleLoginButton.setOnClickListener { startGoogleLogin() }
     }
 
     private fun login() {
@@ -81,27 +89,32 @@ class LoginFragment : Fragment() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnSuccessListener {
                 binding.loginProgress.visibility = View.GONE
-                lifecycleScope.launch {
-                    userRepository.getUserProfile()
-                }
                 findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
             }
             .addOnFailureListener {
                 binding.loginProgress.visibility = View.GONE
                 binding.loginButton.isEnabled = true
-                Toast.makeText(requireContext(), "Login fehlgeschlagen: ${it.message}", Toast.LENGTH_LONG).show()
+                val msg = when {
+                    it.message?.contains("password") == true -> "Falsches Passwort."
+                    it.message?.contains("no user") == true -> "E-Mail nicht gefunden."
+                    else -> "Login fehlgeschlagen: ${it.message}"
+                }
+                Toast.makeText(requireContext(), msg, Toast.LENGTH_LONG).show()
             }
     }
 
-    private fun googleLogin() {
+    private fun startGoogleLogin() {
         binding.loginProgress.visibility = View.VISIBLE
+
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
-        val googleSignInClient = GoogleSignIn.getClient(requireActivity(), gso)
-        googleSignInClient.signOut().addOnCompleteListener {
-            googleSignInLauncher.launch(googleSignInClient.signInIntent)
+
+        val client = GoogleSignIn.getClient(requireActivity(), gso)
+        // Erst signOut um immer Account-Auswahl zu zeigen
+        client.signOut().addOnCompleteListener {
+            googleSignInLauncher.launch(client.signInIntent)
         }
     }
 
@@ -109,7 +122,7 @@ class LoginFragment : Fragment() {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         auth.signInWithCredential(credential)
             .addOnSuccessListener { result ->
-                val isNew = result.additionalUserInfo?.isNewUser ?: false
+                val isNew = result.additionalUserInfo?.isNewUser == true
                 if (isNew) {
                     val user = auth.currentUser
                     lifecycleScope.launch {
@@ -122,15 +135,16 @@ class LoginFragment : Fragment() {
                         userRepository.updateUserProfile(profile)
                     }
                 }
-                lifecycleScope.launch {
-                    userRepository.getUserProfile()
-                }
                 binding.loginProgress.visibility = View.GONE
                 findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
             }
             .addOnFailureListener {
                 binding.loginProgress.visibility = View.GONE
-                Toast.makeText(requireContext(), "Google Login fehlgeschlagen: ${it.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Google Auth fehlgeschlagen: ${it.message}",
+                    Toast.LENGTH_LONG
+                ).show()
             }
     }
 
