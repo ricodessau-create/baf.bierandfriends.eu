@@ -20,7 +20,6 @@ jobs:
 
       - name: Decode Keystore
         run: |
-          # Hier nutzen wir dein Secret RELEASE_KEYSTORE
           echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 --decode > app/release.keystore
 
       - name: Grant execute permission for gradlew
@@ -30,7 +29,6 @@ jobs:
         run: |
           ./gradlew bundleRelease \
             -DRELEASE_KEYSTORE_PASSWORD="${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" \
-            -DRELEASE_KEY_ALIAS="${{ secrets.RELEASE_KEY_ALIAS }}" \
             -DRELEASE_KEY_PASSWORD="${{ secrets.RELEASE_KEY_PASSWORD }}" \
             --stacktrace
 
