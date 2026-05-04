@@ -2,7 +2,7 @@ name: Android Release CI
 
 on:
   push:
-    branches: [ "main", "master" ] # Oder dein Haupt-Branch-Name
+    branches: [ "main", "master" ]
 
 jobs:
   build:
@@ -21,7 +21,7 @@ jobs:
 
       - name: Decode Keystore
         run: |
-          # Dekodiert den in GitHub Secrets gespeicherten Base64-Keystore
+          # Dekodiert dein Base64-Secret direkt in den app-Ordner
           echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 --decode > app/release.keystore
 
       - name: Grant execute permission for gradlew
@@ -30,7 +30,7 @@ jobs:
       - name: Build Release Bundle (AAB)
         run: ./gradlew bundleRelease --stacktrace
         env:
-          # Diese Umgebungsvariablen werden von der build.gradle gelesen
+          # Diese Secrets müssen in den Repository-Einstellungen vorhanden sein
           SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
