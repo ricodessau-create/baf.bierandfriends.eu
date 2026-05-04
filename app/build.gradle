@@ -20,9 +20,10 @@ android {
     signingConfigs {
         release {
             storeFile file("release.keystore")
-            // Namen angepasst an deine GitHub Secrets (Screenshot)
+            // Wir nehmen die Passwörter aus den System-Properties
             storePassword System.getProperty("RELEASE_KEYSTORE_PASSWORD") ?: System.getenv("RELEASE_KEYSTORE_PASSWORD")
-            keyAlias System.getProperty("RELEASE_KEY_ALIAS") ?: System.getenv("RELEASE_KEY_ALIAS")
+            // Hier steht jetzt fest dein Alias drin:
+            keyAlias "baf-key"
             keyPassword System.getProperty("RELEASE_KEY_PASSWORD") ?: System.getenv("RELEASE_KEY_PASSWORD")
         }
     }
