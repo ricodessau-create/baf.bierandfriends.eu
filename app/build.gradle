@@ -1,18 +1,27 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'com.google.gms.google-services'
+}
+
 android {
     namespace 'baf.bierandfriends.eu'
     compileSdk 34
 
     defaultConfig {
         applicationId "baf.bierandfriends.eu"
-        minSdk 26
+        minSdk 24
         targetSdk 34
         versionCode 1
         versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
         release {
             storeFile file("release.keystore")
+            // Diese Werte werden sicher über den CI-Workflow (unten) injiziert
             storePassword System.getenv("SIGNING_STORE_PASSWORD")
             keyAlias System.getenv("SIGNING_KEY_ALIAS")
             keyPassword System.getenv("SIGNING_KEY_PASSWORD")
@@ -23,7 +32,54 @@ android {
         release {
             signingConfig signingConfigs.release
             minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    buildFeatures {
+        viewBinding true
+        dataBinding true
+    }
+}
+
+dependencies {
+    // AndroidX & UI
+    implementation 'androidx.core:core-ktx:1.13.1'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    
+    // Navigation
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.7.7'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.7.7'
+
+    // Google Sign-In
+    implementation 'com.google.android.gms:play-services-auth:21.1.1'
+
+    // Glide (Bilder)
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
+
+    // Netzwerk (OkHttp)
+    implementation 'com.squareup.okhttp3:okhttp:4.12.0'
+
+    // Firebase
+    implementation platform('com.google.firebase:firebase-bom:33.0.0')
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-auth-ktx'
+    implementation 'com.google.firebase:firebase-firestore-ktx'
+
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
