@@ -21,16 +21,14 @@ jobs:
 
       - name: Decode Keystore
         run: |
-          # Dekodiert dein Base64-Secret direkt in den app-Ordner
           echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 --decode > app/release.keystore
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build Release Bundle (AAB)
+      - name: Build and Sign Release Bundle
         run: ./gradlew bundleRelease --stacktrace
         env:
-          # Diese Secrets müssen in den Repository-Einstellungen vorhanden sein
           SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
           SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
