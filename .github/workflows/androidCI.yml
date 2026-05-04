@@ -1,73 +1,43 @@
-name: Android CI
+name: Android Release CI
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "master" ] # Oder dein Haupt-Branch-Name
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
           java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
 
-      - name: Cache Gradle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
-      - name: Create debug keystore
+      - name: Decode Keystore
         run: |
-          mkdir -p ~/.android
-          keytool -genkeypair -v \
-            -keystore ~/.android/debug.keystore \
-            -alias androiddebugkey \
-            -keyalg RSA -keysize 2048 \
-            -validity 10000 \
-            -storepass android \
-            -keypass android \
-            -dname "CN=Android Debug,O=Android,C=US"
-
-      - name: Print SHA-1 for Google Login
-        run: |
-          keytool -list -v \
-            -keystore ~/.android/debug.keystore \
-            -alias androiddebugkey \
-            -storepass android \
-            -keypass android | grep "SHA1:"
+          # Dekodiert den in GitHub Secrets gespeicherten Base64-Keystore
+          echo "${{ secrets.RELEASE_KEYSTORE_BASE64 }}" | base64 --decode > app/release.keystore
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Verify google-services.json exists
-        run: |
-          if [ -f "app/google-services.json" ]; then
-            echo "✅ google-services.json gefunden"
-            python3 -c "import json; json.load(open('app/google-services.json')); print('✅ JSON ist valide')"
-          else
-            echo "❌ google-services.json fehlt!"
-            exit 1
-          fi
+      - name: Build Release Bundle (AAB)
+        run: ./gradlew bundleRelease --stacktrace
+        env:
+          # Diese Umgebungsvariablen werden von der build.gradle gelesen
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
 
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug --stacktrace
-
-      - name: Upload Debug APK
+      - name: Upload Release Bundle
         uses: actions/upload-artifact@v4
         with:
-          name: BierAndFriends-Debug
-          path: app/build/outputs/apk/debug/*.apk
+          name: app-release-bundle
+          path: app/build/outputs/bundle/release/app-release.aab
+          
