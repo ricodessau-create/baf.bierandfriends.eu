@@ -1,7 +1,8 @@
 plugins {
     id 'com.android.application'
-    id 'kotlin-android'
-    id 'com.google.gms.google-services' // Firebase
+    // Geänderte IDs für bessere Kompatibilität mit Gradle 9.x
+    id 'org.jetbrains.kotlin.android' version '1.9.20' 
+    id 'com.google.gms.google-services' version '4.4.0'
 }
 
 android {
@@ -20,9 +21,8 @@ android {
 
     signingConfigs {
         release {
-            // Greift auf die Datei zu, die wir im Workflow erstellt haben
+            // Greift auf die Datei zu, die wir im Workflow dekodiert haben
             storeFile file("release.keystore")
-            // Liest die Passwörter aus den Umgebungsvariablen des Workflows
             storePassword System.getenv("SIGNING_STORE_PASSWORD")
             keyAlias System.getenv("SIGNING_KEY_ALIAS")
             keyPassword System.getenv("SIGNING_KEY_PASSWORD")
@@ -35,13 +35,6 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            
-            // WICHTIG: Kein Suffix hier, damit es zur google-services.json passt
-        }
-        debug {
-            // Optional: Wenn du lokal testest, kannst du hier einen Suffix lassen, 
-            // aber für den Play Store ist nur der 'release' Block entscheidend.
-            applicationIdSuffix ".debug"
         }
     }
     
@@ -61,7 +54,18 @@ android {
 }
 
 dependencies {
-    // Deine Abhängigkeiten (Firebase, UI, etc.) bleiben hier gleich
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
-    // ...
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    
+    // Firebase
+    implementation platform('com.google.firebase:firebase-bom:32.7.0')
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-auth-ktx'
+    implementation 'com.google.firebase:firebase-firestore-ktx'
+
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }
