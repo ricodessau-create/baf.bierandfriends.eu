@@ -9,21 +9,18 @@ android {
     compileSdk 34
 
     defaultConfig {
-        // Der Name für Google Play
         applicationId "eu.BierAndFriends.baf"
-        
         minSdk 24
         targetSdk 34
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-    }
 
-    // Dieser Block löst dein aktuelles Problem mit der google-services.json!
-    // Er erlaubt es Firebase, trotz des neuen Namens zu funktionieren.
-    resValue "string", "project_id", "baf-bier-and-friends"
-    resValue "string", "google_app_id", "1:1071276067749:android:1754869818820980b1e42c"
+        // Hier müssen die Firebase-IDs rein, damit sie gefunden werden
+        resValue "string", "project_id", "baf-bier-and-friends"
+        resValue "string", "google_app_id", "1:1071276067749:android:1754869818820980b1e42c"
+    }
 
     buildTypes {
         release {
