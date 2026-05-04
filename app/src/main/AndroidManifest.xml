@@ -11,7 +11,7 @@
         android:theme="@style/Theme.BierAndFriends">
 
         <activity
-            android:name=".MainActivity"
+            android:name="bierandfriends.app.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
