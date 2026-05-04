@@ -7,7 +7,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -27,14 +26,11 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build and Sign Release Bundle
-        # Wir übergeben die Passwörter hier als Projekt-Parameter (-P), das ist am stabilsten
-        run: |
-          ./gradlew bundleRelease \
-            -Pandroid.injected.signing.store.file=$(pwd)/app/release.keystore \
-            -Pandroid.injected.signing.store.password="${{ secrets.SIGNING_STORE_PASSWORD }}" \
-            -Pandroid.injected.signing.key.alias="${{ secrets.SIGNING_KEY_ALIAS }}" \
-            -Pandroid.injected.signing.key.password="${{ secrets.SIGNING_KEY_PASSWORD }}" \
-            --stacktrace
+        run: ./gradlew bundleRelease --stacktrace
+        env:
+          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
 
       - name: Upload Release Bundle
         uses: actions/upload-artifact@v4
