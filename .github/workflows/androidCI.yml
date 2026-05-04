@@ -25,21 +25,20 @@ jobs:
           mkdir -p keystore
           echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 -d > keystore/baf-release.keystore
 
-      - name: Diagnose Keystore
-        run: |
-          keytool -list -v -keystore keystore/baf-release.keystore -storepass "${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" | grep "Aliasname:" || echo "Keystore Check fehlgeschlagen"
-
-      - name: Build Release Bundle
+      - name: Build APK and Bundle
         env:
           KEYSTORE_FILE: ${{ github.workspace }}/keystore/baf-release.keystore
           KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
-        run: ./gradlew bundleRelease --stacktrace
+        # assembleRelease erzeugt die .apk Datei, die Google jetzt sehen will
+        run: ./gradlew assembleRelease bundleRelease --stacktrace
 
-      - name: Upload Bundle
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: BAF-Release-Bundle
-          path: app/build/outputs/bundle/release/*.aab
-          
+          name: BAF-Release-Files
+          path: |
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/bundle/release/*.aab
+            
