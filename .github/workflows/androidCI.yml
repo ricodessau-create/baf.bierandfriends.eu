@@ -31,7 +31,6 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
-        # assembleRelease erzeugt die .apk Datei, die Google jetzt sehen will
         run: ./gradlew assembleRelease bundleRelease --stacktrace
 
       - name: Upload Artifacts
