@@ -1,8 +1,7 @@
 plugins {
     id 'com.android.application'
-    // Geänderte IDs für bessere Kompatibilität mit Gradle 9.x
-    id 'org.jetbrains.kotlin.android' version '1.9.20' 
-    id 'com.google.gms.google-services' version '4.4.0'
+    id 'org.jetbrains.kotlin.android'
+    id 'com.google.gms.google-services'
 }
 
 android {
@@ -21,7 +20,7 @@ android {
 
     signingConfigs {
         release {
-            // Greift auf die Datei zu, die wir im Workflow dekodiert haben
+            // Die Datei "release.keystore" wird vom Workflow aus dem Secret erstellt
             storeFile file("release.keystore")
             storePassword System.getenv("SIGNING_STORE_PASSWORD")
             keyAlias System.getenv("SIGNING_KEY_ALIAS")
@@ -54,13 +53,13 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.core:core-ktx:1.13.1'
     implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     
-    // Firebase
-    implementation platform('com.google.firebase:firebase-bom:32.7.0')
+    // Firebase Bill of Materials (BoM)
+    implementation platform('com.google.firebase:firebase-bom:33.0.0')
     implementation 'com.google.firebase:firebase-analytics-ktx'
     implementation 'com.google.firebase:firebase-auth-ktx'
     implementation 'com.google.firebase:firebase-firestore-ktx'
