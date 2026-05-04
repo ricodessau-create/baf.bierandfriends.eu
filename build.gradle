@@ -1,15 +1,11 @@
-// Top-level build file
 buildscript {
     repositories {
         google()
         mavenCentral()
     }
     dependencies {
-        // Version 8.4.0 ist stabil und kompatibel mit Gradle 8.7+
         classpath 'com.android.tools.build:gradle:8.4.0'
-        // Kotlin 2.0.0 behebt den "HasConvention" Fehler, den du im Log hattest
         classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.0.0'
-        // Aktuelle Version für Firebase Dienste
         classpath 'com.google.gms:google-services:4.4.1'
     }
 }
