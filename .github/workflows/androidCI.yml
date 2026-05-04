@@ -7,7 +7,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,20 +23,27 @@ jobs:
       - name: Decode Keystore
         run: |
           mkdir -p keystore
+          # Dekodiert den Base64-String aus Termux zurück in eine Datei
           echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 -d > keystore/baf-release.keystore
+
+      - name: 🔍 DIAGNOSE: Keystore Check
+        run: |
+          echo "--- Keystore Inhalt prüfen ---"
+          keytool -list -v -keystore keystore/baf-release.keystore \
+            -storepass "${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" | grep "Aliasname:" || echo "❌ Fehler: Passwort falsch oder Datei beschädigt"
 
       - name: Build Release Bundle (AAB)
         env:
+          # Diese Variablen werden von Gradle in der build.gradle genutzt
           KEYSTORE_FILE: ${{ github.workspace }}/keystore/baf-release.keystore
           KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
-        # "bundleRelease" statt "assembleRelease" erzeugt das AAB für den Store
         run: ./gradlew bundleRelease --stacktrace
 
       - name: Upload Release Bundle
         uses: actions/upload-artifact@v4
         with:
-          name: BierAndFriends-App-Bundle
+          name: BAF-Release-Bundle
           path: app/build/outputs/bundle/release/*.aab
           
