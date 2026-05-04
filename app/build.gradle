@@ -9,7 +9,7 @@ android {
     compileSdk 34
 
     defaultConfig {
-        applicationId "bierandfriends.app"
+        applicationId "eu.BierAndFriends.baf"
         minSdk 24
         targetSdk 34
         versionCode 1
