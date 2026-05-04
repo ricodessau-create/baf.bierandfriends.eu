@@ -8,11 +8,10 @@ android {
     namespace 'baf.bierandfriends.eu'
     compileSdk 34
 
-    // 1. SIGNIER-EINSTELLUNGEN HINZUFÜGEN
     signingConfigs {
         release {
-            // Diese Variablen kommen von GitHub Actions
-            storeFile file("release_keystore.jks") 
+            // Greift auf die Datei zu, die der Workflow gerade erstellt hat
+            storeFile file("release_keystore.jks")
             storePassword System.getenv("RELEASE_KEYSTORE_PASSWORD")
             keyAlias System.getenv("RELEASE_KEY_ALIAS")
             keyPassword System.getenv("RELEASE_KEY_PASSWORD")
@@ -30,9 +29,7 @@ android {
 
     buildTypes {
         release {
-            // 2. HIER DIE SIGNIERUNG AKTIVIEREN
             signingConfig signingConfigs.release
-            
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
@@ -58,7 +55,7 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment-ktx:2.7.7'
     implementation 'androidx.navigation:navigation-ui-ktx:2.7.7'
     
-    // Firebase & Auth
+    // Firebase
     implementation platform('com.google.firebase:firebase-bom:32.7.2')
     implementation 'com.google.firebase:firebase-auth-ktx'
     implementation 'com.google.firebase:firebase-firestore-ktx'
