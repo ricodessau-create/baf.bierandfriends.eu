@@ -2,9 +2,7 @@ name: Android Release CI
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "master" ]
 
 jobs:
   build:
@@ -20,55 +18,26 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Cache Gradle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
-
-      - name: Verify google-services.json
-        run: |
-          if [ -f "app/google-services.json" ]; then
-            python3 -c "import json; json.load(open('app/google-services.json')); print('✅ google-services.json OK')"
-          else
-            echo "❌ google-services.json fehlt!"
-            exit 1
-          fi
 
       - name: Decode Keystore
         run: |
           mkdir -p keystore
           echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 -d > keystore/baf-release.keystore
-          echo "✅ Keystore entpackt"
-          keytool -list -keystore keystore/baf-release.keystore \
-            -storepass "${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" 2>/dev/null || echo "Keystore-Info"
 
-      - name: Print SHA-1
-        run: |
-          keytool -list -v \
-            -keystore keystore/baf-release.keystore \
-            -alias "${{ secrets.RELEASE_KEY_ALIAS }}" \
-            -storepass "${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" \
-            -keypass "${{ secrets.RELEASE_KEY_PASSWORD }}" | grep "SHA1:" || true
-
-      - name: Build Release APK
+      - name: Build Release Bundle (AAB)
         env:
           KEYSTORE_FILE: ${{ github.workspace }}/keystore/baf-release.keystore
           KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
-        run: ./gradlew assembleRelease --stacktrace
+        # "bundleRelease" statt "assembleRelease" erzeugt das AAB für den Store
+        run: ./gradlew bundleRelease --stacktrace
 
-      - name: Upload Release APK
+      - name: Upload Release Bundle
         uses: actions/upload-artifact@v4
         with:
-          name: BierAndFriends-Release-v1.0.0
-          path: app/build/outputs/apk/release/*.apk
-          retention-days: 30
+          name: BierAndFriends-App-Bundle
+          path: app/build/outputs/bundle/release/*.aab
+          
