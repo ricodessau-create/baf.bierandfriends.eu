@@ -22,6 +22,12 @@ jobs:
         run: |
           echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 --decode > app/release.keystore
 
+      - name: List Keystore Content (Debug)
+        run: |
+          echo "Prüfe Keystore Inhalt..."
+          # Listet alle Aliase auf. Wenn das Passwort falsch ist, schlägt dieser Schritt fehl.
+          keytool -list -keystore app/release.keystore -storepass "${{ secrets.RELEASE_KEYSTORE_PASSWORD }}"
+
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
