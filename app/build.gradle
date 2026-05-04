@@ -5,21 +5,20 @@ plugins {
 }
 
 android {
+    // Interner Name für deinen Code und deine Layouts
     namespace 'baf.bierandfriends.eu'
     compileSdk 34
 
     defaultConfig {
-        applicationId "eu.BierAndFriends.baf"
+        // Exakt wie in deiner Firebase Console (Screenshot)
+        applicationId "eu.bierandfriends.baf"
+        
         minSdk 24
         targetSdk 34
         versionCode 1
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-
-        // Hier müssen die Firebase-IDs rein, damit sie gefunden werden
-        resValue "string", "project_id", "baf-bier-and-friends"
-        resValue "string", "google_app_id", "1:1071276067749:android:1754869818820980b1e42c"
     }
 
     buildTypes {
@@ -45,15 +44,19 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    
     implementation 'androidx.navigation:navigation-fragment-ktx:2.7.7'
     implementation 'androidx.navigation:navigation-ui-ktx:2.7.7'
+    
     implementation platform('com.google.firebase:firebase-bom:32.7.2')
     implementation 'com.google.firebase:firebase-auth-ktx'
     implementation 'com.google.firebase:firebase-firestore-ktx'
+    
     implementation 'com.github.bumptech.glide:glide:4.16.0'
     implementation 'io.github.jan-tennert.supabase:postgrest-kt:2.1.3'
     implementation 'io.github.jan-tennert.supabase:storage-kt:2.1.3'
     implementation 'io.ktor:ktor-client-android:2.3.8'
+
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
