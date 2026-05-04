@@ -22,15 +22,15 @@ jobs:
 
       - name: Decode Keystore
         run: |
-          mkdir -p keystore
-          echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 -d > keystore/baf-release.keystore
+          # Wir speichern den Keystore direkt im app-Ordner, damit Gradle ihn leicht findet
+          echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 -d > app/release_keystore.jks
 
       - name: Build APK and Bundle
         env:
-          KEYSTORE_FILE: ${{ github.workspace }}/keystore/baf-release.keystore
-          KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+          # Diese Umgebungsvariablen werden von der build.gradle gelesen
+          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: ./gradlew assembleRelease bundleRelease --stacktrace
 
       - name: Upload Artifacts
