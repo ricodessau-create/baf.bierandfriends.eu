@@ -13,7 +13,7 @@
         android:label="BaF"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher"
-        android:theme="@style/Theme.BAF"
+        android:theme="@style/Theme.Theme_BAF"
         android:requestLegacyExternalStorage="true">
 
         <activity
