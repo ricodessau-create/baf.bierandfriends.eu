@@ -23,25 +23,21 @@ jobs:
       - name: Decode Keystore
         run: |
           mkdir -p keystore
-          # Dekodiert den Base64-String aus Termux zurück in eine Datei
           echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 -d > keystore/baf-release.keystore
 
-      - name: 🔍 DIAGNOSE: Keystore Check
+      - name: Diagnose Keystore
         run: |
-          echo "--- Keystore Inhalt prüfen ---"
-          keytool -list -v -keystore keystore/baf-release.keystore \
-            -storepass "${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" | grep "Aliasname:" || echo "❌ Fehler: Passwort falsch oder Datei beschädigt"
+          keytool -list -v -keystore keystore/baf-release.keystore -storepass "${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" | grep "Aliasname:" || echo "Keystore Check fehlgeschlagen"
 
-      - name: Build Release Bundle (AAB)
+      - name: Build Release Bundle
         env:
-          # Diese Variablen werden von Gradle in der build.gradle genutzt
           KEYSTORE_FILE: ${{ github.workspace }}/keystore/baf-release.keystore
           KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: ./gradlew bundleRelease --stacktrace
 
-      - name: Upload Release Bundle
+      - name: Upload Bundle
         uses: actions/upload-artifact@v4
         with:
           name: BAF-Release-Bundle
