@@ -57,18 +57,18 @@ dependencies {
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     
-    // NAVIGATION (für navGraph Fehler)
+    // NAVIGATION
     implementation 'androidx.navigation:navigation-fragment-ktx:2.7.7'
     implementation 'androidx.navigation:navigation-ui-ktx:2.7.7'
 
-    // GOOGLE SIGN-IN (für Unresolved reference 'GoogleSignIn')
+    // GOOGLE SIGN-IN
     implementation 'com.google.android.gms:play-services-auth:21.1.1'
 
-    // GLIDE (für Unresolved reference 'Glide' / 'bumptech')
-    implementation 'github.com.bumptech.glide:glide:4.16.0'
-    annotationProcessor 'github.com.bumptech.glide:compiler:4.16.0'
+    // GLIDE (Hier war der Fehler: com.github statt github.com)
+    implementation 'com.github.bumptech.glide:glide:4.16.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.16.0'
 
-    // OKHTTP (für Unresolved reference 'okhttp3' / Supabase)
+    // OKHTTP
     implementation 'com.squareup.okhttp3:okhttp:4.12.0'
 
     // FIREBASE
