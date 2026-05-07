@@ -17,9 +17,11 @@ import baf.bierandfriends.eu.data.repository.NewsRepository
 import baf.bierandfriends.eu.data.repository.TicketRepository
 import baf.bierandfriends.eu.databinding.FragmentHomeBinding
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
+import java.net.HttpURLConnection
 import java.net.URL
 
 class HomeFragment : Fragment() {
@@ -35,7 +37,9 @@ class HomeFragment : Fragment() {
 
     private val serverIp = "baf.bierandfriends.eu"
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -47,7 +51,6 @@ class HomeFragment : Fragment() {
             findNavController().navigate(R.id.action_homeFragment_to_profileFragment)
         }
 
-        // Schnellzugriff klickbar machen
         binding.statEvents.setOnClickListener {
             findNavController().navigate(R.id.eventsFragment)
         }
@@ -83,14 +86,12 @@ class HomeFragment : Fragment() {
     private fun loadStats() {
         lifecycleScope.launch {
             try {
-                val events = eventsRepository.getUpcomingEvents()
-                binding.statEventsCount.text = events.size.toString()
+                binding.statEventsCount.text = eventsRepository.getUpcomingEvents().size.toString()
             } catch (e: Exception) { binding.statEventsCount.text = "0" }
         }
         lifecycleScope.launch {
             try {
-                val posts = forumRepository.getLatestPosts()
-                binding.statPostsCount.text = posts.size.toString()
+                binding.statPostsCount.text = forumRepository.getLatestPosts().size.toString()
             } catch (e: Exception) { binding.statPostsCount.text = "0" }
         }
         lifecycleScope.launch {
@@ -101,43 +102,99 @@ class HomeFragment : Fragment() {
         }
         lifecycleScope.launch {
             try {
-                val items = marketRepository.getMarketItems()
-                binding.statMarketCount.text = items.size.toString()
+                binding.statMarketCount.text = marketRepository.getMarketItems().size.toString()
             } catch (e: Exception) { binding.statMarketCount.text = "0" }
         }
     }
 
     private fun loadServerStatus() {
         lifecycleScope.launch {
-            try {
-                val result = withContext(Dispatchers.IO) {
-                    val url = URL("https://api.mcsrvstat.us/2/$serverIp")
-                    val connection = url.openConnection()
-                    connection.connectTimeout = 5000
-                    connection.readTimeout = 5000
-                    connection.getInputStream().bufferedReader().readText()
-                }
-                val json = JSONObject(result)
-                val online = json.optBoolean("online", false)
+            // 3 Versuche mit verschiedenen APIs
+            val online = tryGetServerStatus()
+            if (!isAdded || _binding == null) return@launch
 
-                if (online) {
-                    val players = json.optJSONObject("players")
-                    val onlineCount = players?.optInt("online", 0) ?: 0
-                    val max = players?.optInt("max", 0) ?: 0
+            if (online != null) {
+                if (online.first) {
                     binding.serverStatusText.text = "Online"
-                    binding.serverStatusText.setTextColor(ContextCompat.getColor(requireContext(), R.color.baf_green))
-                    binding.serverStatusDot.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.baf_green))
-                    binding.serverPlayersText.text = "$onlineCount/$max Spieler"
+                    binding.serverStatusText.setTextColor(
+                        ContextCompat.getColor(requireContext(), R.color.baf_green)
+                    )
+                    binding.serverStatusDot.setBackgroundColor(
+                        ContextCompat.getColor(requireContext(), R.color.baf_green)
+                    )
+                    binding.serverPlayersText.text = "${online.second} Spieler online"
                 } else {
                     binding.serverStatusText.text = "Offline"
-                    binding.serverStatusText.setTextColor(ContextCompat.getColor(requireContext(), R.color.baf_red))
-                    binding.serverStatusDot.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.baf_red))
+                    binding.serverStatusText.setTextColor(
+                        ContextCompat.getColor(requireContext(), R.color.baf_red)
+                    )
+                    binding.serverStatusDot.setBackgroundColor(
+                        ContextCompat.getColor(requireContext(), R.color.baf_red)
+                    )
                     binding.serverPlayersText.text = ""
                 }
-            } catch (e: Exception) {
+            } else {
                 binding.serverStatusText.text = "Nicht erreichbar"
+                binding.serverStatusText.setTextColor(
+                    ContextCompat.getColor(requireContext(), R.color.baf_text_secondary)
+                )
+                binding.serverPlayersText.text = ""
             }
         }
+    }
+
+    /**
+     * Versucht den Serverstatus mit 3 Versuchen abzufragen.
+     * Gibt Pair(online, playerCount) zurück, oder null bei Fehler.
+     */
+    private suspend fun tryGetServerStatus(): Pair<Boolean, Int>? {
+        // API v3 ist aktueller und zuverlässiger
+        val apis = listOf(
+            "https://api.mcsrvstat.us/3/$serverIp",
+            "https://api.mcsrvstat.us/2/$serverIp",
+            "https://mcapi.us/server/status?ip=$serverIp"
+        )
+
+        repeat(3) { attempt ->
+            try {
+                return withContext(Dispatchers.IO) {
+                    val url = URL(apis[attempt % apis.size])
+                    val conn = url.openConnection() as HttpURLConnection
+                    conn.connectTimeout = 6000
+                    conn.readTimeout = 6000
+                    conn.requestMethod = "GET"
+                    conn.setRequestProperty("User-Agent", "BAFApp/1.0")
+
+                    val responseCode = conn.responseCode
+                    if (responseCode != 200) return@withContext null
+
+                    val text = conn.inputStream.bufferedReader().readText()
+                    val json = JSONObject(text)
+
+                    // API v3 Format
+                    if (json.has("online")) {
+                        val isOnline = json.optBoolean("online", false)
+                        val players = json.optJSONObject("players")
+                        val count = players?.optInt("online", 0) ?: 0
+                        return@withContext Pair(isOnline, count)
+                    }
+
+                    // mcapi.us Format
+                    if (json.has("status")) {
+                        val status = json.optString("status", "")
+                        val isOnline = status == "online"
+                        val players = json.optJSONObject("players")
+                        val count = players?.optInt("now", 0) ?: 0
+                        return@withContext Pair(isOnline, count)
+                    }
+
+                    null
+                }
+            } catch (e: Exception) {
+                if (attempt < 2) delay(1500) // 1.5s warten vor nächstem Versuch
+            }
+        }
+        return null
     }
 
     override fun onDestroyView() {
