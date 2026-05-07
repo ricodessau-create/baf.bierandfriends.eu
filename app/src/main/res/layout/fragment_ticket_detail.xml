@@ -5,7 +5,6 @@
     android:orientation="vertical"
     android:background="@color/baf_background">
 
-    <!-- Header -->
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="140dp">
@@ -37,7 +36,6 @@
 
     </FrameLayout>
 
-    <!-- Ticket Info -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -124,7 +122,6 @@
         android:textStyle="bold"
         android:padding="16dp"/>
 
-    <!-- Messages -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/ticketMessagesRecycler"
         android:layout_width="match_parent"
@@ -133,7 +130,6 @@
         android:padding="8dp"
         android:clipToPadding="false"/>
 
-    <!-- Message Input -->
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
@@ -144,7 +140,10 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:background="@color/baf_card"
-        android:padding="8dp"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="24dp"
         android:gravity="center_vertical">
 
         <EditText
