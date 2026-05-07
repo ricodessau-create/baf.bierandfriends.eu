@@ -8,16 +8,19 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="180dp">
+
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@drawable/header_baf_samurai"
             android:scaleType="centerCrop"
             android:contentDescription="BAF Header"/>
+
         <View
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="#99000000"/>
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -29,15 +32,18 @@
             android:textStyle="bold"
             android:gravity="center"
             android:letterSpacing="0.15"/>
+
         <ImageView
             android:id="@+id/profileIcon"
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_gravity="top|end"
-            android:layout_margin="12dp"
+            android:layout_marginTop="40dp"
+            android:layout_marginEnd="12dp"
             android:src="@drawable/ic_profile_gaming"
             android:contentDescription="Profil"
             android:padding="4dp"/>
+
     </FrameLayout>
 
     <ScrollView
