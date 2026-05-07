@@ -9,27 +9,32 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="140dp">
+
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@drawable/header_baf_samurai"
             android:scaleType="centerCrop"
             android:contentDescription="Header"/>
+
         <View
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="#99000000"/>
+
         <TextView
             android:id="@+id/ticketDetailBack"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="top|start"
-            android:layout_margin="12dp"
+            android:layout_marginTop="40dp"
+            android:layout_marginStart="12dp"
             android:text="← Zurück"
             android:textColor="@color/baf_gold"
             android:textSize="15sp"
             android:clickable="true"
             android:focusable="true"/>
+
     </FrameLayout>
 
     <!-- Ticket Info -->
