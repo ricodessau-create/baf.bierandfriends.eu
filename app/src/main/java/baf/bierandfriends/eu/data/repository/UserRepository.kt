@@ -1,6 +1,7 @@
 package baf.bierandfriends.eu.data.repository
 
 import baf.bierandfriends.eu.data.models.UserProfile
+import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -57,7 +58,13 @@ class UserRepository {
     suspend fun generateSyncToken(): String {
         val uid = auth.currentUser?.uid ?: return ""
         val token = (100000..999999).random().toString()
-        db.collection("sync_tokens").document(token).set(mapOf("uid" to uid)).await()
+        // createdAt mitspeichern damit die Firebase Function Ablauf prüfen kann
+        db.collection("sync_tokens").document(token).set(
+            mapOf(
+                "uid" to uid,
+                "createdAt" to Timestamp.now()
+            )
+        ).await()
         return token
     }
 
