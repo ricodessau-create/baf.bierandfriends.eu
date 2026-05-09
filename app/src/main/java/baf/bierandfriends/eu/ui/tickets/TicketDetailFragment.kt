@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -12,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import baf.bierandfriends.eu.data.repository.TicketRepository
 import baf.bierandfriends.eu.data.repository.UserRepository
 import baf.bierandfriends.eu.databinding.FragmentTicketDetailBinding
+import baf.bierandfriends.eu.util.RankHelper
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -27,6 +29,7 @@ class TicketDetailFragment : Fragment() {
     private val ticketRepository = TicketRepository()
     private val userRepository = UserRepository()
     private var ticketId = ""
+    private var canClose = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -49,8 +52,19 @@ class TicketDetailFragment : Fragment() {
             true
         }
 
-        loadTicket()
-        loadMessages()
+        lifecycleScope.launch {
+            val profile = userRepository.getUserProfile()
+            val rank = profile?.rank ?: ""
+            canClose = RankHelper.canCloseTickets(rank)
+
+            if (canClose) {
+                binding.closeTicketButton.visibility = View.VISIBLE
+                binding.closeTicketButton.setOnClickListener { confirmCloseTicket() }
+            }
+
+            loadTicket()
+            loadMessages()
+        }
 
         // Polling alle 5s
         lifecycleScope.launch {
@@ -72,17 +86,25 @@ class TicketDetailFragment : Fragment() {
                 binding.ticketDetailAuthor.text = "Von: ${ticket.authorName}"
 
                 val statusDisplay = when (ticket.status.lowercase()) {
-                    "offen" -> "🔴 Offen"
-                    "in bearbeitung" -> "🟡 In Bearbeitung"
-                    "geschlossen" -> "🟢 Geschlossen"
-                    else -> ticket.status
+                    "offen"           -> "🔴 Offen"
+                    "in bearbeitung"  -> "🟡 In Bearbeitung"
+                    "geschlossen"     -> "🟢 Geschlossen"
+                    else              -> ticket.status
                 }
                 binding.ticketDetailStatus.text = statusDisplay
 
+                // Schließen-Button verstecken wenn schon geschlossen
+                if (ticket.status.lowercase() == "geschlossen" && canClose) {
+                    binding.closeTicketButton.text = "✅ Bereits geschlossen"
+                    binding.closeTicketButton.isEnabled = false
+                }
+
                 val dateText = if (ticket.createdAt > 0L)
-                    SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.GERMAN).format(Date(ticket.createdAt))
+                    SimpleDateFormat("dd.MM.yyyy HH:mm", Locale.GERMAN)
+                        .format(Date(ticket.createdAt))
                 else ""
                 binding.ticketDetailDate.text = dateText
+
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_SHORT).show()
             }
@@ -122,6 +144,27 @@ class TicketDetailFragment : Fragment() {
                 Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun confirmCloseTicket() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Ticket schließen")
+            .setMessage("Möchtest du dieses Ticket als geschlossen markieren?")
+            .setPositiveButton("Schließen") { _, _ ->
+                lifecycleScope.launch {
+                    try {
+                        ticketRepository.updateTicketStatus(ticketId, "geschlossen")
+                        Toast.makeText(requireContext(), "✅ Ticket geschlossen.", Toast.LENGTH_SHORT).show()
+                        binding.closeTicketButton.text = "✅ Bereits geschlossen"
+                        binding.closeTicketButton.isEnabled = false
+                        loadTicket()
+                    } catch (e: Exception) {
+                        Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton("Abbrechen", null)
+            .show()
     }
 
     override fun onDestroyView() {
