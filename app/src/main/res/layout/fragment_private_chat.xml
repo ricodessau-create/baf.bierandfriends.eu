@@ -62,7 +62,7 @@
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
         android:paddingTop="8dp"
-        android:paddingBottom="24dp"
+        android:paddingBottom="48dp"
         android:gravity="center_vertical">
 
         <EditText
