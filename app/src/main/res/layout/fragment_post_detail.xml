@@ -28,7 +28,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|start"
-                android:layout_margin="16dp"
+                android:layout_marginTop="40dp"
+                android:layout_marginStart="16dp"
                 android:text="← Zurück"
                 android:textColor="@color/baf_gold"
                 android:textSize="16sp"
@@ -86,7 +87,18 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/baf_text_primary"
                 android:textSize="15sp"
-                android:lineSpacingExtra="4dp"/>
+                android:lineSpacingExtra="4dp"
+                android:layout_marginBottom="24dp"/>
+
+            <!-- Löschen-Button – wird nur für Autor oder Moderator+ angezeigt -->
+            <Button
+                android:id="@+id/deletePostButton"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="🗑️ BEITRAG LÖSCHEN"
+                android:textColor="@color/baf_red"
+                android:visibility="gone"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
 
         </LinearLayout>
 
