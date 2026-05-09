@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:background="@color/baf_card">
+
+    <TextView
+        android:text="Name *"
+        android:textColor="@color/baf_gold"
+        android:textSize="12sp"
+        android:layout_marginBottom="4dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <EditText
+        android:id="@+id/eventName"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="z.B. PvP-Turnier"
+        android:textColor="@color/baf_text_primary"
+        android:textColorHint="@color/baf_text_secondary"
+        android:background="@color/baf_background"
+        android:padding="12dp"
+        android:inputType="text"
+        android:layout_marginBottom="12dp"/>
+
+    <TextView
+        android:text="Beschreibung"
+        android:textColor="@color/baf_gold"
+        android:textSize="12sp"
+        android:layout_marginBottom="4dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <EditText
+        android:id="@+id/eventDescription"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:hint="Beschreibung des Events..."
+        android:textColor="@color/baf_text_primary"
+        android:textColorHint="@color/baf_text_secondary"
+        android:background="@color/baf_background"
+        android:padding="12dp"
+        android:inputType="textMultiLine"
+        android:gravity="top"
+        android:layout_marginBottom="12dp"/>
+
+    <TextView
+        android:text="Datum und Uhrzeit"
+        android:textColor="@color/baf_gold"
+        android:textSize="12sp"
+        android:layout_marginBottom="4dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <EditText
+        android:id="@+id/eventDate"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:hint="Tippe zum Auswählen"
+        android:textColor="@color/baf_text_primary"
+        android:textColorHint="@color/baf_text_secondary"
+        android:background="@color/baf_background"
+        android:padding="12dp"
+        android:focusable="false"
+        android:clickable="true"/>
+
+</LinearLayout>
