@@ -46,7 +46,6 @@
         android:layout_height="0dp"
         android:layout_weight="1"
         android:padding="8dp"
-        android:paddingBottom="8dp"
         android:clipToPadding="false"
         android:background="@color/baf_background"/>
 
@@ -63,7 +62,7 @@
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
         android:paddingTop="8dp"
-        android:paddingBottom="24dp"
+        android:paddingBottom="48dp"
         android:gravity="center_vertical">
 
         <EditText
