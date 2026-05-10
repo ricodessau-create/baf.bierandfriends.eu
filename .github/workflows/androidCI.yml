@@ -2,11 +2,14 @@ name: Android Release CI
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -17,27 +20,49 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Grant execute permission for gradlew
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+
+      - name: Grant execute permission
         run: chmod +x gradlew
 
-      - name: Decode Keystore
+      - name: Verify google-services.json
         run: |
-          # Wir speichern den Keystore direkt im app-Ordner, damit Gradle ihn leicht findet
-          echo "${{ secrets.RELEASE_KEYSTORE }}" | base64 -d > app/release_keystore.jks
+          python3 -c "import json; json.load(open('app/google-services.json')); print('✅ OK')"
 
-      - name: Build APK and Bundle
+      - name: Decode Keystore
         env:
-          # Diese Umgebungsvariablen werden von der build.gradle gelesen
-          RELEASE_KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
-          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
-          RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
+          RELEASE_KEYSTORE: ${{ secrets.RELEASE_KEYSTORE }}
+        run: |
+          mkdir -p app/keystore
+          echo "$RELEASE_KEYSTORE" | base64 -d > app/keystore/release.keystore
+          echo "Keystore Größe: $(wc -c < app/keystore/release.keystore) bytes"
+
+      - name: Verify Keystore Alias
+        run: |
+          keytool -list \
+            -keystore app/keystore/release.keystore \
+            -storepass "${{ secrets.RELEASE_KEYSTORE_PASSWORD }}" \
+            -v 2>&1 | grep -E "Alias|Eintragstyp|Entry type" || true
+
+      - name: Build Release
+        env:
+          KEYSTORE_FILE: ${{ github.workspace }}/app/keystore/release.keystore
+          KEYSTORE_PASSWORD: ${{ secrets.RELEASE_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: ./gradlew assembleRelease bundleRelease --stacktrace
 
-      - name: Upload Artifacts
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: BAF-Release-Files
+          name: BierAndFriends-${{ github.run_number }}
           path: |
             app/build/outputs/apk/release/*.apk
             app/build/outputs/bundle/release/*.aab
-            
+          retention-days: 30
