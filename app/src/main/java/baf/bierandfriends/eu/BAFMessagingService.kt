@@ -21,7 +21,6 @@ class BAFMessagingService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        // Neuen Token in Firestore speichern
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
         FirebaseFirestore.getInstance()
             .collection("users")
@@ -49,7 +48,6 @@ class BAFMessagingService : FirebaseMessagingService() {
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
-        // Notification Channel erstellen (Android 8+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
@@ -72,17 +70,9 @@ class BAFMessagingService : FirebaseMessagingService() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val icon = when (type) {
-            "chat"    -> R.drawable.ic_chat
-            "ticket"  -> R.drawable.ic_ticket
-            "event"   -> R.drawable.ic_events
-            "forum"   -> R.drawable.ic_community
-            "market"  -> R.drawable.ic_market
-            else      -> R.mipmap.ic_launcher
-        }
-
+        // Immer ic_launcher nutzen – keine fehlenden Icons
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(icon)
+            .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle(title)
             .setContentText(body)
             .setStyle(NotificationCompat.BigTextStyle().bigText(body))
