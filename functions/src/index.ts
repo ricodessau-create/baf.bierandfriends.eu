@@ -1,23 +1,17 @@
+import { onRequest } from "firebase-functions/v2/https";
+import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import * as admin from "firebase-admin";
-import {
-    onRequest,
-} from "firebase-functions/v2/https";
-import {
-    onDocumentCreated,
-} from "firebase-functions/v2/firestore";
 
 admin.initializeApp();
 const db = admin.firestore();
 const messaging = admin.messaging();
 
-// ─── Hilfsfunktionen ──────────────────────────────────────────────────────
+// Region auf USA lassen, damit dein Link im Plugin exakt so bleibt wie er ist!
+const opts = { region: "us-central1" };
 
-async function sendToUser(
-    uid: string,
-    title: string,
-    body: string,
-    type: string
-): Promise<void> {
+// ─── ZENTRALE HILFSFUNKTIONEN (Sorgen dafür, dass es am Handy bimmelt) ───
+
+async function sendPush(uid: string, title: string, body: string, type: string) {
     try {
         const userDoc = await db.collection("users").doc(uid).get();
         const token = userDoc.get("fcmToken");
@@ -29,25 +23,24 @@ async function sendToUser(
             data: { type },
             android: {
                 priority: "high",
-                notification: { channelId: "baf_notifications", sound: "default" }
+                notification: { 
+                    channelId: "baf_notifications", // WICHTIG: Muss exakt wie in deiner App.txt sein
+                    sound: "default",
+                    clickAction: "OPEN_ACTIVITY_1"
+                }
             }
         });
     } catch (e) {
-        console.error(`sendToUser(${uid}) Fehler:`, e);
+        console.error(`Push-Fehler bei User ${uid}:`, e);
     }
 }
 
-async function sendToAll(
-    title: string,
-    body: string,
-    type: string,
-    excludeUid?: string
-): Promise<void> {
+async function broadcastPush(title: string, body: string, type: string, excludeUid?: string) {
     try {
         const snapshot = await db.collection("users").get();
-        const sends = snapshot.docs
-            .filter((doc) => doc.id !== excludeUid)
-            .map((doc) => {
+        const promises = snapshot.docs
+            .filter(doc => doc.id !== excludeUid)
+            .map(doc => {
                 const token = doc.get("fcmToken");
                 if (!token) return null;
                 return messaging.send({
@@ -56,274 +49,103 @@ async function sendToAll(
                     data: { type },
                     android: {
                         priority: "high",
-                        notification: { channelId: "baf_notifications", sound: "default" }
-                    }
-                }).catch(() => null);
-            })
-            .filter(Boolean);
-
-        await Promise.all(sends as Promise<string | null>[]);
-    } catch (e) {
-        console.error("sendToAll Fehler:", e);
-    }
-}
-
-// ─── BAFSync Endpoint ──────────────────────────────────────────────────────
-
-export const biersync = onRequest(
-    { region: "europe-west3" },
-    async (req, res) => {
-        res.set("Access-Control-Allow-Origin", "*");
-        res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-        res.set("Access-Control-Allow-Headers", "Content-Type");
-
-        if (req.method === "OPTIONS") {
-            res.status(204).send("");
-            return;
-        }
-        if (req.method !== "POST") {
-            res.status(405).send("Method not allowed");
-            return;
-        }
-
-        try {
-            const { token, uuid, name, bedrock } = req.body || {};
-
-            if (!token || !uuid || !name) {
-                res.status(400).json({ success: false, message: "Fehlende Felder" });
-                return;
-            }
-
-            const tokenDoc = await db.collection("sync_tokens").doc(token).get();
-            if (!tokenDoc.exists) {
-                res.status(400).json({
-                    success: false,
-                    message: "Ungültiger Token. Bitte neu generieren."
-                });
-                return;
-            }
-
-            const tokenData = tokenDoc.data();
-            const uid = tokenData?.uid;
-            if (!uid) {
-                res.status(400).json({ success: false, message: "Token ungültig" });
-                return;
-            }
-
-            if (tokenData?.createdAt) {
-                const createdAt = tokenData.createdAt.toMillis();
-                if (Date.now() - createdAt > 10 * 60 * 1000) {
-                    await tokenDoc.ref.delete();
-                    res.status(400).json({
-                        success: false,
-                        message: "Token abgelaufen. Bitte neu generieren."
-                    });
-                    return;
-                }
-            }
-
-            const userRef = db.collection("users").doc(uid);
-            await userRef.set(
-                { minecraftUuid: uuid, minecraftName: name, isBedrock: bedrock || false },
-                { merge: true }
-            );
-            await tokenDoc.ref.delete();
-
-            const userSnap = await userRef.get();
-            const rank = userSnap.get("rank") || "malzbier";
-            const username = userSnap.get("username") || name;
-
-            await sendToUser(
-                uid,
-                "⚔ Minecraft verknüpft!",
-                `Dein Account ${name} wurde erfolgreich verknüpft.`,
-                "sync"
-            );
-
-            res.json({ success: true, message: "Sync erfolgreich", rank, username });
-        } catch (e) {
-            console.error("biersync Fehler:", e);
-            res.status(500).json({ success: false, message: "Serverfehler" });
-        }
-    }
-);
-
-// ─── Neuer Chat-Beitrag ───────────────────────────────────────────────────
-
-export const onNewChatMessage = onDocumentCreated(
-    { document: "public_chat/{messageId}", region: "europe-west3" },
-    async (event) => {
-        const data = event.data?.data();
-        if (!data) return;
-
-        const authorName = data.authorName || "Jemand";
-        const text = (data.text || "") as string;
-        const authorUid = data.authorUid || "";
-
-        await sendToAll(
-            `💬 ${authorName} im Chat`,
-            text.length > 80 ? text.substring(0, 80) + "..." : text,
-            "chat",
-            authorUid
-        );
-    }
-);
-
-// ─── Neue Privat-Nachricht ────────────────────────────────────────────────
-
-export const onNewPrivateMessage = onDocumentCreated(
-    {
-        document: "private_chats/{chatId}/messages/{messageId}",
-        region: "europe-west3"
-    },
-    async (event) => {
-        const data = event.data?.data();
-        if (!data) return;
-
-        const senderName = data.senderName || "Jemand";
-        const text = (data.text || "") as string;
-        const receiverUid = data.receiverUid || "";
-
-        if (!receiverUid) return;
-
-        await sendToUser(
-            receiverUid,
-            `📩 Neue Nachricht von ${senderName}`,
-            text.length > 80 ? text.substring(0, 80) + "..." : text,
-            "chat"
-        );
-    }
-);
-
-// ─── Neues Ticket ─────────────────────────────────────────────────────────
-
-export const onNewTicket = onDocumentCreated(
-    { document: "tickets/{ticketId}", region: "europe-west3" },
-    async (event) => {
-        const data = event.data?.data();
-        if (!data) return;
-
-        const authorName = data.authorName || "Jemand";
-        const title = data.title || "";
-
-        const staffRanks = ["supporter", "moderator", "admin", "cheffe", "trainee"];
-        const snapshot = await db.collection("users").get();
-
-        const sends = snapshot.docs
-            .filter((doc) =>
-                staffRanks.includes((doc.get("rank") || "").toLowerCase())
-            )
-            .map((doc) => {
-                const token = doc.get("fcmToken");
-                if (!token) return null;
-                return messaging.send({
-                    token,
-                    notification: {
-                        title: `🎫 Neues Ticket von ${authorName}`,
-                        body: title
-                    },
-                    data: { type: "ticket" },
-                    android: {
-                        priority: "high",
                         notification: { channelId: "baf_notifications" }
                     }
                 }).catch(() => null);
-            })
-            .filter(Boolean);
-
-        await Promise.all(sends as Promise<string | null>[]);
+            });
+        await Promise.all(promises);
+    } catch (e) {
+        console.error("Broadcast-Fehler:", e);
     }
-);
+}
 
-// ─── Neue Ticket-Nachricht ────────────────────────────────────────────────
+// ─── 1. DER BIERSYNC ENDPOINT (Für dein Minecraft Plugin) ────────────────
 
-export const onNewTicketMessage = onDocumentCreated(
-    {
-        document: "tickets/{ticketId}/messages/{messageId}",
-        region: "europe-west3"
-    },
-    async (event) => {
-        const data = event.data?.data();
-        if (!data) return;
+export const biersync = onRequest(opts, async (req, res) => {
+    res.set("Access-Control-Allow-Origin", "*");
+    if (req.method === "OPTIONS") { res.status(204).send(""); return; }
+    
+    try {
+        const { token, uuid, name, bedrock } = req.body || {};
+        const tokenDoc = await db.collection("sync_tokens").doc(token).get();
+        const uid = tokenDoc.data()?.uid;
 
-        const authorName = data.authorName || "Jemand";
-        const text = (data.text || "") as string;
-        const authorUid = data.authorUid || "";
-        const ticketId = event.params.ticketId;
+        if (!uid) { res.status(400).send("Token ungültig"); return; }
 
-        const ticketDoc = await db.collection("tickets").doc(ticketId).get();
-        const ticketAuthorUid = ticketDoc.get("authorUid");
+        await db.collection("users").doc(uid).set({ 
+            minecraftUuid: uuid, 
+            minecraftName: name, 
+            isBedrock: bedrock || false 
+        }, { merge: true });
 
-        if (ticketAuthorUid && ticketAuthorUid !== authorUid) {
-            await sendToUser(
-                ticketAuthorUid,
-                "🎫 Antwort auf dein Ticket",
-                `${authorName}: ${text.length > 60 ? text.substring(0, 60) + "..." : text}`,
-                "ticket"
-            );
-        }
+        await tokenDoc.ref.delete();
+        await sendPush(uid, "⚔ Account verknüpft!", `Hi ${name}, dein Account ist jetzt startklar!`, "sync");
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).send("Fehler");
     }
-);
+});
 
-// ─── Neuer Forum-Beitrag ──────────────────────────────────────────────────
+// ─── 2. CHAT PUSH (Wenn jemand im globalen Chat schreibt) ───────────────
 
-export const onNewForumPost = onDocumentCreated(
-    { document: "forum/{postId}", region: "europe-west3" },
-    async (event) => {
-        const data = event.data?.data();
-        if (!data) return;
+export const onNewChatMessage = onDocumentCreated(opts, "public_chat/{messageId}", async (event) => {
+    const data = event.data?.data();
+    if (!data) return;
+    await broadcastPush(`💬 ${data.authorName || "Jemand"} im Chat`, data.text || "...", "chat", data.authorUid);
+});
 
-        const author = data.author || "Jemand";
-        const title = data.title || "";
-        const authorUid = data.authorUid || "";
+// ─── 3. PRIVAT-NACHRICHTEN PUSH ──────────────────────────────────────────
 
-        await sendToAll(
-            `📋 Neuer Beitrag von ${author}`,
-            title,
-            "forum",
-            authorUid
-        );
+export const onNewPrivateMessage = onDocumentCreated(opts, "private_chats/{chatId}/messages/{messageId}", async (event) => {
+    const data = event.data?.data();
+    if (!data || !data.receiverUid) return;
+    await sendPush(data.receiverUid, `📩 Nachricht von ${data.senderName}`, data.text || "...", "chat");
+});
+
+// ─── 4. TICKET PUSH (Neu für Staff / Antwort für User) ───────────────────
+
+export const onNewTicket = onDocumentCreated(opts, "tickets/{ticketId}", async (event) => {
+    const data = event.data?.data();
+    if (!data) return;
+    const staffRanks = ["supporter", "moderator", "admin", "cheffe", "trainee"];
+    const snapshot = await db.collection("users").get();
+    
+    const staffSends = snapshot.docs
+        .filter(doc => staffRanks.includes((doc.get("rank") || "").toLowerCase()))
+        .map(doc => sendPush(doc.id, `🎫 Neues Ticket!`, `${data.authorName}: ${data.title}`, "ticket"));
+    await Promise.all(staffSends);
+});
+
+export const onNewTicketMessage = onDocumentCreated(opts, "tickets/{ticketId}/messages/{messageId}", async (event) => {
+    const data = event.data?.data();
+    if (!data) return;
+    const ticketDoc = await db.collection("tickets").doc(event.params.ticketId).get();
+    const ticketAuthorUid = ticketDoc.get("authorUid");
+    if (ticketAuthorUid && ticketAuthorUid !== data.authorUid) {
+        await sendPush(ticketAuthorUid, `🎫 Ticket-Update`, `${data.authorName}: ${data.text}`, "ticket");
     }
-);
+});
 
-// ─── Neues Event ──────────────────────────────────────────────────────────
+// ─── 5. FORUM PUSH (Bei neuen Beiträgen) ──────────────────────────────────
 
-export const onNewEvent = onDocumentCreated(
-    { document: "events/{eventId}", region: "europe-west3" },
-    async (event) => {
-        const data = event.data?.data();
-        if (!data) return;
+export const onNewForumPost = onDocumentCreated(opts, "forum/{postId}", async (event) => {
+    const data = event.data?.data();
+    if (!data) return;
+    await broadcastPush(`📋 Forum: ${data.author}`, data.title || "Neuer Beitrag", "forum", data.authorUid);
+});
 
-        const name = data.name || "Neues Event";
-        const description = (data.description || "") as string;
+// ─── 6. EVENT PUSH (Wenn ein Event erstellt wird) ─────────────────────────
 
-        await sendToAll(
-            `🎉 Neues Event: ${name}`,
-            description.length > 80
-                ? description.substring(0, 80) + "..."
-                : description,
-            "event"
-        );
-    }
-);
+export const onNewEvent = onDocumentCreated(opts, "events/{eventId}", async (event) => {
+    const data = event.data?.data();
+    if (!data) return;
+    await broadcastPush(`🎉 Neues Event!`, data.name || "Schau mal rein!", "event");
+});
 
-// ─── Neues Markt-Angebot ──────────────────────────────────────────────────
+// ─── 7. MARKTPLATZ PUSH (Neue Items) ──────────────────────────────────────
 
-export const onNewMarketItem = onDocumentCreated(
-    { document: "market/{itemId}", region: "europe-west3" },
-    async (event) => {
-        const data = event.data?.data();
-        if (!data) return;
-
-        const ownerName = data.ownerName || "Jemand";
-        const title = data.title || "";
-        const ownerUuid = data.ownerUuid || "";
-
-        await sendToAll(
-            `🛒 Neues Angebot von ${ownerName}`,
-            title,
-            "market",
-            ownerUuid
-        );
-    }
-);
+export const onNewMarketItem = onDocumentCreated(opts, "market/{itemId}", async (event) => {
+    const data = event.data?.data();
+    if (!data) return;
+    await broadcastPush(`🛒 Markt: ${data.ownerName}`, data.title || "Neues Angebot", "market", data.ownerUuid);
+});
