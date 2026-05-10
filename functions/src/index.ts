@@ -6,7 +6,7 @@ admin.initializeApp();
 const db = admin.firestore();
 const messaging = admin.messaging();
 
-// Region auf Frankfurt festlegen
+// Konfiguration: Region festlegen (Frankfurt)
 const opts = { region: "europe-west3" };
 
 // ─── Hilfsfunktionen ───────────────────────────────────────────────────
@@ -91,7 +91,7 @@ export const biersync = onRequest(opts, async (req, res) => {
         const rank = userSnap.get("rank") || "malzbier";
         const username = userSnap.get("username") || name;
 
-        await sendToUser(uid, "⚔ Minecraft verknüpft!", `Dein Account ${name} wurde erfolgreich verknüpft.`, "sync");
+        await sendToUser(uid, "⚔ Minecraft verknüpft!", `Dein Account ${name} wurde verknüpft.`, "sync");
 
         res.json({ success: true, message: "Sync erfolgreich", rank, username });
     } catch (e) {
@@ -100,7 +100,7 @@ export const biersync = onRequest(opts, async (req, res) => {
     }
 });
 
-// ─── Trigger: Neue Chat-Nachricht ─────────────────────────────────────────
+// ─── Firestore Trigger (v2) ───────────────────────────────────────────────
 
 export const onNewChatMessage = onDocumentCreated(opts, "public_chat/{messageId}", async (event) => {
     const data = event.data?.data();
@@ -113,8 +113,6 @@ export const onNewChatMessage = onDocumentCreated(opts, "public_chat/{messageId}
     );
 });
 
-// ─── Trigger: Neue Privat-Nachricht ───────────────────────────────────────
-
 export const onNewPrivateMessage = onDocumentCreated(opts, "private_chats/{chatId}/messages/{messageId}", async (event) => {
     const data = event.data?.data();
     if (!data || !data.receiverUid) return;
@@ -126,15 +124,11 @@ export const onNewPrivateMessage = onDocumentCreated(opts, "private_chats/{chatI
     );
 });
 
-// ─── Trigger: Neues Ticket ────────────────────────────────────────────────
-
 export const onNewTicket = onDocumentCreated(opts, "tickets/{ticketId}", async (event) => {
     const data = event.data?.data();
     if (!data) return;
-
     const staffRanks = ["supporter", "moderator", "admin", "cheffe", "trainee"];
     const snapshot = await db.collection("users").get();
-
     const sends = snapshot.docs
         .filter(doc => staffRanks.includes((doc.get("rank") || "").toLowerCase()))
         .map(doc => {
@@ -150,27 +144,15 @@ export const onNewTicket = onDocumentCreated(opts, "tickets/{ticketId}", async (
     await Promise.all(sends);
 });
 
-// ─── Trigger: Ticket-Nachricht ────────────────────────────────────────────
-
 export const onNewTicketMessage = onDocumentCreated(opts, "tickets/{ticketId}/messages/{messageId}", async (event) => {
     const data = event.data?.data();
     if (!data) return;
-    const ticketId = event.params.ticketId;
-
-    const ticketDoc = await db.collection("tickets").doc(ticketId).get();
+    const ticketDoc = await db.collection("tickets").doc(event.params.ticketId).get();
     const ticketAuthorUid = ticketDoc.get("authorUid");
-
     if (ticketAuthorUid && ticketAuthorUid !== data.authorUid) {
-        await sendToUser(
-            ticketAuthorUid,
-            `🎫 Antwort auf dein Ticket`,
-            `${data.authorName || "Jemand"}: ${(data.text || "").substring(0, 60)}...`,
-            "ticket"
-        );
+        await sendToUser(ticketAuthorUid, `🎫 Antwort auf dein Ticket`, `${data.authorName || "Jemand"}: ${(data.text || "").substring(0, 60)}...`, "ticket");
     }
 });
-
-// ─── Trigger: Neuer Forum-Beitrag ─────────────────────────────────────────
 
 export const onNewForumPost = onDocumentCreated(opts, "forum/{postId}", async (event) => {
     const data = event.data?.data();
@@ -178,19 +160,11 @@ export const onNewForumPost = onDocumentCreated(opts, "forum/{postId}", async (e
     await sendToAll(`📋 Neuer Beitrag von ${data.author || "Jemand"}`, data.title || "", "forum", data.authorUid);
 });
 
-// ─── Trigger: Neues Event ─────────────────────────────────────────────────
-
 export const onNewEvent = onDocumentCreated(opts, "events/{eventId}", async (event) => {
     const data = event.data?.data();
     if (!data) return;
-    await sendToAll(
-        `🎉 Neues Event: ${data.name || "Event"}`,
-        (data.description || "").substring(0, 80) + "...",
-        "event"
-    );
+    await sendToAll(`🎉 Neues Event: ${data.name || "Event"}`, (data.description || "").substring(0, 80) + "...", "event");
 });
-
-// ─── Trigger: Neues Markt-Angebot ─────────────────────────────────────────
 
 export const onNewMarketItem = onDocumentCreated(opts, "market/{itemId}", async (event) => {
     const data = event.data?.data();
