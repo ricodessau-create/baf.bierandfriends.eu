@@ -20,11 +20,16 @@ android {
     signingConfigs {
         release {
             def keystorePath = System.getenv("KEYSTORE_FILE")
-            if (keystorePath) {
+            def keystorePassword = System.getenv("KEYSTORE_PASSWORD")
+            def keyAlias = System.getenv("KEY_ALIAS")
+            def keyPassword = System.getenv("KEY_PASSWORD")
+
+            if (keystorePath != null && keystorePassword != null &&
+                keyAlias != null && keyPassword != null) {
                 storeFile file(keystorePath)
-                storePassword System.getenv("KEYSTORE_PASSWORD")
-                keyAlias System.getenv("KEY_ALIAS")
-                keyPassword System.getenv("KEY_PASSWORD")
+                storePassword keystorePassword
+                keyAlias keyAlias
+                keyPassword keyPassword
             }
         }
     }
@@ -38,7 +43,10 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
+            def keystorePath = System.getenv("KEYSTORE_FILE")
+            if (keystorePath != null) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 
