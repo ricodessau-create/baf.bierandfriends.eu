@@ -20,13 +20,10 @@ android {
 
     signingConfigs {
         release {
-            // Versucht die Datei im aktuellen Ordner oder eine Ebene höher zu finden
-            def ksFile = file("release_keystore.jks")
-            if (!ksFile.exists()) {
-                ksFile = file("../release_keystore.jks")
-            }
             
-            storeFile ksFile
+            storeFile file("../release_keystore.jks")
+            
+            
             storePassword System.getenv("RELEASE_KEYSTORE_PASSWORD")
             keyAlias System.getenv("RELEASE_KEY_ALIAS")
             keyPassword System.getenv("RELEASE_KEY_PASSWORD")
