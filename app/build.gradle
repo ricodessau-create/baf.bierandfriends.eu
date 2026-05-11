@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace 'baf.bierandfriends.eu'
+    namespace 'eu.bierandfriends.baf'
     compileSdk 35
 
     defaultConfig {
