@@ -10,7 +10,7 @@ android {
     compileSdk 35
 
     defaultConfig {
-        applicationId "baf.bierandfriends.eu"
+        applicationId "eu.bierandfriends.baf"
         minSdk 26
         targetSdk 35
         versionCode 7
