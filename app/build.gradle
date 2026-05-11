@@ -13,16 +13,18 @@ android {
         applicationId "eu.bierandfriends.baf"
         minSdk 26
         targetSdk 35
-        versionCode 7
-        versionName "1.6"
+        versionCode 8
+        versionName "1.7"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
         release {
-            storeFile file(System.getenv("KEYSTORE_FILE") ?: "keystore/release.keystore")
-            storePassword System.getenv("KEYSTORE_PASSWORD") ?: ""
-            keyAlias System.getenv("KEY_ALIAS") ?: ""
-            keyPassword System.getenv("KEY_PASSWORD") ?: ""
+            // Angepasst an deine GitHub Secrets aus dem Screenshot
+            storeFile file("../release_keystore.jks")
+            storePassword System.getenv("RELEASE_KEYSTORE_PASSWORD")
+            keyAlias System.getenv("RELEASE_KEY_ALIAS")
+            keyPassword System.getenv("RELEASE_KEY_PASSWORD")
         }
     }
 
@@ -68,12 +70,15 @@ dependencies {
 
     implementation 'com.google.android.material:material:1.11.0'
 
-    implementation platform('com.google.firebase:firebase-bom:32.7.0')
+    implementation platform('com.google.firebase:firebase-bom:32.7.2')
     implementation 'com.google.firebase:firebase-auth-ktx'
     implementation 'com.google.firebase:firebase-firestore-ktx'
     implementation 'com.google.firebase:firebase-messaging-ktx'
 
-    implementation 'com.google.android.gms:play-services-auth:20.7.0'
+    // Fix für die Google Play Sicherheitswarnung
+    implementation 'com.google.android.recaptcha:recaptcha:18.4.0'
+
+    implementation 'com.google.android.gms:play-services-auth:21.0.0'
 
     implementation 'com.github.bumptech.glide:glide:4.16.0'
 
