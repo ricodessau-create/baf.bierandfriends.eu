@@ -20,14 +20,15 @@ android {
 
     signingConfigs {
         release {
-            // Wir nutzen die Umgebungsvariable direkt für den Pfad. 
-            // Falls sie leer ist, suchen wir im Root (Standardverhalten vieler Actions)
-            def keystorePath = System.getenv("RELEASE_KEYSTORE_PATH") ?: "../release_keystore.jks"
-            storeFile file(keystorePath)
-            
-            storePassword System.getenv("RELEASE_KEYSTORE_PASSWORD")
-            keyAlias System.getenv("RELEASE_KEY_ALIAS")
-            keyPassword System.getenv("RELEASE_KEY_PASSWORD")
+            // Wir suchen die Datei im Root. Wenn sie nicht da ist, lassen wir es leer, 
+            // damit der Task nicht mit einem Fehler abbricht.
+            def keystoreFile = file("../release_keystore.jks")
+            if (keystoreFile.exists()) {
+                storeFile keystoreFile
+                storePassword System.getenv("RELEASE_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("RELEASE_KEY_ALIAS")
+                keyPassword System.getenv("RELEASE_KEY_PASSWORD")
+            }
         }
     }
 
@@ -36,7 +37,10 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
+            // Nur signieren, wenn die Datei auch wirklich gefunden wurde
+            if (signingConfigs.release.storeFile != null) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 
@@ -70,7 +74,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-firestore-ktx'
     implementation 'com.google.firebase:firebase-messaging-ktx'
 
-    // Das ist der Fix für Google Play
+    // Fix für Google Play reCAPTCHA
     implementation 'com.google.android.recaptcha:recaptcha:18.4.0'
 
     implementation 'com.google.android.gms:play-services-auth:21.0.0'
