@@ -6,13 +6,13 @@ plugins {
 }
 
 android {
-    namespace 'eu.bierandfriends.baf'
+    namespace 'baf.bierandfriends.eu'
     compileSdk 35
 
     defaultConfig {
         // WICHTIG: Hier stand bei dir "eu.bierandfriends.baf". 
         // Ich habe es auf Claudes Version zurückgesetzt, falls das dein Store-Paket ist.
-        applicationId "baf.bierandfriends.eu" 
+        applicationId "eu.bierandfriends.baf" 
         minSdk 26
         targetSdk 35
         versionCode 8
