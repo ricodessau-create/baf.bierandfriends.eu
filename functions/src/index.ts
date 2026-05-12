@@ -38,7 +38,8 @@ async function sendToAll(title: string, body: string, type: string, excludeUid =
     } catch (e) { console.error("sendToAll:", e); }
 }
 
-export const biersync = functions.region(reg).https.onRequest(async (req, res) => {
+// Name geändert von biersync auf biersync_app wegen Google Cloud Konflikt
+export const biersync_app = functions.region(reg).https.onRequest(async (req, res) => {
     res.set("Access-Control-Allow-Origin", "*");
     res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
     res.set("Access-Control-Allow-Headers", "Content-Type");
