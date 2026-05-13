@@ -10,6 +10,7 @@ import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import baf.bierandfriends.eu.databinding.ActivityMainBinding
@@ -23,6 +24,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val TAG = "MainActivity"
+    private var pendingNotificationType: String? = null
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -37,6 +39,9 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         FirebaseApp.initializeApp(this)
+
+        // Notification-Typ aus Intent merken
+        pendingNotificationType = intent?.getStringExtra("notification_type")
 
         requestNotificationPermission()
 
@@ -61,51 +66,49 @@ class MainActivity : AppCompatActivity() {
         navController.addOnDestinationChangedListener { _, destination, _ ->
             binding.bottomNavigation.visibility =
                 if (destination.id in noBottomNav) View.GONE else View.VISIBLE
-        }
 
-        // Notification-Tap auswerten
-        handleNotificationIntent(intent)
+            // Erst navigieren wenn wir auf einem Haupt-Tab sind (nicht Login)
+            if (destination.id == R.id.homeFragment) {
+                pendingNotificationType?.let { type ->
+                    pendingNotificationType = null
+                    navigateToNotification(navController, type)
+                }
+            }
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        // App war bereits offen – trotzdem navigieren
-        handleNotificationIntent(intent)
+        val type = intent.getStringExtra("notification_type") ?: return
+        try {
+            val navController = findNavController(R.id.nav_host_fragment)
+            val current = navController.currentDestination?.id
+            // Nur navigieren wenn User schon eingeloggt ist (nicht auf Login-Screen)
+            if (current != null &&
+                current != R.id.loginFragment &&
+                current != R.id.registerFragment) {
+                navigateToNotification(navController, type)
+            } else {
+                pendingNotificationType = type
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "onNewIntent Navigation Fehler: ${e.message}")
+        }
     }
 
-    private fun handleNotificationIntent(intent: Intent?) {
-        val type = intent?.getStringExtra("notification_type") ?: return
-        if (type.isEmpty()) return
-
-        Log.d(TAG, "Notification Tap: type=$type")
-
-        // Kurz warten bis NavController bereit ist
-        binding.root.post {
-            try {
-                val navController = findNavController(R.id.nav_host_fragment)
-                when (type) {
-                    "chat" -> {
-                        navController.navigate(R.id.communityFragment)
-                    }
-                    "ticket" -> {
-                        navController.navigate(R.id.ticketsFragment)
-                    }
-                    "forum" -> {
-                        navController.navigate(R.id.communityFragment)
-                    }
-                    "event" -> {
-                        navController.navigate(R.id.eventsFragment)
-                    }
-                    "market" -> {
-                        navController.navigate(R.id.marketFragment)
-                    }
-                    "sync" -> {
-                        navController.navigate(R.id.profileFragment)
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Navigation Fehler: ${e.message}")
+    private fun navigateToNotification(navController: NavController, type: String) {
+        Log.d(TAG, "Navigiere zu: $type")
+        try {
+            when (type) {
+                "chat"   -> navController.navigate(R.id.communityFragment)
+                "ticket" -> navController.navigate(R.id.ticketsFragment)
+                "forum"  -> navController.navigate(R.id.communityFragment)
+                "event"  -> navController.navigate(R.id.eventsFragment)
+                "market" -> navController.navigate(R.id.marketFragment)
+                "sync"   -> navController.navigate(R.id.profileFragment)
             }
+        } catch (e: Exception) {
+            Log.e(TAG, "Navigation Fehler: ${e.message}")
         }
     }
 
