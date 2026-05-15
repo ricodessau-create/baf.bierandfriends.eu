@@ -12,7 +12,6 @@ import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import baf.bierandfriends.eu.databinding.ActivityMainBinding
@@ -26,7 +25,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val TAG = "MainActivity"
-    private var pendingNotificationType: String? = null
 
     private val notificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -37,10 +35,6 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         FirebaseApp.initializeApp(this)
-
-        // Beide möglichen Keys prüfen
-        pendingNotificationType = extractNotificationType(intent)
-        Log.d(TAG, "Pending notification type: $pendingNotificationType")
 
         requestNotificationPermission()
 
@@ -57,77 +51,64 @@ class MainActivity : AppCompatActivity() {
         navController.addOnDestinationChangedListener { _, destination, _ ->
             binding.bottomNavigation.visibility =
                 if (destination.id in noBottomNav) View.GONE else View.VISIBLE
+        }
 
-            // Warten bis homeFragment geladen ist, dann navigieren
-            if (destination.id == R.id.homeFragment) {
-                pendingNotificationType?.let { type ->
-                    pendingNotificationType = null
-                    // 500ms warten damit NavController stabil ist
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        navigateToNotification(navController, type)
-                    }, 500)
-                }
-            }
+        // Notification-Navigation erst nach 1 Sekunde
+        val type = getNotificationType(intent)
+        if (type != null) {
+            Handler(Looper.getMainLooper()).postDelayed({
+                handleNotificationNavigation(type)
+            }, 1000)
         }
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        val type = extractNotificationType(intent) ?: return
-        Log.d(TAG, "onNewIntent type: $type")
-
+        val type = getNotificationType(intent) ?: return
         Handler(Looper.getMainLooper()).postDelayed({
-            try {
-                val navController = findNavController(R.id.nav_host_fragment)
-                val current = navController.currentDestination?.id
-                if (current != null &&
-                    current != R.id.loginFragment &&
-                    current != R.id.registerFragment) {
-                    navigateToNotification(navController, type)
-                } else {
-                    pendingNotificationType = type
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "onNewIntent Fehler: ${e.message}")
-            }
+            handleNotificationNavigation(type)
         }, 300)
     }
 
-    private fun extractNotificationType(intent: Intent?): String? {
+    private fun getNotificationType(intent: Intent?): String? {
         if (intent == null) return null
-        // FCM sendet data payload auf verschiedene Arten
         return intent.getStringExtra("notification_type")
             ?: intent.getStringExtra("type")
-            ?: intent.extras?.getString("notification_type")
-            ?: intent.extras?.getString("type")
     }
 
-    private fun navigateToNotification(navController: NavController, type: String) {
-        Log.d(TAG, "Navigiere zu Typ: $type")
+    private fun handleNotificationNavigation(type: String) {
         try {
-            val destination = when (type) {
-                "chat"   -> R.id.communityFragment
-                "ticket" -> R.id.ticketsFragment
-                "forum"  -> R.id.communityFragment
-                "event"  -> R.id.eventsFragment
-                "market" -> R.id.marketFragment
-                "sync"   -> R.id.profileFragment
-                else     -> null
+            val navController = findNavController(R.id.nav_host_fragment)
+            val uid = FirebaseAuth.getInstance().currentUser?.uid
+
+            // Nicht navigieren wenn nicht eingeloggt
+            if (uid == null) {
+                Log.d(TAG, "Nicht eingeloggt – keine Navigation")
+                return
             }
-            destination?.let {
-                // Erst zur Home navigieren falls nötig, dann zum Ziel
-                val current = navController.currentDestination?.id
-                if (current != R.id.homeFragment) {
-                    navController.navigate(R.id.homeFragment)
-                    Handler(Looper.getMainLooper()).postDelayed({
-                        try { navController.navigate(it) } catch (e: Exception) { }
-                    }, 300)
-                } else {
-                    navController.navigate(it)
+
+            // Direkt Bottom Nav Item aktivieren – sicherer als navigate()
+            when (type) {
+                "chat", "forum" -> {
+                    binding.bottomNavigation.selectedItemId = R.id.communityFragment
+                }
+                "ticket" -> {
+                    binding.bottomNavigation.selectedItemId = R.id.ticketsFragment
+                }
+                "event" -> {
+                    binding.bottomNavigation.selectedItemId = R.id.eventsFragment
+                }
+                "market" -> {
+                    binding.bottomNavigation.selectedItemId = R.id.marketFragment
+                }
+                else -> {
+                    binding.bottomNavigation.selectedItemId = R.id.homeFragment
                 }
             }
+            Log.d(TAG, "Navigation zu: $type")
         } catch (e: Exception) {
             Log.e(TAG, "Navigation Fehler: ${e.message}")
+            // Kein Crash – einfach auf Home bleiben
         }
     }
 
@@ -138,8 +119,10 @@ class MainActivity : AppCompatActivity() {
 
     private fun requestNotificationPermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-                == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(
+                    this, Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
                 fetchAndSaveFcmToken()
             } else {
                 notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
