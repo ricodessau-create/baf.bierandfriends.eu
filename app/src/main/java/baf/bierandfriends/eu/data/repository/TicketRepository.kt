@@ -13,42 +13,42 @@ class TicketRepository {
 
     suspend fun createTicket(ticket: Ticket) {
         val ref = db.collection("tickets").add(ticket).await()
-        // ID ins Dokument schreiben
         db.collection("tickets").document(ref.id).update("id", ref.id).await()
     }
 
     suspend fun getMyTickets(): List<Ticket> {
         val uid = auth.currentUser?.uid ?: return emptyList()
         return try {
-            val snapshot = db.collection("tickets")
+            db.collection("tickets")
                 .whereEqualTo("authorUid", uid)
-                .get()
-                .await()
-            snapshot.documents.mapNotNull { doc ->
-                doc.toObject(Ticket::class.java)?.copy(id = doc.id)
-            }
-        } catch (e: Exception) {
-            emptyList()
-        }
+                .get().await()
+                .documents.mapNotNull { doc ->
+                    doc.toObject(Ticket::class.java)?.copy(id = doc.id)
+                }
+        } catch (e: Exception) { emptyList() }
     }
 
     suspend fun getAllTickets(): List<Ticket> {
         return try {
-            val snapshot = db.collection("tickets").get().await()
-            snapshot.documents.mapNotNull { doc ->
-                doc.toObject(Ticket::class.java)?.copy(id = doc.id)
-            }
-        } catch (e: Exception) {
-            emptyList()
-        }
+            db.collection("tickets").get().await()
+                .documents.mapNotNull { doc ->
+                    doc.toObject(Ticket::class.java)?.copy(id = doc.id)
+                }
+        } catch (e: Exception) { emptyList() }
     }
 
     suspend fun updateTicketStatus(id: String, status: String) {
-        try {
-            db.collection("tickets").document(id).update("status", status).await()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        db.collection("tickets").document(id)
+            .update("status", status).await()
+    }
+
+    suspend fun deleteTicket(id: String) {
+        // Erst alle Nachrichten löschen
+        val messages = db.collection("tickets").document(id)
+            .collection("messages").get().await()
+        messages.documents.forEach { it.reference.delete() }
+        // Dann das Ticket selbst
+        db.collection("tickets").document(id).delete().await()
     }
 
     suspend fun addTicketMessage(ticketId: String, text: String, authorName: String) {
@@ -68,8 +68,7 @@ class TicketRepository {
             db.collection("tickets").document(ticketId)
                 .collection("messages").get().await()
                 .documents.map { (it.data ?: emptyMap()) + mapOf("id" to it.id) }
-        } catch (e: Exception) {
-            emptyList()
-        }
+                .sortedBy { (it["createdAt"] as? com.google.firebase.Timestamp)?.seconds ?: 0L }
+        } catch (e: Exception) { emptyList() }
     }
 }
