@@ -30,6 +30,8 @@ class TicketDetailFragment : Fragment() {
     private val userRepository = UserRepository()
     private var ticketId = ""
     private var canClose = false
+    private var canDelete = false
+    private var currentStatus = ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -42,31 +44,22 @@ class TicketDetailFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         ticketId = arguments?.getString("ticketId") ?: ""
-
         binding.ticketDetailBack.setOnClickListener { findNavController().navigateUp() }
-
         binding.ticketSendButton.setOnClickListener { sendMessage() }
-
         binding.ticketMessageInput.setOnEditorActionListener { _, _, _ ->
-            sendMessage()
-            true
+            sendMessage(); true
         }
 
         lifecycleScope.launch {
             val profile = userRepository.getUserProfile()
             val rank = profile?.rank ?: ""
             canClose = RankHelper.canCloseTickets(rank)
-
-            if (canClose) {
-                binding.closeTicketButton.visibility = View.VISIBLE
-                binding.closeTicketButton.setOnClickListener { confirmCloseTicket() }
-            }
+            canDelete = RankHelper.isAdmin(rank)
 
             loadTicket()
             loadMessages()
         }
 
-        // Polling alle 5s
         lifecycleScope.launch {
             while (isActive) {
                 delay(5000)
@@ -78,25 +71,20 @@ class TicketDetailFragment : Fragment() {
     private fun loadTicket() {
         lifecycleScope.launch {
             try {
-                val tickets = ticketRepository.getMyTickets() + ticketRepository.getAllTickets()
-                val ticket = tickets.distinctBy { it.id }.find { it.id == ticketId } ?: return@launch
+                val tickets = (ticketRepository.getMyTickets() +
+                    ticketRepository.getAllTickets()).distinctBy { it.id }
+                val ticket = tickets.find { it.id == ticketId } ?: return@launch
 
+                currentStatus = ticket.status.lowercase()
                 binding.ticketDetailTitle.text = ticket.title
                 binding.ticketDetailDescription.text = ticket.description
                 binding.ticketDetailAuthor.text = "Von: ${ticket.authorName}"
 
-                val statusDisplay = when (ticket.status.lowercase()) {
-                    "offen"           -> "🔴 Offen"
-                    "in bearbeitung"  -> "🟡 In Bearbeitung"
-                    "geschlossen"     -> "🟢 Geschlossen"
-                    else              -> ticket.status
-                }
-                binding.ticketDetailStatus.text = statusDisplay
-
-                // Schließen-Button verstecken wenn schon geschlossen
-                if (ticket.status.lowercase() == "geschlossen" && canClose) {
-                    binding.closeTicketButton.text = "✅ Bereits geschlossen"
-                    binding.closeTicketButton.isEnabled = false
+                binding.ticketDetailStatus.text = when (currentStatus) {
+                    "offen"          -> "🔴 Offen"
+                    "in bearbeitung" -> "🟡 In Bearbeitung"
+                    "geschlossen"    -> "🟢 Geschlossen"
+                    else             -> ticket.status
                 }
 
                 val dateText = if (ticket.createdAt > 0L)
@@ -104,6 +92,27 @@ class TicketDetailFragment : Fragment() {
                         .format(Date(ticket.createdAt))
                 else ""
                 binding.ticketDetailDate.text = dateText
+
+                // Schließen-Button
+                if (canClose) {
+                    binding.closeTicketButton.visibility = View.VISIBLE
+                    if (currentStatus == "geschlossen") {
+                        binding.closeTicketButton.text = "✅ Bereits geschlossen"
+                        binding.closeTicketButton.isEnabled = false
+                    } else {
+                        binding.closeTicketButton.text = "🔒 TICKET SCHLIESSEN"
+                        binding.closeTicketButton.isEnabled = true
+                        binding.closeTicketButton.setOnClickListener { confirmCloseTicket() }
+                    }
+                }
+
+                // Löschen-Button nur für Admin/Cheffe und nur wenn geschlossen
+                if (canDelete && currentStatus == "geschlossen") {
+                    binding.deleteTicketButton.visibility = View.VISIBLE
+                    binding.deleteTicketButton.setOnClickListener { confirmDeleteTicket() }
+                } else {
+                    binding.deleteTicketButton.visibility = View.GONE
+                }
 
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -120,19 +129,15 @@ class TicketDetailFragment : Fragment() {
                 binding.ticketMessagesRecycler.adapter = adapter
                 binding.ticketMessagesRecycler.layoutManager =
                     LinearLayoutManager(requireContext()).apply { stackFromEnd = true }
-                if (messages.isNotEmpty()) {
+                if (messages.isNotEmpty())
                     binding.ticketMessagesRecycler.scrollToPosition(messages.size - 1)
-                }
-            } catch (e: Exception) {
-                // Ignorieren
-            }
+            } catch (e: Exception) { }
         }
     }
 
     private fun sendMessage() {
         val text = binding.ticketMessageInput.text.toString().trim()
         if (text.isEmpty() || ticketId.isEmpty()) return
-
         lifecycleScope.launch {
             try {
                 val profile = userRepository.getUserProfile()
@@ -155,9 +160,26 @@ class TicketDetailFragment : Fragment() {
                     try {
                         ticketRepository.updateTicketStatus(ticketId, "geschlossen")
                         Toast.makeText(requireContext(), "✅ Ticket geschlossen.", Toast.LENGTH_SHORT).show()
-                        binding.closeTicketButton.text = "✅ Bereits geschlossen"
-                        binding.closeTicketButton.isEnabled = false
                         loadTicket()
+                    } catch (e: Exception) {
+                        Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            .setNegativeButton("Abbrechen", null)
+            .show()
+    }
+
+    private fun confirmDeleteTicket() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Ticket löschen")
+            .setMessage("Möchtest du dieses geschlossene Ticket endgültig löschen?\nDiese Aktion kann nicht rückgängig gemacht werden.")
+            .setPositiveButton("Löschen") { _, _ ->
+                lifecycleScope.launch {
+                    try {
+                        ticketRepository.deleteTicket(ticketId)
+                        Toast.makeText(requireContext(), "✅ Ticket gelöscht.", Toast.LENGTH_SHORT).show()
+                        findNavController().navigateUp()
                     } catch (e: Exception) {
                         Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
