@@ -53,7 +53,6 @@ class MainActivity : AppCompatActivity() {
                 if (destination.id in noBottomNav) View.GONE else View.VISIBLE
         }
 
-        // Notification-Navigation erst nach 1 Sekunde
         val type = getNotificationType(intent)
         if (type != null) {
             Handler(Looper.getMainLooper()).postDelayed({
@@ -80,20 +79,24 @@ class MainActivity : AppCompatActivity() {
         try {
             val navController = findNavController(R.id.nav_host_fragment)
             val uid = FirebaseAuth.getInstance().currentUser?.uid
+            if (uid == null) return
 
-            // Nicht navigieren wenn nicht eingeloggt
-            if (uid == null) {
-                Log.d(TAG, "Nicht eingeloggt – keine Navigation")
-                return
-            }
-
-            // Direkt Bottom Nav Item aktivieren – sicherer als navigate()
             when (type) {
-                "chat", "forum" -> {
+                "chat" -> {
                     binding.bottomNavigation.selectedItemId = R.id.communityFragment
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        try {
+                            navController.navigate(R.id.action_communityFragment_to_chatFragment)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Chat Navigation: ${e.message}")
+                        }
+                    }, 400)
                 }
                 "ticket" -> {
                     binding.bottomNavigation.selectedItemId = R.id.ticketsFragment
+                }
+                "forum" -> {
+                    binding.bottomNavigation.selectedItemId = R.id.communityFragment
                 }
                 "event" -> {
                     binding.bottomNavigation.selectedItemId = R.id.eventsFragment
@@ -101,14 +104,19 @@ class MainActivity : AppCompatActivity() {
                 "market" -> {
                     binding.bottomNavigation.selectedItemId = R.id.marketFragment
                 }
+                "sync" -> {
+                    try {
+                        navController.navigate(R.id.profileFragment)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Sync Navigation: ${e.message}")
+                    }
+                }
                 else -> {
                     binding.bottomNavigation.selectedItemId = R.id.homeFragment
                 }
             }
-            Log.d(TAG, "Navigation zu: $type")
         } catch (e: Exception) {
             Log.e(TAG, "Navigation Fehler: ${e.message}")
-            // Kein Crash – einfach auf Home bleiben
         }
     }
 
