@@ -84,13 +84,16 @@ class MainActivity : AppCompatActivity() {
             when (type) {
                 "chat" -> {
                     binding.bottomNavigation.selectedItemId = R.id.communityFragment
+                    // FIX: Delay erhöht auf 700ms + currentDestination-Check vor Navigate
                     Handler(Looper.getMainLooper()).postDelayed({
                         try {
-                            navController.navigate(R.id.action_communityFragment_to_chatFragment)
+                            if (navController.currentDestination?.id == R.id.communityFragment) {
+                                navController.navigate(R.id.action_communityFragment_to_chatFragment)
+                            }
                         } catch (e: Exception) {
                             Log.e(TAG, "Chat Navigation: ${e.message}")
                         }
-                    }, 400)
+                    }, 700)
                 }
                 "ticket" -> {
                     binding.bottomNavigation.selectedItemId = R.id.ticketsFragment
