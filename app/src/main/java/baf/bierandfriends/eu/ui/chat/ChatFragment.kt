@@ -1,6 +1,7 @@
 package baf.bierandfriends.eu.ui.chat
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,6 +26,7 @@ class ChatFragment : Fragment() {
     private val chatRepository = ChatRepository()
     private val userRepository = UserRepository()
     private val auth = FirebaseAuth.getInstance()
+    private val TAG = "ChatFragment"
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,15 +59,32 @@ class ChatFragment : Fragment() {
     }
 
     private fun loadMessages() {
+        // FIX: Fragment evtl. noch nicht attached (z.B. direkt nach Notification-Tap)
+        if (!isAdded || _binding == null) return
+
         lifecycleScope.launch {
-            val messages = chatRepository.getPublicMessages()
-            val adapter = ChatAdapter(messages, auth.currentUser?.uid ?: "")
-            binding.chatRecyclerView.adapter = adapter
-            binding.chatRecyclerView.layoutManager = LinearLayoutManager(requireContext()).apply {
-                stackFromEnd = true
-            }
-            if (messages.isNotEmpty()) {
-                binding.chatRecyclerView.scrollToPosition(messages.size - 1)
+            try {
+                val messages = chatRepository.getPublicMessages()
+                if (!isAdded || _binding == null) return@launch
+
+                val adapter = ChatAdapter(messages, auth.currentUser?.uid ?: "")
+                binding.chatRecyclerView.adapter = adapter
+                binding.chatRecyclerView.layoutManager =
+                    LinearLayoutManager(requireContext()).apply {
+                        stackFromEnd = true
+                    }
+                if (messages.isNotEmpty()) {
+                    binding.chatRecyclerView.scrollToPosition(messages.size - 1)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "loadMessages Fehler: ${e.javaClass.simpleName}: ${e.message}", e)
+                if (isAdded && _binding != null) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Chat konnte nicht geladen werden.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
     }
@@ -75,13 +94,19 @@ class ChatFragment : Fragment() {
         if (text.isEmpty()) return
 
         lifecycleScope.launch {
-            val profile = userRepository.getUserProfile()
-            val name = profile?.username ?: "Unbekannt"
-            val rank = profile?.rank ?: "malzbier"
-
-            chatRepository.sendPublicMessage(text, name, rank)
-            binding.chatInput.setText("")
-            loadMessages()
+            try {
+                val profile = userRepository.getUserProfile()
+                val name = profile?.username ?: "Unbekannt"
+                val rank = profile?.rank ?: "malzbier"
+                chatRepository.sendPublicMessage(text, name, rank)
+                binding.chatInput.setText("")
+                loadMessages()
+            } catch (e: Exception) {
+                Log.e(TAG, "sendMessage Fehler: ${e.message}", e)
+                if (isAdded && _binding != null) {
+                    Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
     }
 
