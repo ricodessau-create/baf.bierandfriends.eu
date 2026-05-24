@@ -41,7 +41,11 @@ class ProfileFragment : Fragment() {
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (granted) openImagePicker()
-        else Toast.makeText(requireContext(), "Berechtigung verweigert.", Toast.LENGTH_SHORT).show()
+        else Toast.makeText(
+            requireContext(),
+            "Berechtigung verweigert.",
+            Toast.LENGTH_SHORT
+        ).show()
     }
 
     private val imagePicker = registerForActivityResult(
@@ -59,7 +63,9 @@ class ProfileFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View {
         _binding = FragmentProfileBinding.inflate(inflater, container, false)
         return binding.root
@@ -79,6 +85,8 @@ class ProfileFragment : Fragment() {
         binding.btnResetToken.setOnClickListener { resetToken() }
 
         binding.logoutButton.setOnClickListener { confirmLogout() }
+
+        binding.deleteAccountButton.setOnClickListener { confirmDeleteAccount() }
     }
 
     private fun checkAndPickImage() {
@@ -96,7 +104,10 @@ class ProfileFragment : Fragment() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
             type = "image/*"
-            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION)
+            addFlags(
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+            )
         }
         imagePicker.launch(intent)
     }
@@ -169,14 +180,19 @@ class ProfileFragment : Fragment() {
                 .setPositiveButton("Speichern") { _, _ ->
                     lifecycleScope.launch {
                         val updated = profile.copy(
-                            username = etUsername.text.toString().trim().ifEmpty { profile.username },
+                            username = etUsername.text.toString().trim()
+                                .ifEmpty { profile.username },
                             bio = etBio.text.toString().trim(),
                             location = etLocation.text.toString().trim(),
                             birthday = etBirthday.text.toString().trim(),
                             discord = etDiscord.text.toString().trim()
                         )
                         userRepository.updateUserProfile(updated)
-                        Toast.makeText(requireContext(), "✅ Profil gespeichert!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            requireContext(),
+                            "✅ Profil gespeichert!",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         loadProfile()
                     }
                 }
@@ -202,12 +218,23 @@ class ProfileFragment : Fragment() {
                 val updated = (profile ?: UserProfile()).copy(photoUrl = downloadUrl)
                 userRepository.updateUserProfile(updated)
 
-                Glide.with(this@ProfileFragment).load(uri).circleCrop().into(binding.profileAvatar)
+                Glide.with(this@ProfileFragment)
+                    .load(uri)
+                    .circleCrop()
+                    .into(binding.profileAvatar)
                 binding.profileAvatar.alpha = 1f
-                Toast.makeText(requireContext(), "✅ Profilbild gespeichert!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "✅ Profilbild gespeichert!",
+                    Toast.LENGTH_SHORT
+                ).show()
             } catch (e: Exception) {
                 binding.profileAvatar.alpha = 1f
-                Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Fehler: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
             }
         }
     }
@@ -233,7 +260,11 @@ class ProfileFragment : Fragment() {
                 lifecycleScope.launch {
                     binding.syncTokenCard.visibility = View.GONE
                     binding.syncTokenText.text = ""
-                    Toast.makeText(requireContext(), "Token zurückgesetzt.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        requireContext(),
+                        "Token zurückgesetzt.",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
             .setNegativeButton("Abbrechen", null)
@@ -246,11 +277,52 @@ class ProfileFragment : Fragment() {
             .setMessage("Möchtest du dich wirklich abmelden?")
             .setPositiveButton("Abmelden") { _, _ ->
                 SupabaseHelper.resetToken()
-                val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).build()
-                GoogleSignIn.getClient(requireActivity(), gso).signOut().addOnCompleteListener {
-                    auth.signOut()
-                    requireActivity().finish()
-                    startActivity(requireActivity().intent)
+                val gso = GoogleSignInOptions.Builder(
+                    GoogleSignInOptions.DEFAULT_SIGN_IN
+                ).build()
+                GoogleSignIn.getClient(requireActivity(), gso)
+                    .signOut()
+                    .addOnCompleteListener {
+                        auth.signOut()
+                        requireActivity().finish()
+                        startActivity(requireActivity().intent)
+                    }
+            }
+            .setNegativeButton("Abbrechen", null)
+            .show()
+    }
+
+    private fun confirmDeleteAccount() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("⚠️ Account löschen")
+            .setMessage(
+                "Möchtest du deinen Account wirklich dauerhaft löschen?\n\n" +
+                "• Dein Profil wird entfernt\n" +
+                "• Alle deine Daten werden gelöscht\n\n" +
+                "Diese Aktion kann NICHT rückgängig gemacht werden!"
+            )
+            .setPositiveButton("Endgültig löschen") { _, _ ->
+                lifecycleScope.launch {
+                    try {
+                        userRepository.deleteUserAccount()
+                        if (isAdded) {
+                            Toast.makeText(
+                                requireContext(),
+                                "Dein Account wurde gelöscht.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            requireActivity().finish()
+                            startActivity(requireActivity().intent)
+                        }
+                    } catch (e: Exception) {
+                        if (isAdded && _binding != null) {
+                            Toast.makeText(
+                                requireContext(),
+                                "Fehler: ${e.message ?: "Account konnte nicht gelöscht werden"}",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                    }
                 }
             }
             .setNegativeButton("Abbrechen", null)
