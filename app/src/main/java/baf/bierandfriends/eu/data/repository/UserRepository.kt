@@ -58,7 +58,6 @@ class UserRepository {
     suspend fun generateSyncToken(): String {
         val uid = auth.currentUser?.uid ?: return ""
         val token = (100000..999999).random().toString()
-        // createdAt mitspeichern damit die Firebase Function Ablauf prüfen kann
         db.collection("sync_tokens").document(token).set(
             mapOf(
                 "uid" to uid,
@@ -100,5 +99,34 @@ class UserRepository {
         } catch (e: Exception) {
             false
         }
+    }
+
+    suspend fun deleteUserAccount() {
+        val uid = auth.currentUser?.uid
+            ?: throw IllegalStateException("Nicht eingeloggt")
+
+        // 1. Firestore-Profil löschen
+        db.collection("users").document(uid).delete().await()
+
+        // 2. Eigene Sync-Tokens löschen
+        try {
+            val tokens = db.collection("sync_tokens")
+                .whereEqualTo("uid", uid)
+                .get().await()
+            tokens.documents.forEach { it.reference.delete() }
+        } catch (_: Exception) {}
+
+        // 3. Ignored-Liste löschen
+        try {
+            val ignored = db.collection("ignored_users")
+                .document(uid)
+                .collection("list")
+                .get().await()
+            ignored.documents.forEach { it.reference.delete() }
+            db.collection("ignored_users").document(uid).delete().await()
+        } catch (_: Exception) {}
+
+        // 4. Firebase Auth Account löschen (muss letzter Schritt sein)
+        auth.currentUser?.delete()?.await()
     }
 }
