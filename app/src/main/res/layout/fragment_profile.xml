@@ -13,16 +13,19 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="180dp">
+
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:src="@drawable/header_baf_samurai"
                 android:scaleType="centerCrop"
                 android:contentDescription="Header"/>
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:background="#99000000"/>
+
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -33,6 +36,7 @@
                 android:textSize="28sp"
                 android:textStyle="bold"
                 android:gravity="center"/>
+
         </FrameLayout>
 
         <!-- Avatar + Name -->
@@ -46,6 +50,7 @@
             <FrameLayout
                 android:layout_width="80dp"
                 android:layout_height="80dp">
+
                 <ImageView
                     android:id="@+id/profileAvatar"
                     android:layout_width="80dp"
@@ -57,6 +62,7 @@
                     android:contentDescription="Profilbild"
                     android:clickable="true"
                     android:focusable="true"/>
+
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -67,6 +73,7 @@
                     android:gravity="center"
                     android:background="#CC000000"
                     android:padding="2dp"/>
+
             </FrameLayout>
 
             <LinearLayout
@@ -109,6 +116,7 @@
                     android:background="@color/baf_card"/>
 
             </LinearLayout>
+
         </LinearLayout>
 
         <View
@@ -215,17 +223,20 @@
                 android:layout_marginBottom="8dp"
                 android:visibility="gone"
                 style="@style/BAF.Card">
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="16dp">
+
                     <TextView
                         android:text="Dein Sync-Token – tippe im Minecraft:"
                         android:textColor="@color/baf_text_secondary"
                         android:textSize="13sp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
+
                     <TextView
                         android:text="/biersync TOKEN"
                         android:textColor="@color/baf_gold"
@@ -233,6 +244,7 @@
                         android:layout_marginBottom="8dp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
+
                     <TextView
                         android:id="@+id/syncTokenText"
                         android:layout_width="match_parent"
@@ -242,7 +254,9 @@
                         android:textStyle="bold"
                         android:gravity="center"
                         android:letterSpacing="0.3"/>
+
                 </LinearLayout>
+
             </com.google.android.material.card.MaterialCardView>
 
             <Button
@@ -265,6 +279,23 @@
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:text="⏻  ABMELDEN"
+                android:textColor="@color/baf_red"
+                android:layout_marginBottom="8dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+
+            <!-- Trennlinie vor Account-Löschung -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/baf_red"
+                android:alpha="0.3"
+                android:layout_marginBottom="8dp"/>
+
+            <Button
+                android:id="@+id/deleteAccountButton"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="🗑️  ACCOUNT LÖSCHEN"
                 android:textColor="@color/baf_red"
                 android:layout_marginBottom="24dp"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
