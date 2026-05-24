@@ -1,6 +1,7 @@
 package baf.bierandfriends.eu.ui.community
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,12 +23,17 @@ class ChatFragment : Fragment() {
 
     private var _binding: FragmentChatBinding? = null
     private val binding get() = _binding!!
+    private val TAG = "CommunityChat"
 
     private val chatRepository = ChatRepository()
     private val userRepository = UserRepository()
     private val auth = FirebaseAuth.getInstance()
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentChatBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -35,8 +41,13 @@ class ChatFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.chatBackButton.setOnClickListener { findNavController().navigateUp() }
-        binding.chatSendButton.setOnClickListener { sendMessage() }
+        binding.chatBackButton.setOnClickListener {
+            findNavController().navigateUp()
+        }
+
+        binding.chatSendButton.setOnClickListener {
+            sendMessage()
+        }
 
         binding.chatInput.setOnEditorActionListener { _, _, _ ->
             sendMessage()
@@ -54,19 +65,32 @@ class ChatFragment : Fragment() {
     }
 
     private fun loadMessages() {
+        // FIX: Guard gegen detached Fragment – verhindert "Chat Fehler: null"
+        if (!isAdded || _binding == null) return
+
         lifecycleScope.launch {
             try {
                 val messages = chatRepository.getPublicMessages()
+                if (!isAdded || _binding == null) return@launch
+
                 val adapter = ChatAdapter(messages, auth.currentUser?.uid ?: "")
                 binding.chatRecyclerView.adapter = adapter
-                binding.chatRecyclerView.layoutManager = LinearLayoutManager(requireContext()).apply {
-                    stackFromEnd = true
-                }
+                binding.chatRecyclerView.layoutManager =
+                    LinearLayoutManager(requireContext()).apply {
+                        stackFromEnd = true
+                    }
                 if (messages.isNotEmpty()) {
                     binding.chatRecyclerView.scrollToPosition(messages.size - 1)
                 }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Chat Fehler: ${e.message}", Toast.LENGTH_SHORT).show()
+                Log.e(TAG, "loadMessages Fehler: ${e.javaClass.simpleName}: ${e.message}", e)
+                if (isAdded && _binding != null) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Chat konnte nicht geladen werden.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
     }
@@ -84,7 +108,14 @@ class ChatFragment : Fragment() {
                 binding.chatInput.setText("")
                 loadMessages()
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_SHORT).show()
+                Log.e(TAG, "sendMessage Fehler: ${e.message}", e)
+                if (isAdded && _binding != null) {
+                    Toast.makeText(
+                        requireContext(),
+                        "Fehler: ${e.message ?: "Unbekannter Fehler"}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
     }
