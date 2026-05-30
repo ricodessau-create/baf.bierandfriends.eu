@@ -18,9 +18,11 @@
         android:theme="@style/Theme.BAF"
         android:requestLegacyExternalStorage="true">
 
+        <!-- adjustResize: Textfeld bleibt IMMER über der Tastatur -->
         <activity
             android:name=".MainActivity"
-            android:exported="true">
+            android:exported="true"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
@@ -36,7 +38,15 @@
             </intent-filter>
         </service>
 
-        <!-- Standard FCM Notification Channel -->
+        <!-- Notification Direct-Reply Receiver -->
+        <receiver
+            android:name=".NotificationReplyReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="baf.bierandfriends.eu.REPLY_ACTION" />
+            </intent-filter>
+        </receiver>
+
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="baf_notifications" />
