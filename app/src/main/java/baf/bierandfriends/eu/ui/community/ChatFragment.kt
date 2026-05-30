@@ -14,6 +14,7 @@ import baf.bierandfriends.eu.data.repository.ChatRepository
 import baf.bierandfriends.eu.data.repository.UserRepository
 import baf.bierandfriends.eu.databinding.FragmentChatBinding
 import baf.bierandfriends.eu.ui.chat.ChatAdapter
+import baf.bierandfriends.eu.util.UserPrefs
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -54,8 +55,18 @@ class ChatFragment : Fragment() {
             true
         }
 
+        // Profil in SharedPreferences speichern → für Notification-Direct-Reply
+        lifecycleScope.launch {
+            val profile = userRepository.getUserProfile()
+            val uid = auth.currentUser?.uid ?: ""
+            if (profile != null && uid.isNotEmpty()) {
+                UserPrefs.save(requireContext(), uid, profile.username, profile.rank)
+            }
+        }
+
         loadMessages()
 
+        // Polling alle 4 Sekunden
         lifecycleScope.launch {
             while (isActive) {
                 delay(4000)
@@ -65,7 +76,6 @@ class ChatFragment : Fragment() {
     }
 
     private fun loadMessages() {
-        // FIX: Guard gegen detached Fragment – verhindert "Chat Fehler: null"
         if (!isAdded || _binding == null) return
 
         lifecycleScope.launch {
@@ -73,30 +83,38 @@ class ChatFragment : Fragment() {
                 val messages = chatRepository.getPublicMessages()
                 if (!isAdded || _binding == null) return@launch
 
-                val adapter = ChatAdapter(messages, auth.currentUser?.uid ?: "")
+                val adapter = ChatAdapter(
+                    messages,
+                    auth.currentUser?.uid ?: ""
+                ) { authorName ->
+                    // @-Mention: Name angetippt → "@Name " ins Eingabefeld schreiben
+                    val mention = "@$authorName "
+                    val current = binding.chatInput.text?.toString() ?: ""
+                    // Mention nur einmal am Anfang einfügen
+                    val newText = if (current.startsWith(mention)) current
+                                  else mention + current.removePrefix(mention)
+                    binding.chatInput.setText(newText)
+                    binding.chatInput.setSelection(newText.length)
+                    binding.chatInput.requestFocus()
+                }
+
                 binding.chatRecyclerView.adapter = adapter
                 binding.chatRecyclerView.layoutManager =
-                    LinearLayoutManager(requireContext()).apply {
-                        stackFromEnd = true
-                    }
+                    LinearLayoutManager(requireContext()).apply { stackFromEnd = true }
                 if (messages.isNotEmpty()) {
                     binding.chatRecyclerView.scrollToPosition(messages.size - 1)
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "loadMessages Fehler: ${e.javaClass.simpleName}: ${e.message}", e)
+                Log.e(TAG, "loadMessages: ${e.javaClass.simpleName}: ${e.message}", e)
                 if (isAdded && _binding != null) {
-                    Toast.makeText(
-                        requireContext(),
-                        "Chat konnte nicht geladen werden.",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    Toast.makeText(requireContext(), "Chat konnte nicht geladen werden.", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
 
     private fun sendMessage() {
-        val text = binding.chatInput.text.toString().trim()
+        val text = binding.chatInput.text?.toString()?.trim() ?: return
         if (text.isEmpty()) return
 
         lifecycleScope.launch {
@@ -108,7 +126,7 @@ class ChatFragment : Fragment() {
                 binding.chatInput.setText("")
                 loadMessages()
             } catch (e: Exception) {
-                Log.e(TAG, "sendMessage Fehler: ${e.message}", e)
+                Log.e(TAG, "sendMessage: ${e.message}", e)
                 if (isAdded && _binding != null) {
                     Toast.makeText(
                         requireContext(),
