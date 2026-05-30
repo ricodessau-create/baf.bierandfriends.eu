@@ -29,7 +29,9 @@ class PrivateChatFragment : Fragment() {
     private var receiverUid = ""
     private var receiverName = ""
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View {
         _binding = FragmentPrivateChatBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -37,12 +39,17 @@ class PrivateChatFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        receiverUid = arguments?.getString("receiverUid") ?: ""
+        receiverUid  = arguments?.getString("receiverUid")  ?: ""
         receiverName = arguments?.getString("receiverName") ?: "Nutzer"
 
         binding.privateChatTitle.text = "💬 $receiverName"
         binding.privateChatBack.setOnClickListener { findNavController().navigateUp() }
         binding.privateChatSend.setOnClickListener { sendMessage() }
+
+        binding.privateChatInput.setOnEditorActionListener { _, _, _ ->
+            sendMessage()
+            true
+        }
 
         loadMessages()
 
@@ -55,45 +62,62 @@ class PrivateChatFragment : Fragment() {
     }
 
     private fun loadMessages() {
-        if (receiverUid.isEmpty()) return
+        if (receiverUid.isEmpty() || !isAdded || _binding == null) return
         lifecycleScope.launch {
-            val messages = chatRepository.getPrivateMessages(receiverUid)
-            val currentUid = auth.currentUser?.uid ?: ""
+            try {
+                val messages = chatRepository.getPrivateMessages(receiverUid)
+                if (!isAdded || _binding == null) return@launch
+                val currentUid = auth.currentUser?.uid ?: ""
 
-            val chatMessages = messages.map { msg ->
-                ChatMessage(
-                    text = msg.text,
-                    authorUid = msg.senderUid,
-                    authorName = msg.senderName,
-                    createdAt = msg.createdAt
-                )
-            }
+                val chatMessages = messages.map { msg ->
+                    ChatMessage(
+                        text      = msg.text,
+                        authorUid  = msg.senderUid,
+                        authorName = msg.senderName,
+                        createdAt  = msg.createdAt
+                    )
+                }
 
-            val adapter = ChatAdapter(chatMessages, currentUid)
-            binding.privateChatRecycler.adapter = adapter
-            binding.privateChatRecycler.layoutManager = LinearLayoutManager(requireContext()).apply {
-                stackFromEnd = true
-            }
-            if (chatMessages.isNotEmpty()) {
-                binding.privateChatRecycler.scrollToPosition(chatMessages.size - 1)
+                val adapter = ChatAdapter(chatMessages, currentUid) { authorName ->
+                    // @-Mention im Privat-Chat
+                    val mention = "@$authorName "
+                    val current = binding.privateChatInput.text?.toString() ?: ""
+                    val newText = if (current.startsWith(mention)) current
+                                  else mention + current.removePrefix(mention)
+                    binding.privateChatInput.setText(newText)
+                    binding.privateChatInput.setSelection(newText.length)
+                    binding.privateChatInput.requestFocus()
+                }
+
+                binding.privateChatRecycler.adapter = adapter
+                binding.privateChatRecycler.layoutManager =
+                    LinearLayoutManager(requireContext()).apply { stackFromEnd = true }
+                if (chatMessages.isNotEmpty()) {
+                    binding.privateChatRecycler.scrollToPosition(chatMessages.size - 1)
+                }
+            } catch (e: Exception) {
+                if (isAdded && _binding != null) {
+                    Toast.makeText(requireContext(), "Fehler beim Laden: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
 
     private fun sendMessage() {
-        val text = binding.privateChatInput.text.toString().trim()
+        val text = binding.privateChatInput.text?.toString()?.trim() ?: return
         if (text.isEmpty() || receiverUid.isEmpty()) return
 
         lifecycleScope.launch {
             val profile = userRepository.getUserProfile()
             val name = profile?.username ?: "Unbekannt"
-
             try {
                 chatRepository.sendPrivateMessage(text, receiverUid, name)
                 binding.privateChatInput.setText("")
                 loadMessages()
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_SHORT).show()
+                if (isAdded && _binding != null) {
+                    Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
