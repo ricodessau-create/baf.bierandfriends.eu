@@ -5,6 +5,7 @@
     android:orientation="vertical"
     android:background="@color/baf_background">
 
+    <!-- Header -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
@@ -40,6 +41,7 @@
         android:layout_height="1dp"
         android:background="@color/baf_gold_dark"/>
 
+    <!-- Nachrichten-Liste – nimmt gesamten verbleibenden Platz -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/privateChatRecycler"
         android:layout_width="match_parent"
@@ -54,6 +56,7 @@
         android:layout_height="1dp"
         android:background="@color/baf_gold_dark"/>
 
+    <!-- Eingabezeile – paddingBottom entfernt, Keyboard-Fix -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -62,22 +65,26 @@
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
         android:paddingTop="8dp"
-        android:paddingBottom="48dp"
+        android:paddingBottom="8dp"
         android:gravity="center_vertical">
 
         <EditText
             android:id="@+id/privateChatInput"
             android:layout_width="0dp"
-            android:layout_height="44dp"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="Nachricht..."
+            android:minHeight="44dp"
+            android:hint="Nachricht…"
             android:textColor="@color/baf_text_primary"
             android:textColorHint="@color/baf_text_secondary"
             android:background="@color/baf_background"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
-            android:inputType="text"
-            android:maxLines="1"/>
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:inputType="text|textCapSentences"
+            android:maxLines="1"
+            android:imeOptions="actionSend"/>
 
         <Button
             android:id="@+id/privateChatSend"
