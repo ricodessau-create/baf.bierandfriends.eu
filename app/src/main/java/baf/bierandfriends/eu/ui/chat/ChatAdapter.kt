@@ -9,7 +9,9 @@ import baf.bierandfriends.eu.util.RankHelper
 
 class ChatAdapter(
     private val messages: List<ChatMessage>,
-    private val currentUid: String
+    private val currentUid: String,
+    /** Callback: Tap auf fremden Namen → @-Mention im Eingabefeld */
+    private val onNameClick: ((authorName: String) -> Unit)? = null
 ) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
 
     inner class ChatViewHolder(val binding: ItemChatMessageBinding) :
@@ -40,6 +42,15 @@ class ChatAdapter(
             holder.binding.chatBubble.setBackgroundColor(
                 holder.itemView.context.getColor(baf.bierandfriends.eu.R.color.baf_card)
             )
+        }
+
+        // @-Mention: Tap auf fremden Namen → Callback mit authorName
+        if (!isOwn && onNameClick != null) {
+            holder.binding.chatAuthor.setOnClickListener {
+                onNameClick.invoke(msg.authorName)
+            }
+        } else {
+            holder.binding.chatAuthor.setOnClickListener(null)
         }
     }
 
