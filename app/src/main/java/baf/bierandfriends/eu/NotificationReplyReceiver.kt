@@ -13,11 +13,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
 
-/**
- * Empfängt Direct-Reply-Antworten aus Benachrichtigungen und sendet
- * die Nachricht direkt an Firestore (public_chat oder private_chats).
- */
 class NotificationReplyReceiver : BroadcastReceiver() {
 
     companion object {
@@ -31,7 +28,7 @@ class NotificationReplyReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val pendingResult = goAsync()
 
-        // Reply-Text aus dem RemoteInput auslesen
+        // Reply-Text aus RemoteInput lesen
         val replyText = RemoteInput.getResultsFromIntent(intent)
             ?.getCharSequence(KEY_REPLY)?.toString()?.trim()
 
@@ -44,7 +41,7 @@ class NotificationReplyReceiver : BroadcastReceiver() {
         val senderUid = intent.getStringExtra(EXTRA_SENDER_UID)       ?: ""
         val notifId   = intent.getIntExtra(EXTRA_NOTIFICATION_ID, 0)
 
-        // Eigene User-Daten aus SharedPreferences (wurden beim Chat-Öffnen gespeichert)
+        // Eigene Daten aus SharedPreferences (von MainActivity.onResume gespeichert)
         val username = UserPrefs.getUsername(context)
         val rank     = UserPrefs.getRank(context)
         val myUid    = UserPrefs.getUid(context).ifEmpty {
@@ -59,51 +56,51 @@ class NotificationReplyReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 if (chatType == "private" && senderUid.isNotEmpty()) {
-                    // Privat-Nachricht zurück an den Absender
+                    // Privat-Antwort
                     val chatId = if (myUid < senderUid) "${myUid}_${senderUid}"
                                  else "${senderUid}_${myUid}"
                     db.collection("private_chats")
                         .document(chatId)
                         .collection("messages")
-                        .add(
-                            mapOf(
-                                "text"        to replyText,
-                                "senderUid"   to myUid,
-                                "senderName"  to username,
-                                "receiverUid" to senderUid,
-                                "createdAt"   to Timestamp.now(),
-                                "id"          to ""
-                            )
-                        )
+                        .add(mapOf(
+                            "text"        to replyText,
+                            "senderUid"   to myUid,
+                            "senderName"  to username,
+                            "receiverUid" to senderUid,
+                            "createdAt"   to Timestamp.now(),
+                            "id"          to ""
+                        )).await() // await() → pendingResult.finish() erst nach erfolgreichem Write
+
                 } else {
-                    // Öffentlichen Chat-Beitrag senden
+                    // Öffentliche Chat-Antwort
                     db.collection("public_chat")
-                        .add(
-                            mapOf(
-                                "text"       to replyText,
-                                "authorUid"  to myUid,
-                                "authorName" to username,
-                                "authorRank" to rank,
-                                "createdAt"  to Timestamp.now(),
-                                "id"         to "",
-                                "photoUrl"   to ""
-                            )
-                        )
+                        .add(mapOf(
+                            "text"       to replyText,
+                            "authorUid"  to myUid,
+                            "authorName" to username,
+                            "authorRank" to rank,
+                            "createdAt"  to Timestamp.now(),
+                            "id"         to "",
+                            "photoUrl"   to ""
+                        )).await()
                 }
 
-                // Notification auf "Gesendet" aktualisieren
+                // Notification aktualisieren: zeige "✓ Gesendet"
+                val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
                 if (notifId != 0) {
-                    val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-                    val sentNotif = NotificationCompat.Builder(context, BAFMessagingService.CHANNEL_ID)
-                        .setSmallIcon(R.mipmap.ic_launcher)
-                        .setContentText("✓ Antwort gesendet")
-                        .setAutoCancel(true)
-                        .build()
-                    nm.notify(notifId, sentNotif)
+                    nm.notify(
+                        notifId,
+                        NotificationCompat.Builder(context, BAFMessagingService.CHANNEL_ID)
+                            .setSmallIcon(R.mipmap.ic_launcher)
+                            .setContentTitle("BierAndFriends")
+                            .setContentText("✓ Antwort gesendet")
+                            .setAutoCancel(true)
+                            .build()
+                    )
                 }
 
             } catch (_: Exception) {
-                // Stille Fehlerbehandlung – Nutzer merkt nichts Schlimmes
+                // Silent fail
             } finally {
                 pendingResult.finish()
             }
