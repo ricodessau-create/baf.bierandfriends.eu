@@ -42,7 +42,7 @@
 
         </FrameLayout>
 
-        <!-- Tabs: Feed | Gruppen | Mitglieder | Chat -->
+        <!-- Tabs -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -109,7 +109,6 @@
             android:layout_height="1dp"
             android:background="@color/baf_gold_dark"/>
 
-        <!-- Leer-Text -->
         <TextView
             android:id="@+id/emptyText"
             android:layout_width="match_parent"
@@ -121,28 +120,29 @@
             android:visibility="gone"/>
 
         <!--
-            paddingBottom="80dp" → letztes Element scrollt VOLLSTÄNDIG über
-            die Bottom-Navigation hinaus sichtbar
-            clipToPadding="false" → Scroll-Bereich wird korrekt erweitert
+            Kein paddingBottom="80dp" mehr nötig!
+            Mit LinearLayout in activity_main.xml liegt die BottomNav
+            UNTERHALB dieses Fragments – kein Overlay mehr.
+            → Letzter Eintrag scrollt vollständig sichtbar.
+            clipToPadding="false" bleibt für sauberes Scroll-Verhalten.
         -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/forumRecyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="10dp"
-            android:paddingBottom="80dp"
             android:clipToPadding="false"
             android:scrollbars="none"/>
 
     </LinearLayout>
 
-    <!-- FAB: Neuer Beitrag -->
+    <!-- FAB -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/newPostButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_margin="80dp"
+        android:layout_margin="16dp"
         android:src="@drawable/ic_add"
         android:visibility="gone"
         app:tint="@android:color/black"
