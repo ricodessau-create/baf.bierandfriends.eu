@@ -6,7 +6,13 @@ const db        = admin.firestore();
 const messaging = admin.messaging();
 const reg       = "us-central1";
 
-/** Sendet eine Push-Nachricht an einen einzelnen User */
+/**
+ * WICHTIG: Kein "notification"-Block in messaging.send()!
+ * Mit notification-Block zeigt Android die Benachrichtigung direkt
+ * (System-Tray) ohne onMessageReceived() aufzurufen → kein Reply-Button.
+ * Data-only → onMessageReceived() wird IMMER aufgerufen, auch wenn die
+ * App beendet ist → BAFMessagingService fügt den Reply-Button hinzu.
+ */
 async function sendToUser(
     uid: string,
     title: string,
@@ -20,14 +26,17 @@ async function sendToUser(
         if (!token) return;
         await messaging.send({
             token,
-            notification: { title, body },
-            data: { type, ...extraData },
-            android: { priority: "high", notification: { channelId: "baf_notifications" } }
+            // Kein notification-Block → data-only Message
+            data: { type, title, body, ...extraData },
+            android: {
+                priority: "high",
+                // Weck das Gerät auf, auch im Doze-Mode
+                directBootOk: true
+            }
         });
     } catch (e) { console.error("sendToUser:", e); }
 }
 
-/** Sendet eine Push-Nachricht an alle User (außer excludeUid) */
 async function sendToAll(
     title: string,
     body: string,
@@ -45,9 +54,8 @@ async function sendToAll(
                     if (!token) return null;
                     return messaging.send({
                         token,
-                        notification: { title, body },
-                        data: { type, ...extraData },
-                        android: { priority: "high", notification: { channelId: "baf_notifications" } }
+                        data: { type, title, body, ...extraData },
+                        android: { priority: "high", directBootOk: true }
                     }).catch(() => null);
                 })
                 .filter(Boolean) as Promise<any>[]
@@ -55,7 +63,8 @@ async function sendToAll(
     } catch (e) { console.error("sendToAll:", e); }
 }
 
-// Name geändert von biersync auf biersync_app wegen Google Cloud Konflikt
+// ─── HTTPS Endpoint ───────────────────────────────────────────────────────────
+
 export const biersync_app = functions.region(reg).https.onRequest(async (req, res) => {
     res.set("Access-Control-Allow-Origin", "*");
     res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -91,7 +100,7 @@ export const biersync_app = functions.region(reg).https.onRequest(async (req, re
     } catch (e) { console.error("biersync:", e); res.status(500).json({ success: false }); }
 });
 
-// ─── Chat-Trigger ────────────────────────────────────────────────────────────
+// ─── Firestore Trigger ────────────────────────────────────────────────────────
 
 export const onNewPublicChat = functions.region(reg).firestore
     .document("public_chat/{id}").onCreate(async (snap) => {
@@ -102,7 +111,6 @@ export const onNewPublicChat = functions.region(reg).firestore
             text.length > 80 ? text.substring(0, 80) + "..." : text,
             "chat",
             d?.authorUid || "",
-            // chatType "public" → App kann Direct-Reply korrekt routen
             { chatType: "public" }
         );
     });
@@ -117,12 +125,9 @@ export const onNewPrivateMessage = functions.region(reg).firestore
             `📩 ${d?.senderName || "Jemand"}`,
             text.length > 80 ? text.substring(0, 80) + "..." : text,
             "chat",
-            // chatType "private" + senderUid → App kann Direct-Reply an Absender schicken
             { chatType: "private", senderUid: d.senderUid || "" }
         );
     });
-
-// ─── Weitere Trigger ─────────────────────────────────────────────────────────
 
 export const onNewTicket = functions.region(reg).firestore
     .document("tickets/{id}").onCreate(async (snap) => {
@@ -137,12 +142,12 @@ export const onNewTicket = functions.region(reg).firestore
                     if (!token) return null;
                     return messaging.send({
                         token,
-                        notification: {
+                        data: {
+                            type:  "ticket",
                             title: `🎫 Neues Ticket von ${d?.authorName || "Jemand"}`,
                             body:  d?.title || ""
                         },
-                        data: { type: "ticket" },
-                        android: { priority: "high", notification: { channelId: "baf_notifications" } }
+                        android: { priority: "high" }
                     }).catch(() => null);
                 })
                 .filter(Boolean) as Promise<any>[]
@@ -151,10 +156,10 @@ export const onNewTicket = functions.region(reg).firestore
 
 export const onNewTicketMessage = functions.region(reg).firestore
     .document("tickets/{ticketId}/messages/{id}").onCreate(async (snap, context) => {
-        const d          = snap.data();
-        const text       = (d?.text || "") as string;
-        const ticketDoc  = await db.collection("tickets").doc(context.params.ticketId).get();
-        const ownerUid   = ticketDoc.get("authorUid");
+        const d         = snap.data();
+        const text      = (d?.text || "") as string;
+        const ticketDoc = await db.collection("tickets").doc(context.params.ticketId).get();
+        const ownerUid  = ticketDoc.get("authorUid");
         if (ownerUid && ownerUid !== d?.authorUid) {
             await sendToUser(
                 ownerUid,
@@ -170,7 +175,9 @@ export const onNewForumPost = functions.region(reg).firestore
         const d = snap.data();
         await sendToAll(
             `📋 ${d?.author || "Jemand"} im Forum`,
-            d?.title || "", "forum", d?.authorUid || ""
+            d?.title || "",
+            "forum",
+            d?.authorUid || ""
         );
     });
 
@@ -190,6 +197,8 @@ export const onNewMarketItem = functions.region(reg).firestore
         const d = snap.data();
         await sendToAll(
             `🛒 ${d?.ownerName || "Jemand"} im Markt`,
-            d?.title || "", "market", d?.ownerUuid || ""
+            d?.title || "",
+            "market",
+            d?.ownerUuid || ""
         );
     });
