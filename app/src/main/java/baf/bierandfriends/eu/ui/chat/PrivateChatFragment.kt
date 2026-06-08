@@ -51,17 +51,21 @@ class PrivateChatFragment : Fragment() {
             true
         }
 
-        loadMessages()
+        loadMessages(scrollToBottom = true)
 
         lifecycleScope.launch {
             while (isActive) {
                 delay(4000)
-                loadMessages()
+                loadMessages(scrollToBottom = false)
             }
         }
     }
 
-    private fun loadMessages() {
+    /**
+     * @param scrollToBottom true = immer ans Ende (beim ersten Laden / nach eigener Nachricht),
+     *                       false = Scroll-Position behalten (Auto-Refresh)
+     */
+    private fun loadMessages(scrollToBottom: Boolean) {
         if (receiverUid.isEmpty() || !isAdded || _binding == null) return
         lifecycleScope.launch {
             try {
@@ -71,15 +75,24 @@ class PrivateChatFragment : Fragment() {
 
                 val chatMessages = messages.map { msg ->
                     ChatMessage(
-                        text      = msg.text,
+                        text       = msg.text,
                         authorUid  = msg.senderUid,
                         authorName = msg.senderName,
                         createdAt  = msg.createdAt
                     )
                 }
 
+                val layoutManager = binding.privateChatRecycler.layoutManager
+                    as? LinearLayoutManager
+                    ?: LinearLayoutManager(requireContext()).apply {
+                        stackFromEnd = true
+                    }.also { binding.privateChatRecycler.layoutManager = it }
+
+                val lastVisible = layoutManager.findLastVisibleItemPosition()
+                val oldCount = binding.privateChatRecycler.adapter?.itemCount ?: 0
+                val wasAtBottom = oldCount == 0 || lastVisible >= oldCount - 1
+
                 val adapter = ChatAdapter(chatMessages, currentUid) { authorName ->
-                    // @-Mention im Privat-Chat
                     val mention = "@$authorName "
                     val current = binding.privateChatInput.text?.toString() ?: ""
                     val newText = if (current.startsWith(mention)) current
@@ -90,9 +103,8 @@ class PrivateChatFragment : Fragment() {
                 }
 
                 binding.privateChatRecycler.adapter = adapter
-                binding.privateChatRecycler.layoutManager =
-                    LinearLayoutManager(requireContext()).apply { stackFromEnd = true }
-                if (chatMessages.isNotEmpty()) {
+
+                if (chatMessages.isNotEmpty() && (scrollToBottom || wasAtBottom)) {
                     binding.privateChatRecycler.scrollToPosition(chatMessages.size - 1)
                 }
             } catch (e: Exception) {
@@ -113,7 +125,7 @@ class PrivateChatFragment : Fragment() {
             try {
                 chatRepository.sendPrivateMessage(text, receiverUid, name)
                 binding.privateChatInput.setText("")
-                loadMessages()
+                loadMessages(scrollToBottom = true)
             } catch (e: Exception) {
                 if (isAdded && _binding != null) {
                     Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_SHORT).show()
