@@ -48,18 +48,23 @@ class ChatFragment : Fragment() {
             sendMessage()
         }
 
-        loadMessages()
+        loadMessages(scrollToBottom = true)
 
         lifecycleScope.launch {
             while (isActive) {
                 delay(5000)
-                loadMessages()
+                loadMessages(scrollToBottom = false)
             }
         }
     }
 
-    private fun loadMessages() {
-        // FIX: Fragment evtl. noch nicht attached (z.B. direkt nach Notification-Tap)
+    /**
+     * Nachrichten laden.
+     * @param scrollToBottom true = immer ans Ende scrollen (beim ersten Laden),
+     *                       false = Scroll-Position behalten, damit der User
+     *                       ältere Nachrichten lesen kann.
+     */
+    private fun loadMessages(scrollToBottom: Boolean) {
         if (!isAdded || _binding == null) return
 
         lifecycleScope.launch {
@@ -67,14 +72,26 @@ class ChatFragment : Fragment() {
                 val messages = chatRepository.getPublicMessages()
                 if (!isAdded || _binding == null) return@launch
 
+                val layoutManager = binding.chatRecyclerView.layoutManager
+                    as? LinearLayoutManager
+                    ?: LinearLayoutManager(requireContext()).apply {
+                        stackFromEnd = true
+                    }.also { binding.chatRecyclerView.layoutManager = it }
+
+                // Scroll-Position vor dem Update merken
+                val lastVisible = layoutManager.findLastVisibleItemPosition()
+                val oldCount = binding.chatRecyclerView.adapter?.itemCount ?: 0
+                val wasAtBottom = oldCount == 0 || lastVisible >= oldCount - 1
+
                 val adapter = ChatAdapter(messages, auth.currentUser?.uid ?: "")
                 binding.chatRecyclerView.adapter = adapter
-                binding.chatRecyclerView.layoutManager =
-                    LinearLayoutManager(requireContext()).apply {
-                        stackFromEnd = true
-                    }
+
                 if (messages.isNotEmpty()) {
-                    binding.chatRecyclerView.scrollToPosition(messages.size - 1)
+                    if (scrollToBottom || wasAtBottom) {
+                        // Ganz nach unten scrollen
+                        binding.chatRecyclerView.scrollToPosition(messages.size - 1)
+                    }
+                    // Andernfalls: User hat hochgescrollt → Position beibehalten
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "loadMessages Fehler: ${e.javaClass.simpleName}: ${e.message}", e)
@@ -100,7 +117,8 @@ class ChatFragment : Fragment() {
                 val rank = profile?.rank ?: "malzbier"
                 chatRepository.sendPublicMessage(text, name, rank)
                 binding.chatInput.setText("")
-                loadMessages()
+                // Nach eigenem Senden immer nach unten scrollen
+                loadMessages(scrollToBottom = true)
             } catch (e: Exception) {
                 Log.e(TAG, "sendMessage Fehler: ${e.message}", e)
                 if (isAdded && _binding != null) {
