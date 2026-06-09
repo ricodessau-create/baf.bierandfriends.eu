@@ -28,6 +28,9 @@ class ChatFragment : Fragment() {
     private val auth = FirebaseAuth.getInstance()
     private val TAG = "ChatFragment"
 
+    private var adapter: ChatAdapter? = null
+    private val currentMessages = mutableListOf<baf.bierandfriends.eu.data.models.ChatMessage>()
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -39,6 +42,14 @@ class ChatFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val layoutManager = LinearLayoutManager(requireContext()).apply {
+            stackFromEnd = true
+        }
+        binding.chatRecyclerView.layoutManager = layoutManager
+
+        adapter = ChatAdapter(currentMessages, auth.currentUser?.uid ?: "")
+        binding.chatRecyclerView.adapter = adapter
 
         binding.chatBackButton.setOnClickListener {
             findNavController().navigateUp()
@@ -58,12 +69,6 @@ class ChatFragment : Fragment() {
         }
     }
 
-    /**
-     * Nachrichten laden.
-     * @param scrollToBottom true = immer ans Ende scrollen (beim ersten Laden),
-     *                       false = Scroll-Position behalten, damit der User
-     *                       ältere Nachrichten lesen kann.
-     */
     private fun loadMessages(scrollToBottom: Boolean) {
         if (!isAdded || _binding == null) return
 
@@ -73,28 +78,29 @@ class ChatFragment : Fragment() {
                 if (!isAdded || _binding == null) return@launch
 
                 val layoutManager = binding.chatRecyclerView.layoutManager
-                    as? LinearLayoutManager
-                    ?: LinearLayoutManager(requireContext()).apply {
-                        stackFromEnd = true
-                    }.also { binding.chatRecyclerView.layoutManager = it }
+                    as? LinearLayoutManager ?: return@launch
 
-                // Scroll-Position vor dem Update merken
                 val lastVisible = layoutManager.findLastVisibleItemPosition()
-                val oldCount = binding.chatRecyclerView.adapter?.itemCount ?: 0
-                val wasAtBottom = oldCount == 0 || lastVisible >= oldCount - 1
+                val oldCount = currentMessages.size
+                // User gilt als "unten" wenn er die letzten 3 Nachrichten sieht
+                val wasAtBottom = oldCount == 0 || lastVisible >= oldCount - 3
 
-                val adapter = ChatAdapter(messages, auth.currentUser?.uid ?: "")
-                binding.chatRecyclerView.adapter = adapter
+                // Nur updaten wenn neue Nachrichten da sind
+                if (messages.size != currentMessages.size ||
+                    messages.lastOrNull()?.text != currentMessages.lastOrNull()?.text) {
 
-                if (messages.isNotEmpty()) {
+                    currentMessages.clear()
+                    currentMessages.addAll(messages)
+                    adapter?.notifyDataSetChanged()
+
                     if (scrollToBottom || wasAtBottom) {
-                        // Ganz nach unten scrollen
-                        binding.chatRecyclerView.scrollToPosition(messages.size - 1)
+                        binding.chatRecyclerView.scrollToPosition(currentMessages.size - 1)
                     }
-                    // Andernfalls: User hat hochgescrollt → Position beibehalten
+                    // Andernfalls: Position bleibt wo sie ist ✅
                 }
+
             } catch (e: Exception) {
-                Log.e(TAG, "loadMessages Fehler: ${e.javaClass.simpleName}: ${e.message}", e)
+                Log.e(TAG, "loadMessages Fehler: ${e.message}", e)
                 if (isAdded && _binding != null) {
                     Toast.makeText(
                         requireContext(),
@@ -117,7 +123,6 @@ class ChatFragment : Fragment() {
                 val rank = profile?.rank ?: "malzbier"
                 chatRepository.sendPublicMessage(text, name, rank)
                 binding.chatInput.setText("")
-                // Nach eigenem Senden immer nach unten scrollen
                 loadMessages(scrollToBottom = true)
             } catch (e: Exception) {
                 Log.e(TAG, "sendMessage Fehler: ${e.message}", e)
