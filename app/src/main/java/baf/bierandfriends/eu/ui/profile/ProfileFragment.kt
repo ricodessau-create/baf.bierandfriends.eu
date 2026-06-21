@@ -37,6 +37,9 @@ class ProfileFragment : Fragment() {
     private val userRepository = UserRepository()
     private val auth = FirebaseAuth.getInstance()
 
+    // Aktuell angezeigter Token – wird bei generateToken gesetzt
+    private var currentSyncToken: String = ""
+
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
@@ -77,15 +80,10 @@ class ProfileFragment : Fragment() {
         loadProfile()
 
         binding.profileAvatar.setOnClickListener { checkAndPickImage() }
-
         binding.editProfileButton.setOnClickListener { showEditDialog() }
-
         binding.syncButton.setOnClickListener { generateToken() }
-
         binding.btnResetToken.setOnClickListener { resetToken() }
-
         binding.logoutButton.setOnClickListener { confirmLogout() }
-
         binding.deleteAccountButton.setOnClickListener { confirmDeleteAccount() }
     }
 
@@ -242,6 +240,7 @@ class ProfileFragment : Fragment() {
     private fun generateToken() {
         lifecycleScope.launch {
             val token = userRepository.generateSyncToken()
+            currentSyncToken = token
             binding.syncTokenText.text = token
             binding.syncTokenCard.visibility = View.VISIBLE
             Toast.makeText(
@@ -253,16 +252,26 @@ class ProfileFragment : Fragment() {
     }
 
     private fun resetToken() {
+        // FIX: Token aus Variable lesen, nicht aus TextView
+        val tokenToDelete = currentSyncToken.ifBlank {
+            binding.syncTokenText.text.toString()
+        }
+        if (tokenToDelete.isBlank()) {
+            Toast.makeText(requireContext(), "Kein aktiver Token vorhanden.", Toast.LENGTH_SHORT).show()
+            return
+        }
         AlertDialog.Builder(requireContext())
             .setTitle("Token zurücksetzen")
             .setMessage("Möchtest du deinen aktuellen Sync-Token löschen?")
             .setPositiveButton("Zurücksetzen") { _, _ ->
                 lifecycleScope.launch {
+                    val success = userRepository.resetSyncToken(tokenToDelete)
+                    currentSyncToken = ""
                     binding.syncTokenCard.visibility = View.GONE
                     binding.syncTokenText.text = ""
                     Toast.makeText(
                         requireContext(),
-                        "Token zurückgesetzt.",
+                        if (success) "Token zurückgesetzt." else "Fehler beim Zurücksetzen.",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
