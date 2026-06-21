@@ -29,10 +29,12 @@ class ChatFragment : Fragment() {
     private val auth = FirebaseAuth.getInstance()
     private val TAG = "ChatFragment"
 
-    // Adapter und Liste EINMAL erstellen, nie ersetzen
     private val messageList = mutableListOf<ChatMessage>()
     private lateinit var chatAdapter: ChatAdapter
     private lateinit var layoutManager: LinearLayoutManager
+
+    // Verhindert Doppel-/Dreifach-Sends
+    private var isSending = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -46,7 +48,6 @@ class ChatFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // RecyclerView einmalig aufsetzen
         layoutManager = LinearLayoutManager(requireContext()).apply {
             stackFromEnd = true
         }
@@ -62,10 +63,8 @@ class ChatFragment : Fragment() {
             sendMessage()
         }
 
-        // Erstes Laden → nach unten scrollen
         loadMessages(scrollToBottom = true)
 
-        // Auto-Refresh → Position behalten wenn hochgescrollt
         lifecycleScope.launch {
             while (isActive) {
                 delay(5000)
@@ -82,24 +81,19 @@ class ChatFragment : Fragment() {
                 val messages = chatRepository.getPublicMessages()
                 if (!isAdded || _binding == null) return@launch
 
-                // Prüfen ob neue Nachrichten vorhanden
-                val newCount = messages.size
                 val oldCount = messageList.size
                 val lastVisible = layoutManager.findLastVisibleItemPosition()
-                // User ist "unten" wenn er die letzte oder vorletzte Nachricht sieht
                 val isAtBottom = oldCount == 0 || lastVisible >= oldCount - 2
 
-                if (newCount != oldCount ||
+                if (messages.size != oldCount ||
                     messages.lastOrNull()?.id != messageList.lastOrNull()?.id) {
                     messageList.clear()
                     messageList.addAll(messages)
                     chatAdapter.notifyDataSetChanged()
 
-                    // Nur scrollen wenn: erstes Laden, eigene Nachricht, oder User war unten
                     if (scrollToBottom || isAtBottom) {
                         binding.chatRecyclerView.scrollToPosition(messageList.size - 1)
                     }
-                    // Hochgescrollt → KEINE Positionsänderung ✅
                 }
 
             } catch (e: Exception) {
@@ -116,8 +110,14 @@ class ChatFragment : Fragment() {
     }
 
     private fun sendMessage() {
+        // Wenn bereits am Senden → ignorieren
+        if (isSending) return
+
         val text = binding.chatInput.text.toString().trim()
         if (text.isEmpty()) return
+
+        isSending = true
+        binding.chatSendButton.isEnabled = false
 
         lifecycleScope.launch {
             try {
@@ -126,12 +126,17 @@ class ChatFragment : Fragment() {
                 val rank = profile?.rank ?: "malzbier"
                 chatRepository.sendPublicMessage(text, name, rank)
                 binding.chatInput.setText("")
-                // Nach eigener Nachricht immer nach unten
                 loadMessages(scrollToBottom = true)
             } catch (e: Exception) {
                 Log.e(TAG, "sendMessage Fehler: ${e.message}", e)
                 if (isAdded && _binding != null) {
                     Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            } finally {
+                // Button immer wieder freigeben, egal ob Erfolg oder Fehler
+                isSending = false
+                if (isAdded && _binding != null) {
+                    binding.chatSendButton.isEnabled = true
                 }
             }
         }
