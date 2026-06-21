@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import baf.bierandfriends.eu.data.models.ChatMessage
 import baf.bierandfriends.eu.data.repository.ChatRepository
 import baf.bierandfriends.eu.data.repository.UserRepository
 import baf.bierandfriends.eu.databinding.FragmentChatBinding
@@ -28,8 +29,10 @@ class ChatFragment : Fragment() {
     private val auth = FirebaseAuth.getInstance()
     private val TAG = "ChatFragment"
 
-    private var adapter: ChatAdapter? = null
-    private val currentMessages = mutableListOf<baf.bierandfriends.eu.data.models.ChatMessage>()
+    // Adapter und Liste EINMAL erstellen, nie ersetzen
+    private val messageList = mutableListOf<ChatMessage>()
+    private lateinit var chatAdapter: ChatAdapter
+    private lateinit var layoutManager: LinearLayoutManager
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,13 +46,13 @@ class ChatFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val layoutManager = LinearLayoutManager(requireContext()).apply {
+        // RecyclerView einmalig aufsetzen
+        layoutManager = LinearLayoutManager(requireContext()).apply {
             stackFromEnd = true
         }
+        chatAdapter = ChatAdapter(messageList, auth.currentUser?.uid ?: "")
         binding.chatRecyclerView.layoutManager = layoutManager
-
-        adapter = ChatAdapter(currentMessages, auth.currentUser?.uid ?: "")
-        binding.chatRecyclerView.adapter = adapter
+        binding.chatRecyclerView.adapter = chatAdapter
 
         binding.chatBackButton.setOnClickListener {
             findNavController().navigateUp()
@@ -59,8 +62,10 @@ class ChatFragment : Fragment() {
             sendMessage()
         }
 
+        // Erstes Laden → nach unten scrollen
         loadMessages(scrollToBottom = true)
 
+        // Auto-Refresh → Position behalten wenn hochgescrollt
         lifecycleScope.launch {
             while (isActive) {
                 delay(5000)
@@ -77,26 +82,24 @@ class ChatFragment : Fragment() {
                 val messages = chatRepository.getPublicMessages()
                 if (!isAdded || _binding == null) return@launch
 
-                val layoutManager = binding.chatRecyclerView.layoutManager
-                    as? LinearLayoutManager ?: return@launch
-
+                // Prüfen ob neue Nachrichten vorhanden
+                val newCount = messages.size
+                val oldCount = messageList.size
                 val lastVisible = layoutManager.findLastVisibleItemPosition()
-                val oldCount = currentMessages.size
-                // User gilt als "unten" wenn er die letzten 3 Nachrichten sieht
-                val wasAtBottom = oldCount == 0 || lastVisible >= oldCount - 3
+                // User ist "unten" wenn er die letzte oder vorletzte Nachricht sieht
+                val isAtBottom = oldCount == 0 || lastVisible >= oldCount - 2
 
-                // Nur updaten wenn neue Nachrichten da sind
-                if (messages.size != currentMessages.size ||
-                    messages.lastOrNull()?.text != currentMessages.lastOrNull()?.text) {
+                if (newCount != oldCount ||
+                    messages.lastOrNull()?.id != messageList.lastOrNull()?.id) {
+                    messageList.clear()
+                    messageList.addAll(messages)
+                    chatAdapter.notifyDataSetChanged()
 
-                    currentMessages.clear()
-                    currentMessages.addAll(messages)
-                    adapter?.notifyDataSetChanged()
-
-                    if (scrollToBottom || wasAtBottom) {
-                        binding.chatRecyclerView.scrollToPosition(currentMessages.size - 1)
+                    // Nur scrollen wenn: erstes Laden, eigene Nachricht, oder User war unten
+                    if (scrollToBottom || isAtBottom) {
+                        binding.chatRecyclerView.scrollToPosition(messageList.size - 1)
                     }
-                    // Andernfalls: Position bleibt wo sie ist ✅
+                    // Hochgescrollt → KEINE Positionsänderung ✅
                 }
 
             } catch (e: Exception) {
@@ -123,6 +126,7 @@ class ChatFragment : Fragment() {
                 val rank = profile?.rank ?: "malzbier"
                 chatRepository.sendPublicMessage(text, name, rank)
                 binding.chatInput.setText("")
+                // Nach eigener Nachricht immer nach unten
                 loadMessages(scrollToBottom = true)
             } catch (e: Exception) {
                 Log.e(TAG, "sendMessage Fehler: ${e.message}", e)
