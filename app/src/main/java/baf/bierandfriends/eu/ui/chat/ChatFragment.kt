@@ -10,7 +10,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import baf.bierandfriends.eu.data.models.ChatMessage
 import baf.bierandfriends.eu.data.repository.ChatRepository
 import baf.bierandfriends.eu.data.repository.UserRepository
 import baf.bierandfriends.eu.databinding.FragmentChatBinding
@@ -29,11 +28,9 @@ class ChatFragment : Fragment() {
     private val auth = FirebaseAuth.getInstance()
     private val TAG = "ChatFragment"
 
-    private val messageList = mutableListOf<ChatMessage>()
     private lateinit var chatAdapter: ChatAdapter
     private lateinit var layoutManager: LinearLayoutManager
 
-    // Verhindert Doppel-/Dreifach-Sends
     private var isSending = false
 
     override fun onCreateView(
@@ -51,7 +48,7 @@ class ChatFragment : Fragment() {
         layoutManager = LinearLayoutManager(requireContext()).apply {
             stackFromEnd = true
         }
-        chatAdapter = ChatAdapter(messageList, auth.currentUser?.uid ?: "")
+        chatAdapter = ChatAdapter(emptyList(), auth.currentUser?.uid ?: "")
         binding.chatRecyclerView.layoutManager = layoutManager
         binding.chatRecyclerView.adapter = chatAdapter
 
@@ -81,19 +78,14 @@ class ChatFragment : Fragment() {
                 val messages = chatRepository.getPublicMessages()
                 if (!isAdded || _binding == null) return@launch
 
-                val oldCount = messageList.size
+                val oldCount = chatAdapter.itemCount
                 val lastVisible = layoutManager.findLastVisibleItemPosition()
                 val isAtBottom = oldCount == 0 || lastVisible >= oldCount - 2
 
-                if (messages.size != oldCount ||
-                    messages.lastOrNull()?.id != messageList.lastOrNull()?.id) {
-                    messageList.clear()
-                    messageList.addAll(messages)
-                    chatAdapter.notifyDataSetChanged()
+                chatAdapter.updateMessages(messages)
 
-                    if (scrollToBottom || isAtBottom) {
-                        binding.chatRecyclerView.scrollToPosition(messageList.size - 1)
-                    }
+                if (messages.isNotEmpty() && (scrollToBottom || isAtBottom)) {
+                    binding.chatRecyclerView.scrollToPosition(messages.size - 1)
                 }
 
             } catch (e: Exception) {
@@ -110,7 +102,6 @@ class ChatFragment : Fragment() {
     }
 
     private fun sendMessage() {
-        // Wenn bereits am Senden → ignorieren
         if (isSending) return
 
         val text = binding.chatInput.text.toString().trim()
@@ -133,7 +124,6 @@ class ChatFragment : Fragment() {
                     Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             } finally {
-                // Button immer wieder freigeben, egal ob Erfolg oder Fehler
                 isSending = false
                 if (isAdded && _binding != null) {
                     binding.chatSendButton.isEnabled = true
