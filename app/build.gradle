@@ -7,22 +7,19 @@ plugins {
 
 android {
     namespace 'baf.bierandfriends.eu'
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
-        // WICHTIG: Hier stand bei dir "eu.bierandfriends.baf". 
-        // Ich habe es auf Claudes Version zurückgesetzt, falls das dein Store-Paket ist.
-        applicationId "eu.bierandfriends.baf" 
+        applicationId "eu.bierandfriends.baf"
         minSdk 26
-        targetSdk 35
-        versionCode 22
-        versionName "3.1"
+        targetSdk 36
+        versionCode 23
+        versionName "3.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
         release {
-            // Claudes Pfad-Logik
             storeFile file(System.getenv("KEYSTORE_FILE") ?: "keystore/release.keystore")
             storePassword System.getenv("KEYSTORE_PASSWORD") ?: ""
             keyAlias System.getenv("KEY_ALIAS") ?: ""
@@ -77,7 +74,6 @@ dependencies {
     implementation 'com.google.firebase:firebase-firestore-ktx'
     implementation 'com.google.firebase:firebase-messaging-ktx'
 
-    // DER FIX FÜR GOOGLE PLAY (Sicherheitslücke reCAPTCHA)
     implementation 'com.google.android.recaptcha:recaptcha:18.4.0'
 
     implementation 'com.google.android.gms:play-services-auth:21.0.0'
