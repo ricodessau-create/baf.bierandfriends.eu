@@ -2,12 +2,15 @@ package baf.bierandfriends.eu.ui.tickets
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import baf.bierandfriends.eu.databinding.ItemTicketMessageBinding
 
 class TicketMessageAdapter(
-    private val messages: List<Map<String, Any>>
+    initialMessages: List<Map<String, Any>>
 ) : RecyclerView.Adapter<TicketMessageAdapter.ViewHolder>() {
+
+    private val messages = initialMessages.toMutableList()
 
     inner class ViewHolder(val binding: ItemTicketMessageBinding) :
         RecyclerView.ViewHolder(binding.root)
@@ -26,4 +29,32 @@ class TicketMessageAdapter(
     }
 
     override fun getItemCount() = messages.size
+
+    fun updateMessages(newMessages: List<Map<String, Any>>) {
+        val diffCallback = object : DiffUtil.Callback() {
+            override fun getOldListSize() = messages.size
+            override fun getNewListSize() = newMessages.size
+
+            override fun areItemsTheSame(oldPos: Int, newPos: Int): Boolean {
+                val old = messages[oldPos]
+                val new = newMessages[newPos]
+                val oldId = old["id"] as? String
+                val newId = new["id"] as? String
+                return if (oldId != null && newId != null) {
+                    oldId == newId
+                } else {
+                    old["authorName"] == new["authorName"] && old["text"] == new["text"]
+                }
+            }
+
+            override fun areContentsTheSame(oldPos: Int, newPos: Int): Boolean {
+                return messages[oldPos] == newMessages[newPos]
+            }
+        }
+
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
+        messages.clear()
+        messages.addAll(newMessages)
+        diffResult.dispatchUpdatesTo(this)
+    }
 }
