@@ -14,7 +14,6 @@ import java.util.Locale
 class ChatAdapter(
     initialMessages: List<ChatMessage>,
     private val currentUid: String,
-    
     private val onNameClick: ((authorName: String) -> Unit)? = null
 ) : RecyclerView.Adapter<ChatAdapter.ChatViewHolder>() {
 
@@ -72,7 +71,6 @@ class ChatAdapter(
 
     fun getCurrentList(): List<ChatMessage> = messages
 
-    
     fun updateMessages(newMessages: List<ChatMessage>) {
         val diffCallback = object : DiffUtil.Callback() {
             override fun getOldListSize() = messages.size
