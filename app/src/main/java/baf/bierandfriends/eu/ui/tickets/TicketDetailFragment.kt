@@ -33,6 +33,9 @@ class TicketDetailFragment : Fragment() {
     private var canDelete = false
     private var currentStatus = ""
 
+    private lateinit var messagesLayoutManager: LinearLayoutManager
+    private lateinit var ticketMessageAdapter: TicketMessageAdapter
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -50,6 +53,11 @@ class TicketDetailFragment : Fragment() {
             sendMessage(); true
         }
 
+        messagesLayoutManager = LinearLayoutManager(requireContext()).apply { stackFromEnd = true }
+        ticketMessageAdapter = TicketMessageAdapter(emptyList())
+        binding.ticketMessagesRecycler.layoutManager = messagesLayoutManager
+        binding.ticketMessagesRecycler.adapter = ticketMessageAdapter
+
         lifecycleScope.launch {
             val profile = userRepository.getUserProfile()
             val rank = profile?.rank ?: ""
@@ -57,13 +65,13 @@ class TicketDetailFragment : Fragment() {
             canDelete = RankHelper.isAdmin(rank)
 
             loadTicket()
-            loadMessages()
+            loadMessages(scrollToBottom = true)
         }
 
         lifecycleScope.launch {
             while (isActive) {
                 delay(5000)
-                loadMessages()
+                loadMessages(scrollToBottom = false)
             }
         }
     }
@@ -93,7 +101,6 @@ class TicketDetailFragment : Fragment() {
                 else ""
                 binding.ticketDetailDate.text = dateText
 
-                // Schließen-Button
                 if (canClose) {
                     binding.closeTicketButton.visibility = View.VISIBLE
                     if (currentStatus == "geschlossen") {
@@ -106,7 +113,6 @@ class TicketDetailFragment : Fragment() {
                     }
                 }
 
-                // Löschen-Button nur für Admin/Cheffe und nur wenn geschlossen
                 if (canDelete && currentStatus == "geschlossen") {
                     binding.deleteTicketButton.visibility = View.VISIBLE
                     binding.deleteTicketButton.setOnClickListener { confirmDeleteTicket() }
@@ -120,17 +126,22 @@ class TicketDetailFragment : Fragment() {
         }
     }
 
-    private fun loadMessages() {
-        if (ticketId.isEmpty()) return
+    private fun loadMessages(scrollToBottom: Boolean) {
+        if (ticketId.isEmpty() || _binding == null) return
         lifecycleScope.launch {
             try {
                 val messages = ticketRepository.getTicketMessages(ticketId)
-                val adapter = TicketMessageAdapter(messages)
-                binding.ticketMessagesRecycler.adapter = adapter
-                binding.ticketMessagesRecycler.layoutManager =
-                    LinearLayoutManager(requireContext()).apply { stackFromEnd = true }
-                if (messages.isNotEmpty())
+                if (_binding == null) return@launch
+
+                val oldCount = ticketMessageAdapter.itemCount
+                val lastVisible = messagesLayoutManager.findLastVisibleItemPosition()
+                val wasAtBottom = oldCount == 0 || lastVisible >= oldCount - 1
+
+                ticketMessageAdapter.updateMessages(messages)
+
+                if (messages.isNotEmpty() && (scrollToBottom || wasAtBottom)) {
                     binding.ticketMessagesRecycler.scrollToPosition(messages.size - 1)
+                }
             } catch (e: Exception) { }
         }
     }
@@ -144,7 +155,7 @@ class TicketDetailFragment : Fragment() {
                 val name = profile?.username ?: "Unbekannt"
                 ticketRepository.addTicketMessage(ticketId, text, name)
                 binding.ticketMessageInput.setText("")
-                loadMessages()
+                loadMessages(scrollToBottom = true)
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_SHORT).show()
             }
