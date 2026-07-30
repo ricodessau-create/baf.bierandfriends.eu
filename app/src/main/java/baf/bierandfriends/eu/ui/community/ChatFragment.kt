@@ -30,6 +30,9 @@ class ChatFragment : Fragment() {
     private val userRepository = UserRepository()
     private val auth = FirebaseAuth.getInstance()
 
+    private lateinit var layoutManager: LinearLayoutManager
+    private lateinit var chatAdapter: ChatAdapter
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -41,6 +44,21 @@ class ChatFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        layoutManager = LinearLayoutManager(requireContext()).apply {
+            stackFromEnd = true
+        }
+        chatAdapter = ChatAdapter(emptyList(), auth.currentUser?.uid ?: "") { authorName ->
+            val mention = "@$authorName "
+            val current = binding.chatInput.text?.toString() ?: ""
+            val newText = if (current.startsWith(mention)) current
+                          else mention + current.removePrefix(mention)
+            binding.chatInput.setText(newText)
+            binding.chatInput.setSelection(newText.length)
+            binding.chatInput.requestFocus()
+        }
+        binding.chatRecyclerView.layoutManager = layoutManager
+        binding.chatRecyclerView.adapter = chatAdapter
 
         binding.chatBackButton.setOnClickListener {
             findNavController().navigateUp()
@@ -55,7 +73,6 @@ class ChatFragment : Fragment() {
             true
         }
 
-        // Profil in SharedPreferences speichern → für Notification-Direct-Reply
         lifecycleScope.launch {
             val profile = userRepository.getUserProfile()
             val uid = auth.currentUser?.uid ?: ""
@@ -64,18 +81,17 @@ class ChatFragment : Fragment() {
             }
         }
 
-        loadMessages()
+        loadMessages(scrollToBottom = true)
 
-        // Polling alle 4 Sekunden
         lifecycleScope.launch {
             while (isActive) {
                 delay(4000)
-                loadMessages()
+                loadMessages(scrollToBottom = false)
             }
         }
     }
 
-    private fun loadMessages() {
+    private fun loadMessages(scrollToBottom: Boolean) {
         if (!isAdded || _binding == null) return
 
         lifecycleScope.launch {
@@ -83,25 +99,13 @@ class ChatFragment : Fragment() {
                 val messages = chatRepository.getPublicMessages()
                 if (!isAdded || _binding == null) return@launch
 
-                val adapter = ChatAdapter(
-                    messages,
-                    auth.currentUser?.uid ?: ""
-                ) { authorName ->
-                    // @-Mention: Name angetippt → "@Name " ins Eingabefeld schreiben
-                    val mention = "@$authorName "
-                    val current = binding.chatInput.text?.toString() ?: ""
-                    // Mention nur einmal am Anfang einfügen
-                    val newText = if (current.startsWith(mention)) current
-                                  else mention + current.removePrefix(mention)
-                    binding.chatInput.setText(newText)
-                    binding.chatInput.setSelection(newText.length)
-                    binding.chatInput.requestFocus()
-                }
+                val oldCount = chatAdapter.itemCount
+                val lastVisible = layoutManager.findLastVisibleItemPosition()
+                val wasAtBottom = oldCount == 0 || lastVisible >= oldCount - 2
 
-                binding.chatRecyclerView.adapter = adapter
-                binding.chatRecyclerView.layoutManager =
-                    LinearLayoutManager(requireContext()).apply { stackFromEnd = true }
-                if (messages.isNotEmpty()) {
+                chatAdapter.updateMessages(messages)
+
+                if (messages.isNotEmpty() && (scrollToBottom || wasAtBottom)) {
                     binding.chatRecyclerView.scrollToPosition(messages.size - 1)
                 }
             } catch (e: Exception) {
@@ -124,7 +128,7 @@ class ChatFragment : Fragment() {
                 val rank = profile?.rank ?: "malzbier"
                 chatRepository.sendPublicMessage(text, name, rank)
                 binding.chatInput.setText("")
-                loadMessages()
+                loadMessages(scrollToBottom = true)
             } catch (e: Exception) {
                 Log.e(TAG, "sendMessage: ${e.message}", e)
                 if (isAdded && _binding != null) {
