@@ -29,6 +29,9 @@ class PrivateChatFragment : Fragment() {
     private var receiverUid = ""
     private var receiverName = ""
 
+    private lateinit var layoutManager: LinearLayoutManager
+    private lateinit var chatAdapter: ChatAdapter
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -51,6 +54,22 @@ class PrivateChatFragment : Fragment() {
             true
         }
 
+        layoutManager = LinearLayoutManager(requireContext()).apply {
+            stackFromEnd = true
+        }
+        val currentUid = auth.currentUser?.uid ?: ""
+        chatAdapter = ChatAdapter(emptyList(), currentUid) { authorName ->
+            val mention = "@$authorName "
+            val current = binding.privateChatInput.text?.toString() ?: ""
+            val newText = if (current.startsWith(mention)) current
+                          else mention + current.removePrefix(mention)
+            binding.privateChatInput.setText(newText)
+            binding.privateChatInput.setSelection(newText.length)
+            binding.privateChatInput.requestFocus()
+        }
+        binding.privateChatRecycler.layoutManager = layoutManager
+        binding.privateChatRecycler.adapter = chatAdapter
+
         loadMessages(scrollToBottom = true)
 
         lifecycleScope.launch {
@@ -61,10 +80,6 @@ class PrivateChatFragment : Fragment() {
         }
     }
 
-    /**
-     * @param scrollToBottom true = immer ans Ende (beim ersten Laden / nach eigener Nachricht),
-     *                       false = Scroll-Position behalten (Auto-Refresh)
-     */
     private fun loadMessages(scrollToBottom: Boolean) {
         if (receiverUid.isEmpty() || !isAdded || _binding == null) return
         lifecycleScope.launch {
@@ -82,27 +97,11 @@ class PrivateChatFragment : Fragment() {
                     )
                 }
 
-                val layoutManager = binding.privateChatRecycler.layoutManager
-                    as? LinearLayoutManager
-                    ?: LinearLayoutManager(requireContext()).apply {
-                        stackFromEnd = true
-                    }.also { binding.privateChatRecycler.layoutManager = it }
-
+                val oldCount = chatAdapter.itemCount
                 val lastVisible = layoutManager.findLastVisibleItemPosition()
-                val oldCount = binding.privateChatRecycler.adapter?.itemCount ?: 0
                 val wasAtBottom = oldCount == 0 || lastVisible >= oldCount - 1
 
-                val adapter = ChatAdapter(chatMessages, currentUid) { authorName ->
-                    val mention = "@$authorName "
-                    val current = binding.privateChatInput.text?.toString() ?: ""
-                    val newText = if (current.startsWith(mention)) current
-                                  else mention + current.removePrefix(mention)
-                    binding.privateChatInput.setText(newText)
-                    binding.privateChatInput.setSelection(newText.length)
-                    binding.privateChatInput.requestFocus()
-                }
-
-                binding.privateChatRecycler.adapter = adapter
+                chatAdapter.updateMessages(chatMessages)
 
                 if (chatMessages.isNotEmpty() && (scrollToBottom || wasAtBottom)) {
                     binding.privateChatRecycler.scrollToPosition(chatMessages.size - 1)
