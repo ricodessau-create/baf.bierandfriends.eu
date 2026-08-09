@@ -36,6 +36,8 @@ class TicketDetailFragment : Fragment() {
     private lateinit var messagesLayoutManager: LinearLayoutManager
     private lateinit var ticketMessageAdapter: TicketMessageAdapter
 
+    private var isSending = false
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -147,8 +149,13 @@ class TicketDetailFragment : Fragment() {
     }
 
     private fun sendMessage() {
+        if (isSending) return
         val text = binding.ticketMessageInput.text.toString().trim()
         if (text.isEmpty() || ticketId.isEmpty()) return
+
+        isSending = true
+        binding.ticketSendButton.isEnabled = false
+
         lifecycleScope.launch {
             try {
                 val profile = userRepository.getUserProfile()
@@ -158,6 +165,11 @@ class TicketDetailFragment : Fragment() {
                 loadMessages(scrollToBottom = true)
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_SHORT).show()
+            } finally {
+                isSending = false
+                if (_binding != null) {
+                    binding.ticketSendButton.isEnabled = true
+                }
             }
         }
     }
