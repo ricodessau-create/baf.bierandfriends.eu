@@ -33,6 +33,8 @@ class ChatFragment : Fragment() {
     private lateinit var layoutManager: LinearLayoutManager
     private lateinit var chatAdapter: ChatAdapter
 
+    private var isSending = false
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -118,8 +120,12 @@ class ChatFragment : Fragment() {
     }
 
     private fun sendMessage() {
+        if (isSending) return
         val text = binding.chatInput.text?.toString()?.trim() ?: return
         if (text.isEmpty()) return
+
+        isSending = true
+        binding.chatSendButton.isEnabled = false
 
         lifecycleScope.launch {
             try {
@@ -137,6 +143,11 @@ class ChatFragment : Fragment() {
                         "Fehler: ${e.message ?: "Unbekannter Fehler"}",
                         Toast.LENGTH_SHORT
                     ).show()
+                }
+            } finally {
+                isSending = false
+                if (isAdded && _binding != null) {
+                    binding.chatSendButton.isEnabled = true
                 }
             }
         }
