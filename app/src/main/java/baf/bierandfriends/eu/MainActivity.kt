@@ -12,6 +12,7 @@ import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
@@ -57,7 +58,6 @@ class MainActivity : AppCompatActivity() {
                 if (destination.id in noBottomNav) View.GONE else View.VISIBLE
         }
 
-        // Deep-Link: baf://app/delete-account → direkt zum Profil (Konto löschen)
         if (intent?.data?.toString() == "baf://app/delete-account") {
             Handler(Looper.getMainLooper()).postDelayed({
                 try { findNavController(R.id.nav_host_fragment).navigate(R.id.profileFragment) }
@@ -66,10 +66,10 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        val type = getNotificationType(intent)
-        if (type != null) {
+        val payload = getNotificationPayload(intent)
+        if (payload != null) {
             Handler(Looper.getMainLooper()).postDelayed({
-                handleNotificationNavigation(type)
+                handleNotificationNavigation(payload)
             }, 1000)
         }
     }
@@ -77,7 +77,6 @@ class MainActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
 
-        // Deep-Link: baf://app/delete-account
         if (intent.data?.toString() == "baf://app/delete-account") {
             Handler(Looper.getMainLooper()).postDelayed({
                 try { findNavController(R.id.nav_host_fragment).navigate(R.id.profileFragment) }
@@ -86,9 +85,9 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        val type = getNotificationType(intent) ?: return
+        val payload = getNotificationPayload(intent) ?: return
         Handler(Looper.getMainLooper()).postDelayed({
-            handleNotificationNavigation(type)
+            handleNotificationNavigation(payload)
         }, 300)
     }
 
@@ -112,29 +111,57 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun getNotificationType(intent: Intent?): String? {
+    private data class NotificationPayload(
+        val type: String,
+        val chatType: String,
+        val senderUid: String,
+        val senderName: String
+    )
+
+    private fun getNotificationPayload(intent: Intent?): NotificationPayload? {
         if (intent == null) return null
-        return intent.getStringExtra("notification_type")
+        val type = intent.getStringExtra("notification_type")
             ?: intent.getStringExtra("type")
+            ?: return null
+        return NotificationPayload(
+            type       = type,
+            chatType   = intent.getStringExtra("chatType") ?: "public",
+            senderUid  = intent.getStringExtra("senderUid") ?: "",
+            senderName = intent.getStringExtra("senderName") ?: "Nutzer"
+        )
     }
 
-    private fun handleNotificationNavigation(type: String) {
+    private fun handleNotificationNavigation(payload: NotificationPayload) {
         try {
             val navController = findNavController(R.id.nav_host_fragment)
             if (FirebaseAuth.getInstance().currentUser?.uid == null) return
 
-            when (type) {
+            when (payload.type) {
                 "chat" -> {
-                    binding.bottomNavigation.selectedItemId = R.id.communityFragment
-                    Handler(Looper.getMainLooper()).postDelayed({
+                    if (payload.chatType == "private" && payload.senderUid.isNotEmpty()) {
                         try {
-                            if (navController.currentDestination?.id == R.id.communityFragment) {
-                                navController.navigate(R.id.action_communityFragment_to_chatFragment)
-                            }
+                            navController.navigate(
+                                R.id.privateChatFragment,
+                                bundleOf(
+                                    "receiverUid"  to payload.senderUid,
+                                    "receiverName" to payload.senderName
+                                )
+                            )
                         } catch (e: Exception) {
-                            Log.e(TAG, "Chat Navigation: ${e.message}")
+                            Log.e(TAG, "Private Chat Navigation: ${e.message}")
                         }
-                    }, 700)
+                    } else {
+                        binding.bottomNavigation.selectedItemId = R.id.communityFragment
+                        Handler(Looper.getMainLooper()).postDelayed({
+                            try {
+                                if (navController.currentDestination?.id == R.id.communityFragment) {
+                                    navController.navigate(R.id.action_communityFragment_to_chatFragment)
+                                }
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Chat Navigation: ${e.message}")
+                            }
+                        }, 700)
+                    }
                 }
                 "ticket" -> binding.bottomNavigation.selectedItemId = R.id.ticketsFragment
                 "forum"  -> binding.bottomNavigation.selectedItemId = R.id.communityFragment
