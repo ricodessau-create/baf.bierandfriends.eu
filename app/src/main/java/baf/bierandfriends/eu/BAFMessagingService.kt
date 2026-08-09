@@ -34,15 +34,16 @@ class BAFMessagingService : FirebaseMessagingService() {
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
 
-        val title     = message.notification?.title ?: message.data["title"] ?: "BierAndFriends"
-        val body      = message.notification?.body  ?: message.data["body"]  ?: ""
-        val type      = message.data["type"]     ?: ""
-        val chatType  = message.data["chatType"] ?: "public"
-        val senderUid = message.data["senderUid"] ?: ""
+        val title      = message.notification?.title ?: message.data["title"] ?: "BierAndFriends"
+        val body       = message.notification?.body  ?: message.data["body"]  ?: ""
+        val type       = message.data["type"]       ?: ""
+        val chatType   = message.data["chatType"]   ?: "public"
+        val senderUid  = message.data["senderUid"]  ?: ""
+        val senderName = message.data["senderName"] ?: ""
 
-        Log.d(TAG, "Empfangen: type=$type chatType=$chatType")
+        Log.d(TAG, "Empfangen: type=$type chatType=$chatType senderUid=$senderUid")
         createNotificationChannel()
-        showNotification(title, body, type, chatType, senderUid)
+        showNotification(title, body, type, chatType, senderUid, senderName)
     }
 
     private fun createNotificationChannel() {
@@ -65,16 +66,19 @@ class BAFMessagingService : FirebaseMessagingService() {
         body: String,
         type: String,
         chatType: String,
-        senderUid: String
+        senderUid: String,
+        senderName: String
     ) {
         val notifMgr = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val notifId  = System.currentTimeMillis().toInt()
 
-        // Tap-Intent: App öffnen und zum richtigen Screen navigieren
         val openIntent = Intent(this, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
             putExtra("notification_type", type)
             putExtra("type", type)
+            putExtra("chatType", chatType)
+            putExtra("senderUid", senderUid)
+            putExtra("senderName", senderName)
         }
         val openPI = PendingIntent.getActivity(
             this, notifId, openIntent,
@@ -91,7 +95,6 @@ class BAFMessagingService : FirebaseMessagingService() {
             .setContentIntent(openPI)
             .setDefaults(NotificationCompat.DEFAULT_ALL)
 
-        // Direct-Reply-Action nur für Chat-Nachrichten
         if (type == "chat") {
             val remoteInput = RemoteInput.Builder(NotificationReplyReceiver.KEY_REPLY)
                 .setLabel("Antworten…")
@@ -104,7 +107,6 @@ class BAFMessagingService : FirebaseMessagingService() {
                 putExtra(NotificationReplyReceiver.EXTRA_NOTIFICATION_ID, notifId)
             }
 
-            // FLAG_MUTABLE ist für RemoteInput auf API 31+ Pflicht
             val replyPiFlags = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
             else
