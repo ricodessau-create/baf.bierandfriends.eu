@@ -32,6 +32,8 @@ class PrivateChatFragment : Fragment() {
     private lateinit var layoutManager: LinearLayoutManager
     private lateinit var chatAdapter: ChatAdapter
 
+    private var isSending = false
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
@@ -115,8 +117,12 @@ class PrivateChatFragment : Fragment() {
     }
 
     private fun sendMessage() {
+        if (isSending) return
         val text = binding.privateChatInput.text?.toString()?.trim() ?: return
         if (text.isEmpty() || receiverUid.isEmpty()) return
+
+        isSending = true
+        binding.privateChatSend.isEnabled = false
 
         lifecycleScope.launch {
             val profile = userRepository.getUserProfile()
@@ -128,6 +134,11 @@ class PrivateChatFragment : Fragment() {
             } catch (e: Exception) {
                 if (isAdded && _binding != null) {
                     Toast.makeText(requireContext(), "Fehler: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            } finally {
+                isSending = false
+                if (isAdded && _binding != null) {
+                    binding.privateChatSend.isEnabled = true
                 }
             }
         }
